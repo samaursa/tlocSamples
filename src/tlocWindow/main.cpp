@@ -42,6 +42,7 @@ int main()
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
+    // We MUST pool for window events, otherwise it will appear to be frozen
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
