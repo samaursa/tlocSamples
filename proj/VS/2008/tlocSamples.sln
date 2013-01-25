@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{7F96664B-DDCE-4840-8B59-EC573919AB18}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlocSimpleQuad", "tlocSimpleQuad\tlocSimpleQuad.vcproj", "{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_StdAlloc|Win32 = Debug_StdAlloc|Win32
+		Debug_StdAlloc|x64 = Debug_StdAlloc|x64
+		Debug|Win32 = Debug|Win32
+		Debug|x64 = Debug|x64
+		Release_DebugInfo|Win32 = Release_DebugInfo|Win32
+		Release_DebugInfo|x64 = Release_DebugInfo|x64
+		Release_StdAlloc_DebugInfo|Win32 = Release_StdAlloc_DebugInfo|Win32
+		Release_StdAlloc_DebugInfo|x64 = Release_StdAlloc_DebugInfo|x64
+		Release_StdAlloc|Win32 = Release_StdAlloc|Win32
+		Release_StdAlloc|x64 = Release_StdAlloc|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug_StdAlloc|Win32.ActiveCfg = Debug_StdAlloc|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug_StdAlloc|Win32.Build.0 = Debug_StdAlloc|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug_StdAlloc|x64.ActiveCfg = Debug_StdAlloc|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug_StdAlloc|x64.Build.0 = Debug_StdAlloc|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug|Win32.Build.0 = Debug|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug|x64.ActiveCfg = Debug|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Debug|x64.Build.0 = Debug|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_DebugInfo|Win32.ActiveCfg = Release_DebugInfo|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_DebugInfo|Win32.Build.0 = Release_DebugInfo|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_DebugInfo|x64.ActiveCfg = Release_DebugInfo|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_DebugInfo|x64.Build.0 = Release_DebugInfo|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc_DebugInfo|Win32.ActiveCfg = Release_StdAlloc_DebugInfo|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc_DebugInfo|Win32.Build.0 = Release_StdAlloc_DebugInfo|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc_DebugInfo|x64.ActiveCfg = Release_StdAlloc_DebugInfo|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc_DebugInfo|x64.Build.0 = Release_StdAlloc_DebugInfo|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc|Win32.ActiveCfg = Release_StdAlloc|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc|Win32.Build.0 = Release_StdAlloc|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc|x64.ActiveCfg = Release_StdAlloc|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release_StdAlloc|x64.Build.0 = Release_StdAlloc|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release|Win32.ActiveCfg = Release|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release|Win32.Build.0 = Release|Win32
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release|x64.ActiveCfg = Release|x64
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1} = {7F96664B-DDCE-4840-8B59-EC573919AB18}
+	EndGlobalSection
+EndGlobal
