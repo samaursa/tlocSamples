@@ -31,7 +31,7 @@ int main()
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-    gfx_win::WindowSettings("tlocSimpleQuad") );
+    gfx_win::WindowSettings("tlocTexturedFan") );
 
   //------------------------------------------------------------------------
   // Initialize renderer
@@ -50,22 +50,22 @@ int main()
   core_cs::ComponentPoolManager compMgr;
 
   //------------------------------------------------------------------------
-  // To render a quad, we need a quad render system - this is a specialized
+  // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(&eventMgr, &entityMgr);
+  gfx_cs::FanRenderSystem   fanSys(&eventMgr, &entityMgr);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(&eventMgr, &entityMgr);
 
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The quad render system expects a few shader variables to be declared
+  // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
   gfx_cs::Material  mat;
   {
     core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/tlocPassthroughVertexShader.glsl");
+      ("../../../../../assets/shaders/tlocOneTextureVS.glsl");
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the vertex shader"); return 1;}
 
@@ -75,7 +75,7 @@ int main()
   }
   {
     core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/tlocPassthroughFragmentShader.glsl");
+      ("../../../../../assets/shaders/tlocOneTextureFS.glsl");
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1;}
 
@@ -85,17 +85,48 @@ int main()
   }
 
   //------------------------------------------------------------------------
+  // Add a texture to the material. We need:
+  //  * an image
+  //  * a TextureObject (preparing the image for OpenGL)
+  //  * a Uniform (all textures are uniforms in shaders)
+  //  * a ShaderOperator (this is what the material will take)
+  //
+  // The material takes in a 'MasterShaderOperator' which is the user defined
+  // shader operator and over-rides any shader operators that the systems
+  // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
+  // that have the same name as the one in the system will be given preference.
+
+  gfx_med::ImageLoaderPng png;
+  core_io::Path path("../../../../../assets/images/uv_grid_col.png");
+  if (png.Load(path) != ErrorSuccess())
+  { TLOC_ASSERT(false, "Image did not load!"); }
+
+  // gl::Uniform supports quite a few types, including a TextureObject
+  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
+  to->Initialize(png.GetImage());
+
+  gfx_gl::UniformPtr  u_to(new gfx_gl::Uniform());
+  u_to->SetName("s_texture").SetValueAs(to);
+
+  gfx_gl::ShaderOperatorPtr so =
+    gfx_gl::ShaderOperatorPtr(new gfx_gl::ShaderOperator());
+  so->AddUniform(u_to);
+
+  // Finally, set this shader operator as the master operator (aka user operator)
+  // in our material.
+  mat.SetMasterShaderOperator(so);
+
+  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q = prefab_gfx::CreateQuad(entityMgr, compMgr, rect);
+  math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
+  core_cs::Entity* q = prefab_gfx::CreateFan(entityMgr, compMgr, circ, 64);
   entityMgr.InsertComponent(q, &mat);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  quadSys.Initialize();
+  fanSys.Initialize();
   matSys.Initialize();
 
   //------------------------------------------------------------------------
@@ -106,8 +137,8 @@ int main()
     while (win.GetEvent(evt))
     { }
 
-    // Finally, process the quad
-    quadSys.ProcessActiveEntities();
+    // Finally, process the fan
+    fanSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }
