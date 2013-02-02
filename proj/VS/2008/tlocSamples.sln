@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlocWindow", "tlocWindow\tl
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlocInput", "tlocInput\tlocInput.vcproj", "{FD654A50-81F7-42BE-90E2-8FB703D59C4D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tlocInputCallbacks", "tlocInputCallbacks\tlocInputCallbacks.vcproj", "{33C57A27-A205-45AD-B0EB-503243D6ABE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_StdAlloc|Win32 = Debug_StdAlloc|Win32
@@ -97,6 +99,30 @@ Global
 		{FD654A50-81F7-42BE-90E2-8FB703D59C4D}.Release|Win32.Build.0 = Release|Win32
 		{FD654A50-81F7-42BE-90E2-8FB703D59C4D}.Release|x64.ActiveCfg = Release|x64
 		{FD654A50-81F7-42BE-90E2-8FB703D59C4D}.Release|x64.Build.0 = Release|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug_StdAlloc|Win32.ActiveCfg = Debug_StdAlloc|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug_StdAlloc|Win32.Build.0 = Debug_StdAlloc|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug_StdAlloc|x64.ActiveCfg = Debug_StdAlloc|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug_StdAlloc|x64.Build.0 = Debug_StdAlloc|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug|Win32.Build.0 = Debug|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug|x64.ActiveCfg = Debug|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Debug|x64.Build.0 = Debug|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_DebugInfo|Win32.ActiveCfg = Release_DebugInfo|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_DebugInfo|Win32.Build.0 = Release_DebugInfo|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_DebugInfo|x64.ActiveCfg = Release_DebugInfo|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_DebugInfo|x64.Build.0 = Release_DebugInfo|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc_DebugInfo|Win32.ActiveCfg = Release_StdAlloc_DebugInfo|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc_DebugInfo|Win32.Build.0 = Release_StdAlloc_DebugInfo|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc_DebugInfo|x64.ActiveCfg = Release_StdAlloc_DebugInfo|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc_DebugInfo|x64.Build.0 = Release_StdAlloc_DebugInfo|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc|Win32.ActiveCfg = Release_StdAlloc|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc|Win32.Build.0 = Release_StdAlloc|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc|x64.ActiveCfg = Release_StdAlloc|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release_StdAlloc|x64.Build.0 = Release_StdAlloc|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release|Win32.ActiveCfg = Release|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release|Win32.Build.0 = Release|Win32
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release|x64.ActiveCfg = Release|x64
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -105,5 +131,6 @@ Global
 		{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1} = {7F96664B-DDCE-4840-8B59-EC573919AB18}
 		{34E9FD63-DF6C-45A1-A740-62B5E47DD064} = {7F96664B-DDCE-4840-8B59-EC573919AB18}
 		{FD654A50-81F7-42BE-90E2-8FB703D59C4D} = {7F96664B-DDCE-4840-8B59-EC573919AB18}
+		{33C57A27-A205-45AD-B0EB-503243D6ABE9} = {7F96664B-DDCE-4840-8B59-EC573919AB18}
 	EndGlobalSection
 EndGlobal
