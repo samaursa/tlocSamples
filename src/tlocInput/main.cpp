@@ -104,7 +104,7 @@ int main()
   gfx_cs::Material mat;
   {
     core_io::FileIO_ReadA file
-      ("../../../../assets/tlocPassthroughVertexShader.glsl");
+      ("../../../../../assets/tlocPassthroughVertexShader.glsl");
     if (file.Open() != ErrorSuccess())
     { printf("\nUnable to open the vertex shader"); return 1; }
 
@@ -115,7 +115,7 @@ int main()
 
   {
     core_io::FileIO_ReadA file
-      ("../../../../assets/tlocPassthroughFragmentShader.glsl");
+      ("../../../../../assets/tlocPassthroughFragmentShader.glsl");
     if (file.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1; }
 
