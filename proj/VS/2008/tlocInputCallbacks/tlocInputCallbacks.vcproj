@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="tlocWindow"
-	ProjectGUID="{34E9FD63-DF6C-45A1-A740-62B5E47DD064}"
-	RootNamespace="tlocWindow"
+	Name="tlocInputCallbacks"
+	ProjectGUID="{33C57A27-A205-45AD-B0EB-503243D6ABE9}"
+	RootNamespace="tlocInputCallbacks"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -44,6 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,6 +63,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -114,6 +117,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -132,6 +136,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="17"
 			/>
@@ -185,6 +191,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -202,6 +209,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -258,6 +267,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -275,6 +285,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -328,6 +340,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_DEBUG; TLOC_USING_STD_ALLOC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -346,6 +359,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -398,6 +413,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_DEBUG; TLOC_USING_STD_ALLOC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -416,6 +432,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="17"
 			/>
@@ -469,6 +487,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE_DEBUGINFO"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -486,6 +505,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -542,6 +563,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE_DEBUGINFO"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -559,6 +581,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -614,6 +638,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE;  TLOC_USING_STD_ALLOC;"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -631,6 +656,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -687,6 +714,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE;  TLOC_USING_STD_ALLOC;"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -704,6 +732,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -759,6 +789,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE_DEBUGINFO;TLOC_USING_STD_ALLOC"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -776,6 +807,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -832,6 +865,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(TLOC_DEP_PATH)\include\&quot;"
 				PreprocessorDefinitions="TLOC_RELEASE_DEBUGINFO;TLOC_USING_STD_ALLOC"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -849,6 +883,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="dinput8.lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -886,11 +922,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\src\tlocWindow\main.cpp"
+				RelativePath="..\..\..\..\src\tlocInputCallbacks\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\tlocWindow\tlocVersionCheck.cpp"
+				RelativePath="..\..\..\..\src\tlocInputCallbacks\tlocVersionCheck.cpp"
 				>
 			</File>
 		</Filter>
@@ -905,14 +941,6 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
-			<File
-				RelativePath="..\..\..\..\assets\tlocPassthroughFragmentShader.glsl"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\assets\tlocPassthroughVertexShader.glsl"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>
