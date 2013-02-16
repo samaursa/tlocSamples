@@ -5,7 +5,31 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
+#include <cstring>
+
 using namespace tloc;
+
+//------------------------------------------------------------------------
+// Temporary code to get proper asset path on platforms
+
+#if defined(TLOC_OS_WIN)
+
+const char* GetAssetPath()
+{
+  static const char* assetPath = "../../../../../assets/";
+  return assetPath;
+}
+#elif defined(TLOC_OS_IPHONE)
+const char* GetAssetPath()
+{
+  static char assetPath[1024];
+  strcpy(assetPath, [[[NSBundle mainBundle] resourcePath]
+                     cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+  strcat(assetPath, "/assets/");
+
+  return assetPath;
+}
+#endif
 
 class WindowCallback
 {
@@ -24,7 +48,7 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
-int main()
+int TLOC_MAIN(int argc, char *argv[])
 {
   gfx_win::Window win;
   WindowCallback  winCallback;
@@ -64,8 +88,14 @@ int main()
   //       vertex and fragment shaders for more info.
   gfx_cs::Material  mat;
   {
-    core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/tlocPassthroughVertexShader.glsl");
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/tlocPassthroughVertexShader.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+#endif
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+    
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the vertex shader"); return 1;}
 
@@ -74,8 +104,14 @@ int main()
     mat.SetVertexSource(code);
   }
   {
-    core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/tlocPassthroughFragmentShader.glsl");
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/tlocPassthroughFragmentShader.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+#endif
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1;}
 
@@ -116,4 +152,5 @@ int main()
   // Exiting
   printf("\nExiting normally");
 
+  return 0;
 }

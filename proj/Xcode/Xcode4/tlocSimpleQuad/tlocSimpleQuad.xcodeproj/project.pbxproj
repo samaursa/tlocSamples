@@ -1,0 +1,293 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		97303B7516CF6453006D5581 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97303B7316CF6453006D5581 /* main.cpp */; };
+		97303B7616CF6453006D5581 /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */; };
+		97303B7816CF64AD006D5581 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 97303B7716CF64AD006D5581 /* assets */; };
+		97303B7D16CF6A71006D5581 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97303B7A16CF6A71006D5581 /* OpenGLES.framework */; };
+		97303B8016CF6B0A006D5581 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97303B7F16CF6B0A006D5581 /* QuartzCore.framework */; };
+		97CC1D9616CF51F8003C6740 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9516CF51F8003C6740 /* UIKit.framework */; };
+		97CC1D9816CF51F8003C6740 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9716CF51F8003C6740 /* Foundation.framework */; };
+		97CC1D9A16CF51F8003C6740 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9916CF51F8003C6740 /* CoreGraphics.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		97303B7316CF6453006D5581 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = main.cpp; path = ../../../../src/tlocSimpleQuad/main.cpp; sourceTree = "<group>"; };
+		97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocSimpleQuad/tlocVersionCheck.cpp; sourceTree = "<group>"; };
+		97303B7716CF64AD006D5581 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
+		97303B7A16CF6A71006D5581 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		97303B7F16CF6B0A006D5581 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		97CC1D9216CF51F8003C6740 /* tlocSimpleQuad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tlocSimpleQuad.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		97CC1D9516CF51F8003C6740 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		97CC1D9716CF51F8003C6740 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		97CC1D9916CF51F8003C6740 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		97CC1DB416CF5995003C6740 /* tlocSimpleQuad-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "tlocSimpleQuad-Info.plist"; path = "SupportingFiles/tlocSimpleQuad-Info.plist"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		97CC1D8F16CF51F8003C6740 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97303B8016CF6B0A006D5581 /* QuartzCore.framework in Frameworks */,
+				97303B7D16CF6A71006D5581 /* OpenGLES.framework in Frameworks */,
+				97CC1D9616CF51F8003C6740 /* UIKit.framework in Frameworks */,
+				97CC1D9816CF51F8003C6740 /* Foundation.framework in Frameworks */,
+				97CC1D9A16CF51F8003C6740 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		97CC1D8916CF51F8003C6740 = {
+			isa = PBXGroup;
+			children = (
+				97CC1DB216CF58E4003C6740 /* tlocSimpleQuad */,
+				97CC1D9416CF51F8003C6740 /* Frameworks */,
+				97CC1D9316CF51F8003C6740 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		97CC1D9316CF51F8003C6740 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				97CC1D9216CF51F8003C6740 /* tlocSimpleQuad.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		97CC1D9416CF51F8003C6740 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				97303B7F16CF6B0A006D5581 /* QuartzCore.framework */,
+				97303B7A16CF6A71006D5581 /* OpenGLES.framework */,
+				97CC1D9516CF51F8003C6740 /* UIKit.framework */,
+				97CC1D9716CF51F8003C6740 /* Foundation.framework */,
+				97CC1D9916CF51F8003C6740 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		97CC1DB216CF58E4003C6740 /* tlocSimpleQuad */ = {
+			isa = PBXGroup;
+			children = (
+				97303B7316CF6453006D5581 /* main.cpp */,
+				97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */,
+				97303B7716CF64AD006D5581 /* assets */,
+				97CC1DB316CF58F1003C6740 /* SupportingFiles */,
+			);
+			name = tlocSimpleQuad;
+			sourceTree = "<group>";
+		};
+		97CC1DB316CF58F1003C6740 /* SupportingFiles */ = {
+			isa = PBXGroup;
+			children = (
+				97CC1DB416CF5995003C6740 /* tlocSimpleQuad-Info.plist */,
+			);
+			name = SupportingFiles;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		97CC1D9116CF51F8003C6740 /* tlocSimpleQuad */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97CC1DAF16CF51F8003C6740 /* Build configuration list for PBXNativeTarget "tlocSimpleQuad" */;
+			buildPhases = (
+				97CC1D8E16CF51F8003C6740 /* Sources */,
+				97CC1D8F16CF51F8003C6740 /* Frameworks */,
+				97CC1D9016CF51F8003C6740 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = tlocSimpleQuad;
+			productName = tlocSimpleQuad;
+			productReference = 97CC1D9216CF51F8003C6740 /* tlocSimpleQuad.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		97CC1D8A16CF51F8003C6740 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = "SkopWorks Inc";
+			};
+			buildConfigurationList = 97CC1D8D16CF51F8003C6740 /* Build configuration list for PBXProject "tlocSimpleQuad" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 97CC1D8916CF51F8003C6740;
+			productRefGroup = 97CC1D9316CF51F8003C6740 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				97CC1D9116CF51F8003C6740 /* tlocSimpleQuad */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		97CC1D9016CF51F8003C6740 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97303B7816CF64AD006D5581 /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		97CC1D8E16CF51F8003C6740 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				97303B7516CF6453006D5581 /* main.cpp in Sources */,
+				97303B7616CF6453006D5581 /* tlocVersionCheck.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		97CC1DAD16CF51F8003C6740 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(TLOC_SAMPLES_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/$(PROJECT_NAME)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					TLOC_DEBUG,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "SupportingFiles/tlocSimpleQuad-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-fno-exceptions",
+					"-fno-rtti",
+				);
+				OTHER_LDFLAGS = (
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocCore/tlocCore_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocMath/tlocMath_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocGraphics/tlocGraphics_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocInput/tlocInput_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocPrefab/tlocPrefab_$(CONFIGURATION).a\"",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+			};
+			name = Debug;
+		};
+		97CC1DAE16CF51F8003C6740 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(TLOC_SAMPLES_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/$(PROJECT_NAME)";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = TLOC_RELEASE;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "SupportingFiles/tlocSimpleQuad-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = (
+					"-DNS_BLOCK_ASSERTIONS=1",
+					"-fno-exceptions",
+					"-fno-rtti",
+				);
+				OTHER_LDFLAGS = (
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocCore/tlocCore_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocMath/tlocMath_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocGraphics/tlocGraphics_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocInput/tlocInput_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocPrefab/tlocPrefab_$(CONFIGURATION).a\"",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		97CC1DB016CF51F8003C6740 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		97CC1DB116CF51F8003C6740 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		97CC1D8D16CF51F8003C6740 /* Build configuration list for PBXProject "tlocSimpleQuad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				97CC1DAD16CF51F8003C6740 /* Debug */,
+				97CC1DAE16CF51F8003C6740 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		97CC1DAF16CF51F8003C6740 /* Build configuration list for PBXNativeTarget "tlocSimpleQuad" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				97CC1DB016CF51F8003C6740 /* Debug */,
+				97CC1DB116CF51F8003C6740 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 97CC1D8A16CF51F8003C6740 /* Project object */;
+}
