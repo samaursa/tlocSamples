@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:tlocTexturedFan/tlocTexturedFan.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:tlocSimpleQuad/tlocSimpleQuad.xcodeproj">
    </FileRef>
 </Workspace>

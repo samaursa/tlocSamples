@@ -50,13 +50,14 @@ TLOC_DEF_TYPE(WindowCallback);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
+  TLOC_UNUSED_2(argc, argv);
+  
   gfx_win::Window win;
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-    gfx_win::WindowSettings("tlocSimpleQuad") );
-
+             gfx_win::WindowSettings("tlocSimpleQuad") );
   //------------------------------------------------------------------------
   // Initialize renderer
   gfx_rend::Renderer  renderer;

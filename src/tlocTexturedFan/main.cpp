@@ -5,7 +5,31 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
+#include <cstring>
+
 using namespace tloc;
+
+//------------------------------------------------------------------------
+// Temporary code to get proper asset path on platforms
+
+#if defined(TLOC_OS_WIN)
+
+const char* GetAssetPath()
+{
+  static const char* assetPath = "../../../../../assets/";
+  return assetPath;
+}
+#elif defined(TLOC_OS_IPHONE)
+const char* GetAssetPath()
+{
+  static char assetPath[1024];
+  strcpy(assetPath, [[[NSBundle mainBundle] resourcePath]
+                     cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+  strcat(assetPath, "/assets/");
+
+  return assetPath;
+}
+#endif
 
 class WindowCallback
 {
@@ -24,8 +48,10 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
-int main()
+int TLOC_MAIN(int argc, char *argv[])
 {
+  TLOC_UNUSED_2(argc, argv);
+  
   gfx_win::Window win;
   WindowCallback  winCallback;
 
@@ -64,8 +90,15 @@ int main()
   //       vertex and fragment shaders for more info.
   gfx_cs::Material  mat;
   {
-    core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/shaders/tlocOneTextureVS.glsl");
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+    
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+    
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the vertex shader"); return 1;}
 
@@ -74,8 +107,15 @@ int main()
     mat.SetVertexSource(code);
   }
   {
-    core_io::FileIO_ReadA shaderFile
-      ("../../../../../assets/shaders/tlocOneTextureFS.glsl");
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+    
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1;}
 
@@ -96,8 +136,11 @@ int main()
   // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
   // that have the same name as the one in the system will be given preference.
 
+  
+
   gfx_med::ImageLoaderPng png;
-  core_io::Path path("../../../../../assets/images/uv_grid_col.png");
+  core_io::Path path( (core_str::String(GetAssetPath()) +
+                      "/images/uv_grid_col.png").c_str() );
   if (png.Load(path) != ErrorSuccess())
   { TLOC_ASSERT(false, "Image did not load!"); }
 
@@ -146,5 +189,7 @@ int main()
   //------------------------------------------------------------------------
   // Exiting
   printf("\nExiting normally");
+
+  return 0;
 
 }

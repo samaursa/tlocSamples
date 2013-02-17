@@ -1,0 +1,294 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		9761978C16D00F36006A4102 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9761978B16D00F36006A4102 /* UIKit.framework */; };
+		9761978E16D00F36006A4102 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9761978D16D00F36006A4102 /* Foundation.framework */; };
+		9761979016D00F36006A4102 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9761978F16D00F36006A4102 /* CoreGraphics.framework */; };
+		976197AD16D014B3006A4102 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976197AB16D014B3006A4102 /* main.cpp */; };
+		976197AE16D014B3006A4102 /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */; };
+		976197B016D015FC006A4102 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 976197AF16D015FC006A4102 /* assets */; };
+		976197B416D01AA1006A4102 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976197B216D01AA1006A4102 /* OpenGLES.framework */; };
+		976197B516D01AA1006A4102 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976197B316D01AA1006A4102 /* QuartzCore.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		9761978816D00F36006A4102 /* tlocTexturedFan.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tlocTexturedFan.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9761978B16D00F36006A4102 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		9761978D16D00F36006A4102 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		9761978F16D00F36006A4102 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		976197A916D01401006A4102 /* tlocTexturedFan-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "tlocTexturedFan-Info.plist"; path = "SupportingFiles/tlocTexturedFan-Info.plist"; sourceTree = "<group>"; };
+		976197AB16D014B3006A4102 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = main.cpp; path = ../../../../src/tlocTexturedFan/main.cpp; sourceTree = "<group>"; };
+		976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocTexturedFan/tlocVersionCheck.cpp; sourceTree = "<group>"; };
+		976197AF16D015FC006A4102 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
+		976197B216D01AA1006A4102 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		976197B316D01AA1006A4102 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		9761978516D00F36006A4102 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				976197B416D01AA1006A4102 /* OpenGLES.framework in Frameworks */,
+				976197B516D01AA1006A4102 /* QuartzCore.framework in Frameworks */,
+				9761978C16D00F36006A4102 /* UIKit.framework in Frameworks */,
+				9761978E16D00F36006A4102 /* Foundation.framework in Frameworks */,
+				9761979016D00F36006A4102 /* CoreGraphics.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9761977F16D00F36006A4102 = {
+			isa = PBXGroup;
+			children = (
+				976197A816D01023006A4102 /* tlocTexturedFan */,
+				9761978A16D00F36006A4102 /* Frameworks */,
+				9761978916D00F36006A4102 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		9761978916D00F36006A4102 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9761978816D00F36006A4102 /* tlocTexturedFan.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9761978A16D00F36006A4102 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				976197B216D01AA1006A4102 /* OpenGLES.framework */,
+				976197B316D01AA1006A4102 /* QuartzCore.framework */,
+				9761978B16D00F36006A4102 /* UIKit.framework */,
+				9761978D16D00F36006A4102 /* Foundation.framework */,
+				9761978F16D00F36006A4102 /* CoreGraphics.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		976197A816D01023006A4102 /* tlocTexturedFan */ = {
+			isa = PBXGroup;
+			children = (
+				976197AB16D014B3006A4102 /* main.cpp */,
+				976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */,
+				976197B116D01602006A4102 /* SupportingFiles */,
+				976197AF16D015FC006A4102 /* assets */,
+			);
+			name = tlocTexturedFan;
+			sourceTree = "<group>";
+		};
+		976197B116D01602006A4102 /* SupportingFiles */ = {
+			isa = PBXGroup;
+			children = (
+				976197A916D01401006A4102 /* tlocTexturedFan-Info.plist */,
+			);
+			name = SupportingFiles;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9761978716D00F36006A4102 /* tlocTexturedFan */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 976197A516D00F36006A4102 /* Build configuration list for PBXNativeTarget "tlocTexturedFan" */;
+			buildPhases = (
+				9761978416D00F36006A4102 /* Sources */,
+				9761978516D00F36006A4102 /* Frameworks */,
+				9761978616D00F36006A4102 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = tlocTexturedFan;
+			productName = tlocTexturedFan;
+			productReference = 9761978816D00F36006A4102 /* tlocTexturedFan.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9761978016D00F36006A4102 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = "SkopWorks Inc";
+			};
+			buildConfigurationList = 9761978316D00F36006A4102 /* Build configuration list for PBXProject "tlocTexturedFan" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 9761977F16D00F36006A4102;
+			productRefGroup = 9761978916D00F36006A4102 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9761978716D00F36006A4102 /* tlocTexturedFan */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9761978616D00F36006A4102 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				976197B016D015FC006A4102 /* assets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9761978416D00F36006A4102 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				976197AD16D014B3006A4102 /* main.cpp in Sources */,
+				976197AE16D014B3006A4102 /* tlocVersionCheck.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		976197A316D00F36006A4102 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(TLOC_SAMPLES_PATH)/bin/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/$(PROJECT_NAME)";
+				CONFIGURATION_TEMP_DIR = "$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					TLOC_DEBUG,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "SupportingFiles/tlocTexturedFan-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"-fno-exceptions",
+					"-fno-rtti",
+				);
+				OTHER_LDFLAGS = (
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocCore/tlocCore_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocMath/tlocMath_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocGraphics/tlocGraphics_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocInput/tlocInput_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocPrefab/tlocPrefab_$(CONFIGURATION).a\"",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+			};
+			name = Debug;
+		};
+		976197A416D00F36006A4102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(TLOC_SAMPLES_PATH)/bin/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/$(PROJECT_NAME)";
+				CONFIGURATION_TEMP_DIR = "$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)";
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = TLOC_RELEASE;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "SupportingFiles/tlocTexturedFan-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
+				OTHER_CFLAGS = (
+					"-DNS_BLOCK_ASSERTIONS=1",
+					"-fno-exceptions",
+					"-fno-rtti",
+				);
+				OTHER_LDFLAGS = (
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocCore/tlocCore_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocMath/tlocMath_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocGraphics/tlocGraphics_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocInput/tlocInput_$(CONFIGURATION).a\"",
+					"\"$(TLOC_PATH)/lib/Xcode4/$(CONFIGURATION)/$(EFFECTIVE_PLATFORM_NAME)/tlocPrefab/tlocPrefab_$(CONFIGURATION).a\"",
+				);
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		976197A616D00F36006A4102 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		976197A716D00F36006A4102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9761978316D00F36006A4102 /* Build configuration list for PBXProject "tlocTexturedFan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				976197A316D00F36006A4102 /* Debug */,
+				976197A416D00F36006A4102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		976197A516D00F36006A4102 /* Build configuration list for PBXNativeTarget "tlocTexturedFan" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				976197A616D00F36006A4102 /* Debug */,
+				976197A716D00F36006A4102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9761978016D00F36006A4102 /* Project object */;
+}
