@@ -73,7 +73,8 @@ public:
   // Called when a button is pressed. Currently will printf tloc's representation
   // of all buttons.
   bool OnButtonPress(const tl_size a_caller,
-    const input_hid::MouseEvent& a_event)
+                     const input_hid::MouseEvent& a_event,
+                     const input_hid::MouseEvent::button_code_type a_buttonCode)
   {
     printf("\nCaller %i pushed a button. Button state is: %i",
            (tl_int)a_caller, a_event.m_buttonCode);
@@ -84,7 +85,8 @@ public:
   // Called when a button is released. Currently will printf tloc's representation
   // of all buttons.
   bool OnButtonRelease(const tl_size a_caller,
-    const input_hid::MouseEvent& a_event)
+                       const input_hid::MouseEvent& a_event,
+                       const input_hid::MouseEvent::button_code_type a_buttonCode)
   {
     printf("\nCaller %i released a button. Button state is %i",
            (tl_int)a_caller, a_event.m_buttonCode);

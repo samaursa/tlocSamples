@@ -926,7 +926,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\src\tlocInput\tlocVersionCheck.cpp"
+				RelativePath="..\..\..\..\src\tlocVersionCheck.cpp"
 				>
 			</File>
 		</Filter>
