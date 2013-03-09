@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="tlocSimpleQuad"
-	ProjectGUID="{3A28F4F0-D746-4CF4-AA57-FA039FF16BB1}"
-	RootNamespace="tlocSimpleQuad"
+	Name="tlocSimplePhysics"
+	ProjectGUID="{EA6245A9-B69C-4C08-B846-09EDCD404B16}"
+	RootNamespace="tlocSimplePhysics"
 	TargetFrameworkVersion="196613"
 	>
 	<Platforms>
@@ -63,6 +63,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -134,6 +136,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="17"
 			/>
@@ -205,6 +209,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -279,6 +285,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -351,6 +359,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -422,6 +432,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="17"
 			/>
@@ -493,6 +505,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -567,6 +581,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -640,6 +656,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -714,6 +732,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -787,6 +807,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -861,6 +883,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -898,7 +922,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\src\tlocSimpleQuad\main.cpp"
+				RelativePath="..\..\..\..\src\tlocSimplePhysics\main.cpp"
 				>
 			</File>
 			<File

@@ -1,5 +1,6 @@
 #include <tlocCore/tloc_core.h>
 #include <tlocGraphics/tloc_graphics.h>
+#include <tlocPhysics/tloc_physics.h>
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
 
@@ -24,7 +25,7 @@ const char* GetAssetPath()
 {
   static char assetPath[1024];
   strcpy(assetPath, [[[NSBundle mainBundle] resourcePath]
-                     cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+cStringUsingEncoding:[NSString defaultCStringEncoding]]);
   strcat(assetPath, "/assets/");
 
   return assetPath;
@@ -57,7 +58,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-    gfx_win::WindowSettings("tlocTexturedFan") );
+    gfx_win::WindowSettings("tlocSimplePhysics") );
 
   //------------------------------------------------------------------------
   // Initialize renderer
@@ -76,26 +77,25 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::ComponentPoolManager cpoolMgr;
 
   //------------------------------------------------------------------------
-  // To render a fan, we need a fan render system - this is a specialized
+  // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(&eventMgr, &entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(&eventMgr, &entityMgr);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(&eventMgr, &entityMgr);
 
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
+  // NOTE: The quad render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
   gfx_cs::Material  mat;
   {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
+    core_str::String shaderPath("/tlocPassthroughVertexShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+    core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-
     shaderPath = GetAssetPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
@@ -108,11 +108,10 @@ int TLOC_MAIN(int argc, char *argv[])
   }
   {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
+    core_str::String shaderPath("/tlocPassthroughFragmentShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+    core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-
     shaderPath = GetAssetPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
@@ -125,63 +124,75 @@ int TLOC_MAIN(int argc, char *argv[])
   }
 
   //------------------------------------------------------------------------
-  // Add a texture to the material. We need:
-  //  * an image
-  //  * a TextureObject (preparing the image for OpenGL)
-  //  * a Uniform (all textures are uniforms in shaders)
-  //  * a ShaderOperator (this is what the material will take)
-  //
-  // The material takes in a 'MasterShaderOperator' which is the user defined
-  // shader operator and over-rides any shader operators that the systems
-  // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
-  // that have the same name as the one in the system will be given preference.
-
-
-
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetPath()) +
-                      "/images/uv_grid_col.png").c_str() );
-  if (png.Load(path) != ErrorSuccess())
-  { TLOC_ASSERT(false, "Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
-
-  gfx_gl::UniformPtr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
-
-  gfx_gl::ShaderOperatorPtr so =
-    gfx_gl::ShaderOperatorPtr(new gfx_gl::ShaderOperator());
-  so->AddUniform(u_to);
-
-  // Finally, set this shader operator as the master operator (aka user operator)
-  // in our material.
-  mat.SetMasterShaderOperator(so);
-
-  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::Entity* q = prefab_gfx::CreateFan(entityMgr, cpoolMgr, circ, 64);
+  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
+    math_t::Rectf32::height(0.5f));
+  core_cs::Entity* q = prefab_gfx::CreateQuad(entityMgr, cpoolMgr, rect);
   entityMgr.InsertComponent(q, &mat);
+
+  //------------------------------------------------------------------------
+  // For physics, we need a physics manager and the relevant systems
+
+  phys_box2d::PhysicsManager::vec_type g(0, -2.0f);
+  phys_box2d::PhysicsManager  physMgr;
+  physMgr.Initialize(phys_box2d::PhysicsManager::gravity(g));
+
+  phys_cs::RigidBodySystem rbSys(&eventMgr, &entityMgr, &physMgr.GetWorld());
+
+  // Make the above quad a rigidbody
+  phys_box2d::rigid_body_def_sptr rbDef(new phys_box2d::RigidBodyDef());
+  rbDef->SetPosition(phys_box2d::RigidBodyDef::vec_type(0, 1.0f));
+  rbDef->SetType<phys_box2d::p_rigid_body::DynamicBody>();
+
+  prefab_phys::AddRigidBody(q, entityMgr, cpoolMgr, rbDef);
+  prefab_phys::AddRigidBodyShape(q, entityMgr, cpoolMgr, rect, 1.0f);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  fanSys.Initialize();
+  quadSys.Initialize();
   matSys.Initialize();
+  rbSys.Initialize();
+
+  // We need a timer for physics
+  core_time::Timer physTimer;
 
   //------------------------------------------------------------------------
   // Main loop
   while (win.IsValid() && !winCallback.m_endProgram)
   {
+    glClear(GL_COLOR_BUFFER_BIT);
+
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
-    // Finally, process the fan
-    fanSys.ProcessActiveEntities();
+    if (physTimer.ElapsedSeconds() > 0.01f)
+    {
+      physMgr.Update((tl_float)physTimer.ElapsedSeconds());
+      physTimer.Reset();
+
+      rbSys.ProcessActiveEntities();
+    }
+
+    // Wrap the quad
+    core_cs::ComponentMapper<phys_cs::RigidBody> rbList =
+      q->GetComponents(phys_cs::components::k_rigidBody);
+    if (rbList.size())
+    {
+      phys_cs::RigidBody myRb = rbList[0];
+      phys_box2d::RigidBody::vec_type pos;
+      myRb.GetRigidBody().GetPosition(pos);
+      if (pos[1] < -1.0f)
+      {
+        myRb.GetRigidBody().SetTransform
+          ( phys_box2d::RigidBody::vec_type(0, 1.0f), math_t::Degree(0.0f) );
+      }
+    }
+
+    // Finally, process the quad
+    quadSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }
@@ -191,5 +202,4 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\nExiting normally");
 
   return 0;
-
 }
