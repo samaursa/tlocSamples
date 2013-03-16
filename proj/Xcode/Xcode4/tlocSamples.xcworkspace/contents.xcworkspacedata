@@ -5,6 +5,9 @@
       location = "group:tlocTexturedFan/tlocTexturedFan.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:tlocSimplePhysics/tlocSimplePhysics.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:tlocSimpleQuad/tlocSimpleQuad.xcodeproj">
    </FileRef>
 </Workspace>

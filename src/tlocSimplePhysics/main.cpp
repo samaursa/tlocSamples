@@ -162,11 +162,11 @@ int TLOC_MAIN(int argc, char *argv[])
   // Main loop
   while (win.IsValid() && !winCallback.m_endProgram)
   {
-    glClear(GL_COLOR_BUFFER_BIT);
-
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
+
+    glClear(GL_COLOR_BUFFER_BIT);
 
     if (physTimer.ElapsedSeconds() > 0.01f)
     {

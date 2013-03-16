@@ -11,10 +11,10 @@
 		9761978E16D00F36006A4102 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9761978D16D00F36006A4102 /* Foundation.framework */; };
 		9761979016D00F36006A4102 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9761978F16D00F36006A4102 /* CoreGraphics.framework */; };
 		976197AD16D014B3006A4102 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976197AB16D014B3006A4102 /* main.cpp */; };
-		976197AE16D014B3006A4102 /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */; };
 		976197B016D015FC006A4102 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 976197AF16D015FC006A4102 /* assets */; };
 		976197B416D01AA1006A4102 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976197B216D01AA1006A4102 /* OpenGLES.framework */; };
 		976197B516D01AA1006A4102 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 976197B316D01AA1006A4102 /* QuartzCore.framework */; };
+		97BADEC616EBE2C500D7B14A /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97BADEC516EBE2C500D7B14A /* tlocVersionCheck.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,10 +24,10 @@
 		9761978F16D00F36006A4102 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		976197A916D01401006A4102 /* tlocTexturedFan-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "tlocTexturedFan-Info.plist"; path = "SupportingFiles/tlocTexturedFan-Info.plist"; sourceTree = "<group>"; };
 		976197AB16D014B3006A4102 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = main.cpp; path = ../../../../src/tlocTexturedFan/main.cpp; sourceTree = "<group>"; };
-		976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocTexturedFan/tlocVersionCheck.cpp; sourceTree = "<group>"; };
 		976197AF16D015FC006A4102 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
 		976197B216D01AA1006A4102 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		976197B316D01AA1006A4102 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		97BADEC516EBE2C500D7B14A /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocVersionCheck.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,7 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				976197AB16D014B3006A4102 /* main.cpp */,
-				976197AC16D014B3006A4102 /* tlocVersionCheck.cpp */,
+				97BADEC516EBE2C500D7B14A /* tlocVersionCheck.cpp */,
 				976197B116D01602006A4102 /* SupportingFiles */,
 				976197AF16D015FC006A4102 /* assets */,
 			);
@@ -157,7 +157,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				976197AD16D014B3006A4102 /* main.cpp in Sources */,
-				976197AE16D014B3006A4102 /* tlocVersionCheck.cpp in Sources */,
+				97BADEC616EBE2C500D7B14A /* tlocVersionCheck.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,7 +207,7 @@
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/ $(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
 			};
 			name = Debug;
 		};
@@ -247,7 +247,7 @@
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/ $(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

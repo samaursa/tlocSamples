@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		97303B7516CF6453006D5581 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97303B7316CF6453006D5581 /* main.cpp */; };
-		97303B7616CF6453006D5581 /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */; };
 		97303B7816CF64AD006D5581 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 97303B7716CF64AD006D5581 /* assets */; };
 		97303B7D16CF6A71006D5581 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97303B7A16CF6A71006D5581 /* OpenGLES.framework */; };
 		97303B8016CF6B0A006D5581 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97303B7F16CF6B0A006D5581 /* QuartzCore.framework */; };
+		97BADEC816EBE2CF00D7B14A /* tlocVersionCheck.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 97BADEC716EBE2CF00D7B14A /* tlocVersionCheck.cpp */; };
 		97CC1D9616CF51F8003C6740 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9516CF51F8003C6740 /* UIKit.framework */; };
 		97CC1D9816CF51F8003C6740 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9716CF51F8003C6740 /* Foundation.framework */; };
 		97CC1D9A16CF51F8003C6740 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 97CC1D9916CF51F8003C6740 /* CoreGraphics.framework */; };
@@ -19,10 +19,10 @@
 
 /* Begin PBXFileReference section */
 		97303B7316CF6453006D5581 /* main.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = main.cpp; path = ../../../../src/tlocSimpleQuad/main.cpp; sourceTree = "<group>"; };
-		97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocSimpleQuad/tlocVersionCheck.cpp; sourceTree = "<group>"; };
 		97303B7716CF64AD006D5581 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../../../../assets; sourceTree = "<group>"; };
 		97303B7A16CF6A71006D5581 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		97303B7F16CF6B0A006D5581 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		97BADEC716EBE2CF00D7B14A /* tlocVersionCheck.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tlocVersionCheck.cpp; path = ../../../../src/tlocVersionCheck.cpp; sourceTree = "<group>"; };
 		97CC1D9216CF51F8003C6740 /* tlocSimpleQuad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = tlocSimpleQuad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		97CC1D9516CF51F8003C6740 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		97CC1D9716CF51F8003C6740 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -79,7 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				97303B7316CF6453006D5581 /* main.cpp */,
-				97303B7416CF6453006D5581 /* tlocVersionCheck.cpp */,
+				97BADEC716EBE2CF00D7B14A /* tlocVersionCheck.cpp */,
 				97303B7716CF64AD006D5581 /* assets */,
 				97CC1DB316CF58F1003C6740 /* SupportingFiles */,
 			);
@@ -157,7 +157,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				97303B7516CF6453006D5581 /* main.cpp in Sources */,
-				97303B7616CF6453006D5581 /* tlocVersionCheck.cpp in Sources */,
+				97BADEC816EBE2CF00D7B14A /* tlocVersionCheck.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,7 +207,7 @@
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/ $(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
 			};
 			name = Debug;
 		};
@@ -247,7 +247,7 @@
 				);
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
+				USER_HEADER_SEARCH_PATHS = "$(TLOC_DEP_PATH)/include/ $(TLOC_DEP_PATH)/include/CATCH/include $(TLOC_DEP_PATH)/include/CATCH/single_include $(TLOC_PATH)/src/";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
