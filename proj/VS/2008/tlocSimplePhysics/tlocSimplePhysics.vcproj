@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Box2D_$(ConfigurationName).lib"
+				AdditionalDependencies="Box2D_$(ConfigurationName).lib tlocPhysics_$(ConfigurationName).lib"
 				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\Box2D\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"

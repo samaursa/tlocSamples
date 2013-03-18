@@ -178,6 +178,10 @@ int main()
       {
         printf("\nCAN I HAZ CHEEZEBURGERZZ");
       }
+      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
+      {
+        mouse->SetClamped(!mouse->GetClamped());
+      }
 
       // The InputManager does not need to be reset while in buffered mode as
       // all input is recorded. E.g If user pushes a key down the key will have

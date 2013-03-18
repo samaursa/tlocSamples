@@ -14,7 +14,7 @@
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalDependencies="tlocCore_$(ConfigurationName).lib tlocInput_$(ConfigurationName).lib tlocMath_$(ConfigurationName).lib tlocPhysics_$(ConfigurationName).lib tlocGraphics_$(ConfigurationName).lib tlocPrefab_$(ConfigurationName).lib glu32.lib OpenGL32.lib"
+		AdditionalDependencies="tlocCore_$(ConfigurationName).lib tlocInput_$(ConfigurationName).lib tlocMath_$(ConfigurationName).lib tlocGraphics_$(ConfigurationName).lib tlocPrefab_$(ConfigurationName).lib glu32.lib OpenGL32.lib"
 		OutputFile="$(TLOC_SAMPLES_PATH)\bin\VS2008\$(ConfigurationName)\$(PlatformName)\$(ProjectName)\$(ProjectName).exe"
 		AdditionalLibraryDirectories="&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocCore&quot;;&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocGraphics&quot;;&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocInput&quot;;&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocMath&quot;;&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocPhysics&quot;;&quot;$(TLOC_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\tlocPrefab&quot;"
 	/>

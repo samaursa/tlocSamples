@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="dinput8.lib"
+				AdditionalDependencies="dinput8.lib tlocInput_$(ConfigurationName).lib tlocMath_$(ConfigurationName).lib tlocGraphics_$(ConfigurationName).lib"
 				AdditionalLibraryDirectories="&quot;$(TLOC_DEP_PATH)\lib\VS2008\$(ConfigurationName)\$(PlatformName)\WinSDK\&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
