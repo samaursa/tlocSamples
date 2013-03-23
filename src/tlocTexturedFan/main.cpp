@@ -67,8 +67,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
-  core_cs::EventManager     eventMgr;
-  core_cs::EntityManager    entityMgr(&eventMgr);
+  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
+  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
@@ -78,11 +78,11 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(&eventMgr, &entityMgr);
+  gfx_cs::FanRenderSystem   fanSys(eventMgr, entityMgr);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(&eventMgr, &entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
@@ -163,8 +163,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::Entity* q = prefab_gfx::CreateFan(entityMgr, cpoolMgr, circ, 64);
-  entityMgr.InsertComponent(q, &mat);
+  core_cs::Entity* q = prefab_gfx::CreateFan(*entityMgr.get(), cpoolMgr, circ, 64);
+  entityMgr->InsertComponent(q, &mat);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

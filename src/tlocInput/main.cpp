@@ -80,8 +80,8 @@ int main()
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
-  core_cs::EventManager eventMgr;
-  core_cs::EntityManager entityMgr(&eventMgr);
+  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
+  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
@@ -91,11 +91,11 @@ int main()
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem quadSys(&eventMgr, &entityMgr);
+  gfx_cs::QuadRenderSystem quadSys(eventMgr, entityMgr);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem matSys(&eventMgr, &entityMgr);
+  gfx_cs::MaterialSystem matSys(eventMgr, entityMgr);
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -128,8 +128,8 @@ int main()
   // The prefab library has some prefabricated entities for us
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* ent = prefab_gfx::CreateQuad(entityMgr, compMgr, rect);
-  entityMgr.InsertComponent(ent, &mat);
+  core_cs::Entity* ent = prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect);
+  entityMgr->InsertComponent(ent, &mat);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
