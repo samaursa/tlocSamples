@@ -46,6 +46,12 @@ void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
   transform.SetPosition(position);
 }
 
+void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_position)
+{
+  math_cs::Transform& transform = GetEntityTransformComponent(a_ent);
+  transform.SetPosition(a_position.ConvertTo<math_t::Vec3f>());
+}
+
 int main()
 {
   gfx_win::Window win;
@@ -77,6 +83,7 @@ int main()
   // Creating a keyboard and mouse HID
   input_hid::KeyboardI* keyboard = inputMgr->CreateHID<input_hid::KeyboardI>();
   input_hid::MouseI* mouse = inputMgr->CreateHID<input_hid::MouseI>();
+  input_hid::TouchSurfaceI* touchSurface = inputMgr->CreateHID<input_hid::TouchSurfaceI>();
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -190,12 +197,22 @@ int main()
         printf("\nCAN I HAZ CHEEZEBURGERZZ");
       }
 
-      // Polling the mouse's relative position, using that value to move the quad
+      // Polling the mouse's absolute position, using that value to move the quad
+      if (mouse->IsButtonDown(input_hid::MouseEvent::left) &&
+          mouse->IsButtonDown(input_hid::MouseEvent::right))
       {
-        const tl_float sensativity = 0.005f;
+        MoveEntityToPosition(ent, math_t::Vec2f(0.0f, 0.0f));
+      }
+      else if (mouse->IsButtonDown(input_hid::MouseEvent::left))
+      {
+        tl_float sensativityX =
+          2.0f / core_utils::CastNumber<tl_float>(winWidth);
+        tl_float sensativityY =
+          -2.0f / core_utils::CastNumber<tl_float>(winHeight);
+
         input_hid::MouseEvent mouseState = mouse->GetState();
-        MoveEntity(ent, math_t::Vec2f(mouseState.m_X.m_rel() * sensativity,
-          -mouseState.m_Y.m_rel() * sensativity));
+        MoveEntityToPosition(ent, math_t::Vec2f(mouseState.m_X.m_abs().Value() * sensativityX,
+          mouseState.m_Y.m_abs().Value() * sensativityY ));
       }
 
       // The Immediate mode InputManager needs to be reset to reset all
