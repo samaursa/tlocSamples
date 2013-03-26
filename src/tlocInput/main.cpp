@@ -83,7 +83,9 @@ int main()
   // Creating a keyboard and mouse HID
   input_hid::KeyboardI* keyboard = inputMgr->CreateHID<input_hid::KeyboardI>();
   input_hid::MouseI* mouse = inputMgr->CreateHID<input_hid::MouseI>();
-  input_hid::TouchSurfaceI* touchSurface = inputMgr->CreateHID<input_hid::TouchSurfaceI>();
+  input_hid::TouchSurfaceI* touchSurface =
+    inputMgr->CreateHID<input_hid::TouchSurfaceI>();
+  TLOC_UNUSED(touchSurface);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
