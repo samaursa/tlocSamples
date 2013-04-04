@@ -109,6 +109,8 @@ link_directories(
   ${TLOC_DEP_BUILD_PATH}/src/Box2D/
   )
 
+# -----------------------------------------------------------------------------
+# Add all libraries and executables
 
 message("")
 message(STATUS "-- Executables --")

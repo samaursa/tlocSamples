@@ -112,10 +112,12 @@ int main()
   // NOTE: The quad render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
+
+  core_str::String assetPath(GetAssetPath());
   gfx_cs::Material mat;
   {
     core_io::FileIO_ReadA file
-      ("../../../../../assets/tlocPassthroughVertexShader.glsl");
+      ( (assetPath + "/tlocPassthroughVertexShader.glsl").c_str() );
     if (file.Open() != ErrorSuccess())
     { printf("\nUnable to open the vertex shader"); return 1; }
 
@@ -126,7 +128,7 @@ int main()
 
   {
     core_io::FileIO_ReadA file
-      ("../../../../../assets/tlocPassthroughFragmentShader.glsl");
+      ( (assetPath + "/tlocPassthroughFragmentShader.glsl").c_str() );
     if (file.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1; }
 
