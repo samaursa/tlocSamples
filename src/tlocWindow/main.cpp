@@ -3,6 +3,8 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
+#include <samplesAssetsPath.h>
+
 using namespace tloc;
 
 class WindowCallback

@@ -1,18 +1,48 @@
 cmake_minimum_required(VERSION 2.6)
 
+#--------------------------------------------------------------------------
+# User should NOT adjust anything beyond this point
 set(TLOC_PROJECT_NAME "game" CACHE STRING "The name of your project goes here")
 
 set(internal_FIXME "FIXME!")
 
-set(TLOC_PATH ${internal_FIXME} CACHE PATH "The root folder of this repository. You do not need to edit this manually.")
-set(TLOC_DEP_PATH ${internal_FIXME} CACHE PATH "The tloc dependency repository path goes here. Make sure that you have run CMake on the repository.")
+set(TLOC_PATH ${internal_FIXME} CACHE PATH "The root folder of the engine repository.")
+set(TLOC_BUILD_PATH ${internal_FIXME} CACHE PATH "The build folder of the engine repository. Make sure the build architecture is the same.")
+set(TLOC_DEP_PATH ${internal_FIXME} CACHE PATH "The tloc dependency repository path goes here. Make sure the build architecture is the same")
+set(TLOC_DEP_BUILD_PATH ${internal_FIXME} CACHE PATH "The build folder of the dependency repository. Make sure the build architecture is the same")
+set(TLOC_COMMON_CMAKE_PATH "${TLOC_DEP_PATH}/tlocCommon.cmake" CACHE PATH "This path should be automatically set after configure.")
 
-set(USER_PATH ${CMAKE_SOURCE_DIR} CACHE PATH "Root folder of this project.")
-set(USER_LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib/${ARCH_DIR} CACHE PATH "Default path for libraries in your project.")
-set(USER_EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/${ARCH_DIR} CACHE PATH "Default path for executables in your project.")
-set(USER_EXECUTABLE_PROJECTS "main" CACHE STRING "Executable project names seperated by semicolons. All names must have their respective folders in the src/ folder with CMakeLists.txt file (see game/ folder for an example).")
-set(USER_LIBRARY_PROJECTS "" CACHE STRING "Library project names seperated by semicolons. All names must have their respective folders in the src/ folder with CMakeLists.txt file (see game/ folder for an example).")
+set(USER_PATH ${CMAKE_SOURCE_DIR} CACHE PATH "Root folder of this project. You do not need to change this path.")
 
+# Variables to check for ${internal_FIXEM}
+set(TLOC_CHECK_PATHS
+  TLOC_PATH
+  TLOC_BUILD_PATH
+  TLOC_DEP_PATH
+  TLOC_DEP_BUILD_PATH
+  )
+
+foreach(PATHDIR ${TLOC_CHECK_PATHS})
+  if (${${PATHDIR}} MATCHES ${internal_FIXME})
+    message(FATAL_ERROR "Please enter a path for ${PATHDIR}")
+  endif()
+endforeach()
+
+#--------------------------------------------------------------------------
+# Project name
+project(${TLOC_PROJECT_NAME})
+
+#--------------------------------------------------------------------------
+# User adjustable variables
+include(tlocUserVars.cmake)
+
+#--------------------------------------------------------------------------
+# Include the common platform settings file
+set(TLOC_COMMON_CMAKE_PATH "${TLOC_DEP_PATH}/tlocCommon.cmake")
+include(${TLOC_COMMON_CMAKE_PATH})
+
+#--------------------------------------------------------------------------
+# Sanity checks
 list(LENGTH USER_EXECUTABLE_PROJECTS tlocExecProjLength)
 list(LENGTH USER_LIBRARY_PROJECTS tlocLibProjLength)
 if(${tlocExecProjLength} EQUAL 0 AND 
@@ -20,12 +50,8 @@ if(${tlocExecProjLength} EQUAL 0 AND
    message(SEND_ERROR "You must have at least one executable or library")
 endif()
 
-if(${TLOC_PATH} MATCHES ${internal_FIXME})
-    message(SEND_ERROR "Please enter a path for tlocEngine")
-endif()
-if(${TLOC_DEP_PATH} MATCHES ${internal_FIXME})
-    message(SEND_ERROR "Please enter a path for tlocDep")
-endif()
+#--------------------------------------------------------------------------
+# Library options
 
 # -- For now, we force the user to use all libraries
 #option(TLOC_INCLUDE_CORE        "Include tlocCore"     ON)
@@ -35,15 +61,6 @@ endif()
 #option(TLOC_INCLUDE_PHYSICS     "Include tlocPhysics"  ON)
 #option(TLOC_INCLUDE_PREFAB      "Include tlocPrefab"   ON)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCH_DIR "x64")
-else()
-    set(ARCH_DIR "x86")
-endif()
-
-project(${TLOC_PROJECT_NAME})
-
+#--------------------------------------------------------------------------
+# The src folder MUST exist
 add_subdirectory(src)
-
-# Enable solution folders for MSVC
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
