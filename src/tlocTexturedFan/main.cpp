@@ -119,6 +119,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetPath()) +
                       "/images/uv_grid_col.png").c_str() );
+
   if (png.Load(path) != ErrorSuccess())
   { TLOC_ASSERT(false, "Image did not load!"); }
 

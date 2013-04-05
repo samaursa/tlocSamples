@@ -94,6 +94,9 @@ int TLOC_MAIN(int argc, char *argv[])
     if (shaderFile.Open() != ErrorSuccess())
     { printf("\nUnable to open the fragment shader"); return 1;}
 
+    TLOC_ASSERT(shaderFile.Open() == ErrorSuccess(),
+      "Fail");
+
     core_str::String code;
     shaderFile.GetContents(code);
     mat.SetFragmentSource(code);

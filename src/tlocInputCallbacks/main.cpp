@@ -76,7 +76,7 @@ public:
   // of all buttons.
   bool OnButtonPress(const tl_size a_caller,
                      const input_hid::MouseEvent& a_event,
-                     const input_hid::MouseEvent::button_code_type a_buttonCode)
+                     const input_hid::MouseEvent::button_code_type)
   {
     printf("\nCaller %i pushed a button. Button state is: %i",
            (tl_int)a_caller, a_event.m_buttonCode);
@@ -88,7 +88,7 @@ public:
   // of all buttons.
   bool OnButtonRelease(const tl_size a_caller,
                        const input_hid::MouseEvent& a_event,
-                       const input_hid::MouseEvent::button_code_type a_buttonCode)
+                       const input_hid::MouseEvent::button_code_type)
   {
     printf("\nCaller %i released a button. Button state is %i",
            (tl_int)a_caller, a_event.m_buttonCode);
