@@ -3,13 +3,13 @@
 
 function(add_common_libraries EXEC_NAME)
   target_link_libraries(${EXEC_NAME}
-    tlocCore.lib
-    tlocGraphics.lib
-    tlocMath.lib
-    tlocInput.lib
-    tlocPhysics.lib
-    tlocPrefab.lib
-    Box2D.lib
+    tlocCore
+    tlocGraphics
+    tlocMath
+    tlocInput
+    tlocPhysics
+    tlocPrefab
+    Box2D
     )
 
   if (TLOC_PLATFORM_WIN32)
@@ -36,8 +36,11 @@ function(add_common_libraries EXEC_NAME)
     target_link_libraries(${EXEC_NAME}
       ${DIRECT_INPUT_LIB}
       )
-
   endif()
+
+  if(TLOC_PLATFORM_IOS)
+  endif()
+
 endfunction()
 
 # -----------------------------------------------------------------------------
@@ -79,6 +82,7 @@ if(TLOC_COMPILER_MSVC)
   string(REGEX REPLACE "/Zm1000" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
   string(REGEX REPLACE "/GX" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 elseif(TLOC_COMPILER_XCODE)
+  set(CMAKE_CXX_FLAGS "-x objective-c++")
   set(CMAKE_CXX_FLAGS_DEBUG "-fno-exceptions -fno-rtti -Wno-unused-function")
   set(CMAKE_CXX_FLAGS_RELEASE "-fno-exceptions -fno-rtti -Wno-unused-function")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-fno-exceptions -fno-rtti -Wno-unused-function")
@@ -138,6 +142,10 @@ FILE(WRITE ${USER_ASSETS_PATH} "
 #define _ASSETS_PATH_H_
 
 #include <cstring>
+
+#if defined (__APPLE__) && defined (__OBJC__)
+# import <Foundation/Foundation.h>
+#endif
 
 #define TLOC_ASSETS_PATH \"${CMAKE_SOURCE_DIR}/assets/\"
 

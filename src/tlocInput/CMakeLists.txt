@@ -4,6 +4,7 @@ set(SOURCE_FILES
   )
 
 add_executable(${USER_CURRENT_EXEC_NAME}
+  ${TLOC_APP_TYPE}
   ${SOURCE_FILES}
   )
 
