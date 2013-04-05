@@ -37,10 +37,18 @@ function(add_common_libraries EXEC_NAME)
       ${DIRECT_INPUT_LIB}
       )
   endif()
+endfunction()
 
+function(add_apple_plist EXEC_NAME ASSETS_PATH)
   if(TLOC_PLATFORM_IOS)
+    set(EXECUTABLE_NAME "\${EXECUTABLE_NAME}" PARENT_SCOPE)
+    set(PRODUCT_NAME    "\${PRODUCT_NAME}" PARENT_SCOPE)
+    set(BUNDLE_NAME     ${EXEC_NAME} PARENT_SCOPE)
+    set_target_properties(${EXEC_NAME} PROPERTIES 
+		MACOSX_BUNDLE_INFO_PLIST ${TLOC_PATH}/platform/iOS/tlocEngine.plist)
+    set_target_properties(${EXEC_NAME} PROPERTIES
+    		RESOURCE "${ASSETS_PATH}")
   endif()
-
 endfunction()
 
 # -----------------------------------------------------------------------------

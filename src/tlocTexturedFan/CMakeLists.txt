@@ -14,3 +14,4 @@ add_executable(${USER_CURRENT_EXEC_NAME}
   )
 
 add_common_libraries(${USER_CURRENT_EXEC_NAME})
+add_apple_plist(${USER_CURRENT_EXEC_NAME} ${ASSETS})
