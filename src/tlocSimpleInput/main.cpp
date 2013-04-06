@@ -75,7 +75,7 @@ int main()
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
   // its lifetime. More than one InputManager can be instantiated.
-  ParamList<HWND> params;
+  ParamList<core_t::Any> params;
   params.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_i_ptr inputMgr =
