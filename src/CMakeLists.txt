@@ -45,11 +45,18 @@ endfunction()
 
 function(add_apple_plist EXEC_NAME ASSETS_PATH)
   if(TLOC_PLATFORM_IOS)
+    # Check if a PLIST file was specified. If not, then go with default.
+    if(USER_IOS_PLIST_PATH)
+      set(PLIST_PATH ${USER_IOS_PLIST_PATH})
+    else()
+      set(PLIST_PATH "${TLOC_PATH}/platform/iOS/tlocEngine.plist")
+    endif()
+
     set(EXECUTABLE_NAME "\${EXECUTABLE_NAME}" PARENT_SCOPE)
     set(PRODUCT_NAME    "\${PRODUCT_NAME}" PARENT_SCOPE)
     set(BUNDLE_NAME     ${EXEC_NAME} PARENT_SCOPE)
     set_target_properties(${EXEC_NAME} PROPERTIES 
-		MACOSX_BUNDLE_INFO_PLIST ${TLOC_PATH}/platform/iOS/tlocEngine.plist)
+		MACOSX_BUNDLE_INFO_PLIST ${PLIST_PATH})
     set_target_properties(${EXEC_NAME} PROPERTIES
     		RESOURCE "${ASSETS_PATH}")
   endif()

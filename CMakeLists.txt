@@ -10,9 +10,9 @@ set(TLOC_PATH ${internal_FIXME} CACHE PATH "The root folder of the engine reposi
 set(TLOC_BUILD_PATH ${internal_FIXME} CACHE PATH "The build folder of the engine repository. Make sure the build architecture is the same.")
 set(TLOC_DEP_PATH ${internal_FIXME} CACHE PATH "The tloc dependency repository path goes here. Make sure the build architecture is the same")
 set(TLOC_DEP_BUILD_PATH ${internal_FIXME} CACHE PATH "The build folder of the dependency repository. Make sure the build architecture is the same")
-set(TLOC_COMMON_CMAKE_PATH "${TLOC_DEP_PATH}/tlocCommon.cmake" CACHE PATH "This path should be automatically set after configure.")
 
 set(USER_PATH ${CMAKE_SOURCE_DIR} CACHE PATH "Root folder of this project. You do not need to change this path.")
+set(USER_IOS_PLIST_PATH "" CACHE FILE "If you have your own custom plist, specify here. If blank, 2LoC will generate one for you.")
 
 # Variables to check for ${internal_FIXEM}
 set(TLOC_CHECK_PATHS
