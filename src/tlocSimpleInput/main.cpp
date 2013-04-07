@@ -54,17 +54,17 @@ void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_p
   transform.SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 
-int main()
+int TLOC_MAIN(int , char *[])
 {
   gfx_win::Window win;
   WindowCallback  winCallback;
   win.Register(&winCallback);
 
-  const tl_int winWidth = 800;
-  const tl_int winHeight = 600;
-
-  win.Create( gfx_win::Window::graphics_mode::Properties(winWidth, winHeight),
+  win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
     gfx_win::WindowSettings("tlocInput") );
+
+  const tl_int winWidth = win.GetWidth();
+  const tl_int winHeight = win.GetHeight();
 
   //------------------------------------------------------------------------
   // Initialize renderer
@@ -87,7 +87,13 @@ int main()
   input_hid::MouseI* mouse = inputMgr->CreateHID<input_hid::MouseI>();
   input_hid::TouchSurfaceI* touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceI>();
-  TLOC_UNUSED(touchSurface);
+
+  // Create a container that we will save our touches in
+  input_hid::TouchSurfaceI::touch_container_type currentTouches;
+
+  // Check pointers
+  TLOC_ASSERT_NOT_NULL(keyboard);
+  TLOC_ASSERT_NOT_NULL(mouse);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -113,13 +119,18 @@ int main()
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
 
-  core_str::String assetPath(GetAssetPath());
   gfx_cs::Material mat;
   {
-    core_io::FileIO_ReadA file
-      ( (assetPath + "/tlocPassthroughVertexShader.glsl").c_str() );
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/tlocPassthroughVertexShader.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+#endif
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA file(shaderPath.c_str());
+
     if (file.Open() != ErrorSuccess())
-    { printf("\nUnable to open the vertex shader"); return 1; }
+    { printf("\nUnable to open the vertex shader"); return 1;}
 
     core_str::String code;
     file.GetContents(code);
@@ -127,10 +138,16 @@ int main()
   }
 
   {
-    core_io::FileIO_ReadA file
-      ( (assetPath + "/tlocPassthroughFragmentShader.glsl").c_str() );
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPath("/tlocPassthroughFragmentShader.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+#endif
+    shaderPath = GetAssetPath() + shaderPath;
+    core_io::FileIO_ReadA file(shaderPath.c_str());
+
     if (file.Open() != ErrorSuccess())
-    { printf("\nUnable to open the fragment shader"); return 1; }
+    { printf("\nUnable to open the fragment shader"); return 1;}
 
     core_str::String code;
     file.GetContents(code);
@@ -211,15 +228,40 @@ int main()
       }
       else if (mouse->IsButtonDown(input_hid::MouseEvent::left))
       {
-        tl_float sensativityX =
+        tl_float sensitivityX =
           2.0f / core_utils::CastNumber<tl_float>(winWidth);
-        tl_float sensativityY =
+        tl_float sensitivityY =
           -2.0f / core_utils::CastNumber<tl_float>(winHeight);
 
         input_hid::MouseEvent mouseState = mouse->GetState();
-        MoveEntityToPosition(ent, math_t::Vec2f(mouseState.m_X.m_abs().Value() * sensativityX,
-          mouseState.m_Y.m_abs().Value() * sensativityY ));
+        MoveEntityToPosition(ent, math_t::Vec2f(mouseState.m_X.m_abs().Value() * sensitivityX,
+          mouseState.m_Y.m_abs().Value() * sensitivityY ));
       }
+
+      currentTouches = touchSurface->GetCurrentTouches();
+
+      if (currentTouches.size() == 1)
+      {
+        tl_float xScaled = currentTouches[0].m_X.m_abs();
+        tl_float yScaled = currentTouches[0].m_Y.m_abs();
+
+        xScaled /= core_utils::CastNumber<tl_float>(winWidth);
+        yScaled /= core_utils::CastNumber<tl_float>(winHeight);
+
+        xScaled = (xScaled * 2.0f) - 1.0f;
+        yScaled = (yScaled * 2.0f) - 1.0f;
+
+        yScaled *= -1;
+
+        math_t::Vec2f scaledPosition(xScaled, yScaled);
+
+        MoveEntityToPosition(ent, scaledPosition);
+      }
+      else if (currentTouches.size() == 2)
+      {
+        MoveEntityToPosition(ent, math_t::Vec2f(0.0f, 0.0f));
+      }
+
 
       // The Immediate mode InputManager needs to be reset to reset all
       // key/button states to their default. E.g. If user pushes a key down the
@@ -245,4 +287,5 @@ int main()
   // Exiting
   printf("\nExiting normally");
 
+  return 0;
 }

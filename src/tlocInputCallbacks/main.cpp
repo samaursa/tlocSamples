@@ -105,9 +105,9 @@ public:
       a_event.m_X.m_rel(),
       a_event.m_Y.m_rel(),
       a_event.m_Z.m_rel());
-    printf("to %i %i %i", a_event.m_X.m_abs(),
-      a_event.m_Y.m_abs(),
-      a_event.m_Z.m_abs());
+    printf("to %i %i %i", a_event.m_X.m_abs().Value(),
+      a_event.m_Y.m_abs().Value(),
+      a_event.m_Z.m_abs().Value());
     return false;
   }
 };
@@ -128,7 +128,7 @@ int main()
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
   // its lifetime. More than one InputManager can be instantiated.
-  ParamList<HWND> params;
+  ParamList<core_t::Any> params;
   params.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_b_ptr inputMgr =
