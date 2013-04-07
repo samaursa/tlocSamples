@@ -211,14 +211,26 @@ int main()
       }
       else if (mouse->IsButtonDown(input_hid::MouseEvent::left))
       {
-        tl_float sensativityX =
-          2.0f / core_utils::CastNumber<tl_float>(winWidth);
-        tl_float sensativityY =
-          -2.0f / core_utils::CastNumber<tl_float>(winHeight);
-
         input_hid::MouseEvent mouseState = mouse->GetState();
-        MoveEntityToPosition(ent, math_t::Vec2f(mouseState.m_X.m_abs().Value() * sensativityX,
-          mouseState.m_Y.m_abs().Value() * sensativityY ));
+
+        tl_float xScaled = core_utils::CastNumber<tl_float>
+          (mouseState.m_X.m_abs().Value());
+        tl_float yScaled = core_utils::CastNumber<tl_float>
+          (mouseState.m_Y.m_abs().Value());
+
+        xScaled /= core_utils::CastNumber<tl_float>(winWidth);
+        yScaled /= core_utils::CastNumber<tl_float>(winHeight);
+
+        xScaled = (xScaled * 2) - 1;
+        yScaled = (yScaled * 2) - 1;
+
+        // mouse co-ords start from top-left, OpenGL from bottom-left
+        yScaled *= -1;
+
+        MoveEntityToPosition(ent, math_t::Vec2f(xScaled, yScaled));
+
+        printf("\nMouse x: %i\nMouse y: %i", mouseState.m_X.m_abs().Value(),
+          mouseState.m_Y.m_abs().Value());
       }
 
       // The Immediate mode InputManager needs to be reset to reset all
