@@ -281,7 +281,7 @@ struct glProgram
     }
 
     PROFILE_START();
-    const tl_int repeat = 500;
+    const tl_int repeat = 300;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-5.0f, 5.0f);
