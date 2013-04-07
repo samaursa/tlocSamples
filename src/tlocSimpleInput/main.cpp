@@ -228,14 +228,12 @@ int TLOC_MAIN(int , char *[])
       }
       else if (mouse->IsButtonDown(input_hid::MouseEvent::left))
       {
-        tl_float sensitivityX =
-        tl_float sensitivityY =
         input_hid::MouseEvent mouseState = mouse->GetState();
 
         tl_float xScaled = core_utils::CastNumber<tl_float>
-          (mouseState.m_X.m_abs().Value());
+        (mouseState.m_X.m_abs().Value());
         tl_float yScaled = core_utils::CastNumber<tl_float>
-          (mouseState.m_Y.m_abs().Value());
+        (mouseState.m_Y.m_abs().Value());
 
         xScaled /= core_utils::CastNumber<tl_float>(winWidth);
         yScaled /= core_utils::CastNumber<tl_float>(winHeight);
