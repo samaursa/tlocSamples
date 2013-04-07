@@ -113,7 +113,7 @@ public:
 };
 TLOC_DEF_TYPE(MouseCallback);
 
-int main()
+int TLOC_MAIN(int, char**)
 {
   gfx_win::Window win;
   WindowCallback  winCallback;
