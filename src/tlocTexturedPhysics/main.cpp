@@ -73,7 +73,7 @@ struct glProgram
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
 
-    if (m_renderer.Initialize() != ErrorSuccess())
+    if (m_renderer.Initialize() != ErrorSuccess)
     {
       TLOC_ASSERT(false, "Renderer failed to initialize");
       exit(0);
@@ -84,7 +84,7 @@ struct glProgram
                               phys_mgr_type::velocity_iterations(6),
                               phys_mgr_type::position_iterations(2));
 
-    TLOC_ASSERT(result == ErrorSuccess(), "Physics failed to initialize!");
+    TLOC_ASSERT(result == ErrorSuccess, "Physics failed to initialize!");
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -208,7 +208,7 @@ struct glProgram
       shaderPath = GetAssetsPath() + shaderPath;
       io::FileIO_ReadA file(shaderPath.c_str());
 
-      if(file.Open() != ErrorSuccess())
+      if(file.Open() != ErrorSuccess)
       {
         printf("\n%s", shaderPath.c_str());
         printf("\nUnable to open vertex shader");
@@ -244,7 +244,7 @@ struct glProgram
       core_str::String filePath(GetAssetsPath());
       filePath += "/images/crate.png";
       core_io::Path path(filePath.c_str());
-      if (png.Load(path) != ErrorSuccess())
+      if (png.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
@@ -265,7 +265,7 @@ struct glProgram
       filePath += "/images/henry.png";
       core_io::Path path(filePath.c_str());
 
-      if (png.Load(path) != ErrorSuccess())
+      if (png.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());

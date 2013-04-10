@@ -39,7 +39,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize renderer
   gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess())
+  if (renderer.Initialize() != ErrorSuccess)
   { printf("\nRenderer failed to initialize"); return 1; }
 
   //------------------------------------------------------------------------
@@ -75,7 +75,7 @@ int TLOC_MAIN(int argc, char *argv[])
     shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the vertex shader"); return 1;}
 
     core_str::String code;
@@ -91,10 +91,10 @@ int TLOC_MAIN(int argc, char *argv[])
     shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the fragment shader"); return 1;}
 
-    TLOC_ASSERT(shaderFile.Open() == ErrorSuccess(),
+    TLOC_ASSERT(shaderFile.Open() == ErrorSuccess,
       "Fail");
 
     core_str::String code;
