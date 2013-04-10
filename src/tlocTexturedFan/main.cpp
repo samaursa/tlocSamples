@@ -74,7 +74,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
     if (shaderFile.Open() != ErrorSuccess())
@@ -91,7 +91,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
     if (shaderFile.Open() != ErrorSuccess())
@@ -117,7 +117,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
 
   gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetPath()) +
+  core_io::Path path( (core_str::String(GetAssetsPath()) +
                       "/images/uv_grid_col.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess())

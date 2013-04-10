@@ -74,7 +74,7 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
     if (shaderFile.Open() != ErrorSuccess())
@@ -90,7 +90,7 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
     if (shaderFile.Open() != ErrorSuccess())

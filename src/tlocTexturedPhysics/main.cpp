@@ -205,7 +205,7 @@ struct glProgram
 #elif defined (TLOC_OS_IPHONE)
       core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetPath() + shaderPath;
+      shaderPath = GetAssetsPath() + shaderPath;
       io::FileIO_ReadA file(shaderPath.c_str());
 
       if(file.Open() != ErrorSuccess())
@@ -227,7 +227,7 @@ struct glProgram
 #elif defined (TLOC_OS_IPHONE)
       core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetPath() + shaderPath;
+      shaderPath = GetAssetsPath() + shaderPath;
       io::FileIO_ReadA file(shaderPath.c_str());
       file.Open();
 
@@ -241,7 +241,7 @@ struct glProgram
     // Add the shader operators
     {
       gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetPath());
+      core_str::String filePath(GetAssetsPath());
       filePath += "/images/crate.png";
       core_io::Path path(filePath.c_str());
       if (png.Load(path) != ErrorSuccess())
@@ -261,7 +261,7 @@ struct glProgram
 
     {
       gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetPath());
+      core_str::String filePath(GetAssetsPath());
       filePath += "/images/henry.png";
       core_io::Path path(filePath.c_str());
 
@@ -349,8 +349,8 @@ struct glProgram
     core_cs::ComponentMapper<gfx_cs::Projection> proj =
     m_cameraEnt->GetComponents(gfx_cs::components::projection);
 
-    gfx_t::AspectRatio ar(gfx_t::AspectRatio::width(m_win.GetWidth()),
-                          gfx_t::AspectRatio::height(m_win.GetHeight()) );
+    gfx_t::AspectRatio ar(gfx_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
+                          gfx_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
     gfx_t::FOV fov(math_t::Degree(60.0f), ar, gfx_t::p_FOV::vertical());
 
     gfx_vp::Frustum::Params params(fov);

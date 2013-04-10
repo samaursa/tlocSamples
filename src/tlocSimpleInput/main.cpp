@@ -94,6 +94,7 @@ int TLOC_MAIN(int , char *[])
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -126,7 +127,7 @@ int TLOC_MAIN(int , char *[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA file(shaderPath.c_str());
 
     if (file.Open() != ErrorSuccess())
@@ -143,7 +144,7 @@ int TLOC_MAIN(int , char *[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA file(shaderPath.c_str());
 
     if (file.Open() != ErrorSuccess())

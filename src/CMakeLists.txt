@@ -159,13 +159,13 @@ FILE(WRITE ${USER_ASSETS_PATH} "
 
 #if defined(TLOC_OS_WIN)
 
-const char* GetAssetPath()
+inline const char* GetAssetsPath()
 {
   static const char* assetPath = \"${CMAKE_SOURCE_DIR}/assets/\";
   return assetPath;
 }
 #elif defined(TLOC_OS_IPHONE)
-const char* GetAssetPath()
+inline const char* GetAssetsPath()
 {
   static char assetPath[1024];
   strcpy(assetPath, [[[NSBundle mainBundle] resourcePath]
