@@ -6,5 +6,6 @@ list(APPEND USER_EXECUTABLE_PROJECTS "tlocTexturedFan")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocWindow;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocTexturedPhysics;")
 
-set(USER_LIBRARY_PROJECTS "")
+set(USER_LIBRARY_PROJECTS "tlocSimpleLibrary")
+
 set(USER_ASSETS_PATH "${CMAKE_SOURCE_DIR}/src/samplesAssetsPath.h")
