@@ -3,10 +3,24 @@ set(SOURCE_FILES
   ../tlocVersionCheck.cpp
   )
 
-add_executable(${USER_CURRENT_EXEC_NAME}
-  ${TLOC_APP_TYPE}
-  ${SOURCE_FILES}
-  )
+set(ASSETS_PATH) 
 
-add_common_libraries(${USER_CURRENT_EXEC_NAME})
-add_apple_plist(${USER_CURRENT_EXEC_NAME} "")
+if (${USER_CURRENT_PROJECT_TYPE} STREQUAL ${USER_PROJECT_TYPE_EXE})
+
+  add_executable(${USER_CURRENT_PROJECT_NAME}
+    ${TLOC_APP_TYPE}
+    ${SOURCE_FILES}
+    ${ASSETS_PATH}
+    )
+  add_common_libraries(${USER_CURRENT_PROJECT_NAME})
+  if (ASSETS_PATH)
+    add_apple_plist(${USER_CURRENT_PROJECT_NAME} ${ASSETS_PATH})
+  endif()
+
+elseif(${USER_CURRENT_PROJECT_NAME} STREQUAL ${USER_PROJECT_TYPE_EXE})
+
+  add_library(${USER_CURRENT_EXEC_NAME} STATIC
+    ${SOURCE_FILES}
+    )
+
+endif()

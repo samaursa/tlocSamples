@@ -63,7 +63,8 @@ struct glProgram
 
   void Initialize()
   {
-    m_win.Create(graphics_mode::Properties(1536, 1048),
+    // trying to match iPad retina display ratio (not resolution)
+    m_win.Create(graphics_mode::Properties(1280, 873),
                  gfx_win::WindowSettings("Atom & Eve"));
 
     ParamList<core_t::Any> params;
