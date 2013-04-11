@@ -130,7 +130,14 @@ foreach(exec ${USER_EXECUTABLE_PROJECTS})
   message(STATUS "Adding ${exec} executable project")
   set(USER_CURRENT_PROJECT_TYPE ${USER_PROJECT_TYPE_EXE})
   set(USER_CURRENT_PROJECT_NAME ${exec})
+  
   add_subdirectory(${exec})
+
+  # put the executable in the "Projects" folder
+  set_target_properties(${exec} 
+    PROPERTIES
+    FOLDER Projects
+    )
 endforeach()
 message(STATUS "-- Executables -- DONE")
 
@@ -140,7 +147,14 @@ foreach(lib ${USER_LIBRARY_PROJECTS})
   message(STATUS "Adding ${lib} library project")
   set(USER_CURRENT_PROJECT_TYPE ${USER_PROJECT_TYPE_LIB})
   set(USER_CURRENT_PROJECT_NAME ${lib})
+
   add_subdirectory(${lib})
+
+  # put the libraries in the "Libraries" folder
+  set_target_properties(${lib} 
+    PROPERTIES
+    FOLDER Libraries
+    )
 endforeach()
 message(STATUS "-- Libraries -- DONE") 
 
