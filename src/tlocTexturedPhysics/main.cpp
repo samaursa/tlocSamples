@@ -281,11 +281,11 @@ struct glProgram
     }
 
     PROFILE_START();
-    const tl_int repeat = 300;
+    const tl_int repeat = 400;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-5.0f, 5.0f);
-      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 180.0f);
+      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 680.0f);
 
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
       {
@@ -307,7 +307,7 @@ struct glProgram
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
         ent_type* fanEnt =
-          prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 24);
+          prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 8);
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
@@ -327,7 +327,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       ent_type* fanEnt =
-        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 30);
+        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
@@ -446,7 +446,7 @@ struct glProgram
 
         char buff[20];
         sprintf(buff, "%f", fps);
-//        m_win.SetTitle(buff);
+        m_win.SetTitle(buff);
       }
 
       m_frameTimeBuff.pop_back();
