@@ -1,10 +1,11 @@
 set(SOURCE_FILES
-  main.cpp
+  simpleGrid.h
+  simpleGrid.cpp
   ../tlocVersionCheck.cpp
   )
 
 set(ASSETS_PATH
-  ../../assets)
+  "")
 
 if (${USER_CURRENT_PROJECT_TYPE} STREQUAL ${USER_PROJECT_TYPE_EXE})
 

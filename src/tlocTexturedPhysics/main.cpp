@@ -63,7 +63,8 @@ struct glProgram
 
   void Initialize()
   {
-    m_win.Create(graphics_mode::Properties(1536, 1048),
+    // trying to match iPad retina display ratio (not resolution)
+    m_win.Create(graphics_mode::Properties(1280, 873),
                  gfx_win::WindowSettings("Atom & Eve"));
 
     ParamList<core_t::Any> params;
@@ -281,11 +282,11 @@ struct glProgram
     }
 
     PROFILE_START();
-    const tl_int repeat = 400;
+    const tl_int repeat = 150;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-5.0f, 5.0f);
-      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 680.0f);
+      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 480.0f);
 
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
       {
