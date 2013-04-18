@@ -35,6 +35,7 @@ enum
 {
   key_pause = 0,
   key_exit,
+  key_cameraPersp,
   key_count
 };
 
@@ -183,9 +184,6 @@ struct glProgram
 
     using core::component_system::ComponentPoolManager;
     using core_str::String;
-
-    //gfx_gl::ShaderProgram sp;
-    //LoadShaders(sp);
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
@@ -341,26 +339,24 @@ struct glProgram
       m_entityMgr->InsertComponent(fanEnt, &mat2);
     }
 
-    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr);
+    tl_float winWidth = (tl_float)m_win.GetWidth();
+    tl_float winHeight = (tl_float)m_win.GetHeight();
 
-    core_cs::ComponentMapper<math_cs::Transform> tform =
-      m_cameraEnt->GetComponents(math_cs::components::transform);
-    tform[0].SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+    // For some reason, if we remove the brackets, C++ assumes the following is
+    // a function declaration. Generally, something like math_t::Rectf proj();
+    // might be considered a function declaration but not when we give
+    // arguments
+    //
+    // TODO: Look into this problem and find a way to remove the extra
+    // brackets.
+    math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
+                         (math_t::Rectf::height(winHeight / 10.0f)) );
 
-    core_cs::ComponentMapper<gfx_cs::Projection> proj =
-    m_cameraEnt->GetComponents(gfx_cs::components::projection);
+    m_ortho = math_proj::frustum_ortho (fRect, 0.1f, 100.0f);
+    m_ortho.BuildFrustum();
 
-    gfx_t::AspectRatio ar(gfx_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
-                          gfx_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
-    gfx_t::FOV fov(math_t::Degree(60.0f), ar, gfx_t::p_FOV::vertical());
-
-    gfx_vp::Frustum::Params params(fov);
-    params.SetFar(100.0f).SetNear(0.1f);
-
-    gfx_vp::Frustum fr(params);
-    fr.BuildFrustum();
-
-    proj[0].SetFrustum(fr);
+    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
+                                            math_t::Vec3f(0, 0, -1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
@@ -425,7 +421,6 @@ struct glProgram
       // Window may have closed by this time
       if (m_win.IsValid() && m_renderFrameTime.ElapsedMilliSeconds() > 16)
       {
-        //tl_int renderFrameTime = m_renderFrameTime.ElapsedMilliSeconds();
         m_renderFrameTime.Reset();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -469,6 +464,38 @@ struct glProgram
     {
       m_keyPresses.Toggle(key_exit);
     }
+    if (a_event.m_keyCode == input::hid::KeyboardEvent::c)
+    {
+      m_keyPresses.Toggle(key_cameraPersp);
+
+      core_cs::ComponentMapper<math_cs::Transform> tform =
+        m_cameraEnt->GetComponents(math_cs::components::transform);
+
+      core_cs::ComponentMapper<math_cs::Projection> proj =
+        m_cameraEnt->GetComponents(math_cs::components::projection);
+
+      if (m_keyPresses.IsMarked(key_cameraPersp) == false)
+      {
+       tform[0].SetPosition(math_t::Vec3f32(0, 0, -1.0f));
+        proj[0].SetFrustum(m_ortho);
+      }
+      else
+      {
+        tform[0].SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+
+        math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
+                               math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
+        math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
+
+        math_proj::frustum_persp::Params params(fov);
+        params.SetFar(100.0f).SetNear(1.0f);
+
+        math_proj::frustum_persp fr(params);
+        fr.BuildFrustum();
+
+        proj[0].SetFrustum(fr);
+      }
+    }
 
     return false;
   }
@@ -499,6 +526,8 @@ struct glProgram
   core_time::Timer32      m_renderFrameTime;
   core_time::Timer32      m_physFrameTime;
   const ent_type*         m_cameraEnt;
+
+  math_proj::frustum_ortho m_ortho;
 
   tl_int              m_accumulator;
 
