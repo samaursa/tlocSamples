@@ -29,17 +29,9 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
-math_cs::Transform& GetEntityTransformComponent(const core_cs::Entity* a_ent)
-{
-  core_cs::ComponentMapper<math_cs::Transform> transformComponents =
-    a_ent->GetComponents(math_cs::components::transform);
-
-  return transformComponents[0];
-}
-
 void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
 {
-  math_cs::Transform& transform = GetEntityTransformComponent(a_ent);
+  math_cs::Transform& transform = a_ent->GetComponent<math_cs::Transform>();
 
   math_cs::Transform::position_type position(transform.GetPosition());
   position[0] += a_deltaPos[0];
@@ -50,7 +42,7 @@ void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
 
 void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_position)
 {
-  math_cs::Transform& transform = GetEntityTransformComponent(a_ent);
+  math_cs::Transform& transform = a_ent->GetComponent<math_cs::Transform>();
   transform.SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 
