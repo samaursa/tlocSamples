@@ -72,12 +72,15 @@ struct glProgram
     ParamList<core_t::Any> params;
     params.m_param1 = m_win.GetWindowHandle();
     m_inputMgr = input::input_mgr_b_ptr(new input::InputManagerB(params));
+    m_inputMgrImm = input::input_mgr_i_ptr(new input::InputManagerI(params));
 
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
 
     m_mouse = m_inputMgr->CreateHID<input::hid::MouseB>();
     m_mouse->Register(this);
+
+    m_touchSurface = m_inputMgrImm->CreateHID<input::hid::TouchSurfaceI>();
 
     if (m_renderer.Initialize() != ErrorSuccess)
     {
@@ -166,6 +169,72 @@ struct glProgram
     }
 
     return colorData;
+  }
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  void MoveMouseAndCheckCollision(f32 absX, f32 absY)
+  {
+    using math_utils::scale_f32_f32;
+    typedef math_utils::scale_f32_f32::range_small range_small;
+    typedef math_utils::scale_f32_f32::range_large range_large;
+    using namespace core::component_system;
+
+    //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+
+    range_small smallR(-1.0f, 1.0f);
+    range_large largeRX(0.0f, (f32)m_win.GetWidth());
+    range_large largeRY(0.0f, (f32)m_win.GetHeight());
+    scale_f32_f32 scx(smallR, largeRX);
+    scale_f32_f32 scy(smallR, largeRY);
+
+    math_t::Vec3f32 xyz(scx.ScaleDown((f32)(absX) ),
+                        scy.ScaleDown((f32)(m_win.GetHeight() -
+                                            absY - 1 )),
+                        -1.0f);
+    math_t::Ray3f ray = m_ortho.GetRay(xyz);
+
+    // Set the mouse pointer
+    m_mouseFan->GetComponent<math_cs::Transform>().
+      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
+                                  ray.GetOrigin()[1], 0.0f) );
+
+    // Now start transform the ray from world to fan entity co-ordinates for
+    // the intersection test
+
+    math_t::Vec3f rayPos = ray.GetOrigin();
+    math_t::Mat3f rot = m_fanEnt->GetComponent<math_cs::Transform>().GetOrientation();
+    rot.Inverse();
+
+    math_t::Vec3f fanPos = m_fanEnt->GetComponent<math_cs::Transform>().GetPosition();
+    rayPos = rayPos - fanPos;
+    rayPos = rot * rayPos;
+
+    math_t::Vec2f rayPos2f = rayPos.ConvertTo<math_t::Vec2f32>();
+    math_t::Vec2f rayDir2f = ray.GetDirection().ConvertTo<math_t::Vec2f32>();
+
+    math_t::Ray2f
+      ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),
+                           math_t::Ray2f::direction(rayDir2f) );
+
+    static tl_int intersectionCounter = 0;
+    static tl_int nonIntersectionCounter = 0;
+
+    if (m_fanEnt->GetComponent<gfx_cs::Fan>().GetEllipseRef().Intersects(ray2))
+    {
+      nonIntersectionCounter = 0;
+      ++intersectionCounter;
+      if (intersectionCounter == 1)
+      { printf("\nIntersecting with circle!"); }
+    }
+    else
+    {
+      intersectionCounter = 0;
+      ++nonIntersectionCounter;
+
+      if (nonIntersectionCounter == 1)
+      { printf("\nNOT intersecting with circle!"); }
+    }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -342,6 +411,18 @@ struct glProgram
       while (m_win.GetEvent(evt))
       { }
 
+      // Handle the touches
+      m_inputMgrImm->Update();
+      m_currentTouches = m_touchSurface->GetCurrentTouches();
+      if (m_currentTouches.size() != 0)
+      {
+        f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs();
+        f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs();
+
+        MoveMouseAndCheckCollision(xAbs, yAbs);
+      }
+      m_inputMgrImm->Reset();
+
       // Window may have closed by this time
       if (m_win.IsValid())
       {
@@ -432,62 +513,8 @@ struct glProgram
   bool OnMouseMove(const tl_size ,
                    const input_hid::MouseEvent& a_event)
   {
-    using math_utils::scale_f32_f32;
-    typedef math_utils::scale_f32_f32::range_small range_small;
-    typedef math_utils::scale_f32_f32::range_large range_large;
-    using namespace core::component_system;
-
-    //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
-
-    range_small smallR(-1.0f, 1.0f);
-    range_large largeRX(0.0f, (f32)m_win.GetWidth());
-    range_large largeRY(0.0f, (f32)m_win.GetHeight());
-    scale_f32_f32 scx(smallR, largeRX);
-    scale_f32_f32 scy(smallR, largeRY);
-
-    math_t::Vec3f32 xyz(scx.ScaleDown((f32)(a_event.m_X.m_abs().Get()) ),
-                        scy.ScaleDown((f32)(m_win.GetHeight() - a_event.m_Y.m_abs().Get() - 1 ) ), -1.0f);
-    math_t::Ray3f ray = m_ortho.GetRay(xyz);
-
-    // Set the mouse pointer
-    m_mouseFan->GetComponent<math_cs::Transform>().
-      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0], ray.GetOrigin()[1], 0.0f) );
-
-    // Now start transform the ray from world to fan entity co-ordinates for
-    // the intersection test
-
-    math_t::Vec3f rayPos = ray.GetOrigin();
-    math_t::Mat3f rot = m_fanEnt->GetComponent<math_cs::Transform>().GetOrientation();
-    rot.Inverse();
-
-    math_t::Vec3f fanPos = m_fanEnt->GetComponent<math_cs::Transform>().GetPosition();
-    rayPos = rayPos - fanPos;
-    rayPos = rot * rayPos;
-
-    math_t::Ray2f
-      ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos.ConvertTo<math_t::Vec2f32>()),
-                           math_t::Ray2f::direction(ray.GetDirection().ConvertTo<math_t::Vec2f32>()) );
-
-    static tl_int intersectionCounter = 0;
-    static tl_int nonIntersectionCounter = 0;
-
-    if (m_fanEnt->GetComponent<gfx_cs::Fan>().GetEllipseRef().Intersects(ray2))
-    {
-      nonIntersectionCounter = 0;
-      ++intersectionCounter;
-      if (intersectionCounter == 1)
-      { printf("\nIntersecting with circle!"); }
-    }
-    else
-    {
-      intersectionCounter = 0;
-      ++nonIntersectionCounter;
-
-      if (nonIntersectionCounter == 1)
-      { printf("\nNOT intersecting with circle!"); }
-    }
-
-
+    MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs().Get(),
+                               (f32)a_event.m_Y.m_abs().Get());
     return false;
   }
 
@@ -521,8 +548,12 @@ struct glProgram
   tl_int              m_accumulator;
 
   input::input_mgr_b_ptr     m_inputMgr;
+  input::input_mgr_i_ptr     m_inputMgrImm;
   input::hid::KeyboardB*     m_keyboard;
   input::hid::MouseB*        m_mouse;
+  input::hid::TouchSurfaceI* m_touchSurface;
+
+  input_hid::TouchSurfaceI::touch_container_type m_currentTouches;
   core::utils::Checkpoints   m_keyPresses;
 
   core_cs::event_manager_sptr m_eventMgr;

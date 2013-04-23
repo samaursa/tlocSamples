@@ -113,6 +113,36 @@ public:
 };
 TLOC_DEF_TYPE(MouseCallback);
 
+class TouchCallback
+{
+public:
+  bool OnTouchPress(const tl_size a_caller,
+                    const input::TouchSurfaceEvent& a_event)
+  {
+    printf("\nCaller %i surface touch #%li at %f %f",
+           (tl_int)a_caller,
+           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+    return false;
+  }
+  bool OnTouchRelease(const tl_size a_caller,
+                      const input::TouchSurfaceEvent& a_event)
+  {
+    printf("\nCaller %i surface touch release #%li at %f %f",
+           (tl_int)a_caller,
+           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+    return false;
+  }
+  bool OnTouchMove(const tl_size a_caller,
+                   const input::TouchSurfaceEvent& a_event)
+  {
+    printf("\nCaller %i surface touch move #%li at %f %f",
+           (tl_int)a_caller,
+           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+    return false;
+  }
+};
+TLOC_DEF_TYPE(TouchCallback);
+
 int TLOC_MAIN(int, char**)
 {
   gfx_win::Window win;
@@ -138,6 +168,13 @@ int TLOC_MAIN(int, char**)
   // Creating a keyboard and mouse HID
   input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
   input_hid::MouseB* mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::TouchSurfaceB* touchSurface =
+    inputMgr->CreateHID<input_hid::TouchSurfaceB>();
+
+  // Check pointers
+  TLOC_ASSERT_NOT_NULL(keyboard);
+  TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // Creating Keyboard and mouse callbacks and registering them with their
@@ -147,6 +184,9 @@ int TLOC_MAIN(int, char**)
 
   MouseCallback mouseCallback;
   mouse->Register(&mouseCallback);
+
+  TouchCallback touchCallback;
+  touchSurface->Register(&touchCallback);
 
   //------------------------------------------------------------------------
   // In order to update at a pre-defined time interval, a timer must be created
