@@ -156,6 +156,12 @@ int TLOC_MAIN(int, char**)
     gfx_win::WindowSettings("tlocInput") );
 
   //------------------------------------------------------------------------
+  // Initialize renderer
+  gfx_rend::Renderer renderer;
+  if (renderer.Initialize() != ErrorSuccess)
+  { printf("\nRenderer failed to initialize"); return 1; }
+
+  //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
   // its lifetime. More than one InputManager can be instantiated.
   ParamList<core_t::Any> params;
@@ -230,6 +236,8 @@ int TLOC_MAIN(int, char**)
       // a state of "down" until the user releases the key, automatically
       // setting it to "up"
       //inputMgr->Reset();
+
+      win.SwapBuffers();
     }
   }
 

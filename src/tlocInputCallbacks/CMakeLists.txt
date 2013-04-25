@@ -3,7 +3,8 @@ set(SOURCE_FILES
   ../tlocVersionCheck.cpp
   )
 
-set(ASSETS_PATH) 
+set(ASSETS_PATH
+  ../../assets)
 
 if (${USER_CURRENT_PROJECT_TYPE} STREQUAL ${USER_PROJECT_TYPE_EXE})
 
