@@ -352,7 +352,7 @@ struct glProgram
     math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
                          (math_t::Rectf::height(winHeight / 10.0f)) );
 
-    m_ortho = math_proj::frustum_ortho (fRect, 0.1f, 100.0f);
+    m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
     m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
@@ -484,10 +484,10 @@ struct glProgram
                                math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
         math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
 
-        math_proj::frustum_persp::Params params(fov);
+        math_proj::FrustumPersp::Params params(fov);
         params.SetFar(100.0f).SetNear(1.0f);
 
-        math_proj::frustum_persp fr(params);
+        math_proj::FrustumPersp fr(params);
         fr.BuildFrustum();
 
         m_cameraEnt->GetComponent<math_cs::Projection>().SetFrustum(fr);
@@ -524,7 +524,7 @@ struct glProgram
   core_time::Timer32      m_physFrameTime;
   const ent_type*         m_cameraEnt;
 
-  math_proj::frustum_ortho m_ortho;
+  math_proj::FrustumOrtho m_ortho;
 
   tl_int              m_accumulator;
 
