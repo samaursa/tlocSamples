@@ -1,11 +1,23 @@
+#------------------------------------------------------------------------------
+# In most cases, this file should NOT be modified by the user. User modifiable
+# files are tlocUserVarsPre.cmake and tlocUserVarsPost.cmake
+
+#------------------------------------------------------------------------------
+include(tlocUserVarsPre.cmake)
+
+#------------------------------------------------------------------------------
 set(SOURCE_FILES
-  main.cpp
+  ${USER_SOURCE_FILES}
   ../tlocVersionCheck.cpp
   )
 
+#------------------------------------------------------------------------------
 set(ASSETS_PATH
-  ../../assets)
+  ${USER_ASSETS_PATH}
+  )
 
+#------------------------------------------------------------------------------
+# Create the project
 if (${USER_CURRENT_PROJECT_TYPE} STREQUAL ${USER_PROJECT_TYPE_EXE})
 
   add_executable(${USER_CURRENT_PROJECT_NAME}
@@ -20,6 +32,13 @@ if (${USER_CURRENT_PROJECT_TYPE} STREQUAL ${USER_PROJECT_TYPE_EXE})
     add_apple_plist(${USER_CURRENT_PROJECT_NAME} "")
   endif()
 
+  # Link the user defined libraries with this project
+  if(USER_EXECUTABLE_LINK_LIBRARIES)
+    target_link_libraries(${USER_CURRENT_PROJECT_NAME}
+      ${USER_EXECUTABLE_LINK_LIBRARIES}
+      )
+  endif()
+
 elseif(${USER_CURRENT_PROJECT_NAME} STREQUAL ${USER_PROJECT_TYPE_LIB})
 
   add_library(${USER_CURRENT_PROJECT_NAME} STATIC
@@ -28,3 +47,12 @@ elseif(${USER_CURRENT_PROJECT_NAME} STREQUAL ${USER_PROJECT_TYPE_LIB})
 
 endif()
 
+# Add dependencies (if any)
+if(USER_PROJECT_DEPENDENCIES)
+  add_dependencies(${USER_CURRENT_PROJECT_NAME}
+    ${USER_PROJECT_DEPENDENCIES}
+    )
+endif()
+
+#------------------------------------------------------------------------------
+include(tlocUserVarsPost.cmake)
