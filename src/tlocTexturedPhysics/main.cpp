@@ -249,10 +249,10 @@ struct glProgram
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
 
-      gl::UniformPtr  u_to(new gl::Uniform());
+      gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);
 
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
       mat.AddShaderOperator(so);
@@ -270,10 +270,10 @@ struct glProgram
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
 
-      gl::UniformPtr  u_to(new gl::Uniform());
+      gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);
 
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
       mat2.AddShaderOperator(so);

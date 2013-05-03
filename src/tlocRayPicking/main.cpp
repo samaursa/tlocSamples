@@ -341,8 +341,8 @@ struct glProgram
       m_henryUniform.reset(new gl::Uniform());
       m_henryUniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
 
-      gl::ShaderOperatorPtr so =
-        gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so =
+        gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(m_henryUniform);
 
       mat.AddShaderOperator(so);
@@ -363,7 +363,7 @@ struct glProgram
       m_crateUniform.reset(new gl::Uniform());
       m_crateUniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
 
-      auto so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      auto so = gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(m_crateUniform);
 
       mat2.AddShaderOperator(so);
@@ -567,8 +567,8 @@ struct glProgram
 
   gfx_gl::texture_object_sptr m_texObjHenry;
   gfx_gl::texture_object_sptr m_texObjCrate;
-  gfx_gl::UniformPtr      m_henryUniform;
-  gfx_gl::UniformPtr      m_crateUniform;
+  gfx_gl::uniform_sptr      m_henryUniform;
+  gfx_gl::uniform_sptr      m_crateUniform;
 
   math_proj::FrustumOrtho m_ortho;
 
