@@ -194,6 +194,20 @@ struct glProgram
                         -1.0f);
     math_t::Ray3f ray = m_ortho.GetRay(xyz);
 
+    // Transform with inverse of camera
+    math_cs::Transformf32 camTrans =
+      m_cameraEnt->GetComponent<math_cs::Transformf32>();
+    math_cs::Transformf32 camTransInv = camTrans.Invert();
+    math_t::Mat4f32 camTransMatInv = camTransInv.GetTransformation();
+
+    math_t::Vec3f32 rayPosTrans = ray.GetOrigin();
+    rayPosTrans.ConvertFrom<f32, 4>
+      (camTransMatInv *
+       rayPosTrans.ConvertTo<math_t::Vec4f32, core_ds::p_tuple::overflow_one>());
+
+    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPosTrans),
+          math_t::Ray3f32::direction(ray.GetDirection()) );
+
     // Set the mouse pointer
     m_mouseFan->GetComponent<math_cs::Transform>().
       SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
@@ -213,9 +227,8 @@ struct glProgram
     math_t::Vec2f rayPos2f = rayPos.ConvertTo<math_t::Vec2f32>();
     math_t::Vec2f rayDir2f = ray.GetDirection().ConvertTo<math_t::Vec2f32>();
 
-    math_t::Ray2f
-      ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),
-                           math_t::Ray2f::direction(rayDir2f) );
+    math_t::Ray2f ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),
+                         math_t::Ray2f::direction(rayDir2f) );
 
     static tl_int intersectionCounter = 0;
     static tl_int nonIntersectionCounter = 0;
@@ -225,7 +238,10 @@ struct glProgram
       nonIntersectionCounter = 0;
       ++intersectionCounter;
       if (intersectionCounter == 1)
-      { printf("\nIntersecting with circle!"); }
+      {
+        m_henryUniform->SetValueAs(m_texObjCrate);
+        printf("\nIntersecting with circle!");
+      }
     }
     else
     {
@@ -233,7 +249,10 @@ struct glProgram
       ++nonIntersectionCounter;
 
       if (nonIntersectionCounter == 1)
-      { printf("\nNOT intersecting with circle!"); }
+      {
+        m_henryUniform->SetValueAs(m_texObjHenry);
+        printf("\nNOT intersecting with circle!");
+      }
     }
   }
 
@@ -260,8 +279,6 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
-
     QuadRenderSystem quadSys(m_eventMgr, m_entityMgr);
     FanRenderSystem fanSys(m_eventMgr, m_entityMgr);
     MaterialSystem matSys(m_eventMgr, m_entityMgr);
@@ -310,44 +327,46 @@ struct glProgram
     //------------------------------------------------------------------------
     // Add the shader operators
     {
-      gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetsPath());
-      filePath += "/images/crate.png";
-      core_io::Path path(filePath.c_str());
-      if (png.Load(path) != ErrorSuccess)
-      { TLOC_ASSERT(false, "Image did not load"); }
-
-      gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-      to->Initialize(png.GetImage());
-
-      gl::UniformPtr  u_to(new gl::Uniform());
-      u_to->SetName("shaderTexture").SetValueAs(to);
-
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
-      so->AddUniform(u_to);
-
-      mat.SetMasterShaderOperator(so);
-    }
-
-    {
-      gfx_med::ImageLoaderPng png;
+      gfx_med::ImageLoaderPng image;
       core_str::String filePath(GetAssetsPath());
       filePath += "/images/henry.png";
       core_io::Path path(filePath.c_str());
 
-      if (png.Load(path) != ErrorSuccess)
+      if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
-      gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-      to->Initialize(png.GetImage());
+      m_texObjHenry.reset(new gfx_gl::TextureObject());
+      m_texObjHenry->Initialize(image.GetImage());
 
-      gl::UniformPtr  u_to(new gl::Uniform());
-      u_to->SetName("shaderTexture").SetValueAs(to);
+      m_henryUniform.reset(new gl::Uniform());
+      m_henryUniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
 
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
-      so->AddUniform(u_to);
+      gl::ShaderOperatorPtr so =
+        gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      so->AddUniform(m_henryUniform);
 
-      mat2.SetMasterShaderOperator(so);
+      mat.AddShaderOperator(so);
+    }
+
+    {
+      gfx_med::ImageLoaderPng image;
+      core_str::String filePath(GetAssetsPath());
+      filePath += "/images/crate.png";
+      core_io::Path path(filePath.c_str());
+
+      if (image.Load(path) != ErrorSuccess)
+      { TLOC_ASSERT(false, "Image did not load"); }
+
+      m_texObjCrate.reset(new gfx_gl::TextureObject());
+      m_texObjCrate->Initialize(image.GetImage());
+
+      m_crateUniform.reset(new gl::Uniform());
+      m_crateUniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
+
+      auto so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      so->AddUniform(m_crateUniform);
+
+      mat2.AddShaderOperator(so);
     }
 
     {
@@ -362,7 +381,7 @@ struct glProgram
       m_fanEnt->GetComponent<math_cs::Transform>().
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      m_entityMgr->InsertComponent(m_fanEnt, &mat2);
+      m_entityMgr->InsertComponent(m_fanEnt, &mat);
     }
 
     {
@@ -390,8 +409,11 @@ struct glProgram
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
+    tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+    tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+
     m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
-                                            math_t::Vec3f(0, 0, -1.0f));
+                                            math_t::Vec3f(posX, posY, -1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
@@ -542,6 +564,11 @@ struct glProgram
 
   ent_type*               m_fanEnt;
   ent_type*               m_mouseFan;
+
+  gfx_gl::texture_object_sptr m_texObjHenry;
+  gfx_gl::texture_object_sptr m_texObjCrate;
+  gfx_gl::UniformPtr      m_henryUniform;
+  gfx_gl::UniformPtr      m_crateUniform;
 
   math_proj::FrustumOrtho m_ortho;
 

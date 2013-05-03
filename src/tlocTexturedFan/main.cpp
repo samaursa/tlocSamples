@@ -136,7 +136,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // Finally, set this shader operator as the master operator (aka user operator)
   // in our material.
-  mat.SetMasterShaderOperator(so);
+  mat.AddShaderOperator(so);
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us

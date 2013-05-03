@@ -255,7 +255,7 @@ struct glProgram
       gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
-      mat.SetMasterShaderOperator(so);
+      mat.AddShaderOperator(so);
     }
 
     {
@@ -276,7 +276,7 @@ struct glProgram
       gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
-      mat2.SetMasterShaderOperator(so);
+      mat2.AddShaderOperator(so);
     }
 
     PROFILE_START();
