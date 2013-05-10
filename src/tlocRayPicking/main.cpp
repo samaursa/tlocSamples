@@ -98,46 +98,6 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void LoadShaders(gfx_gl::ShaderProgram& a_sp)
-  {
-    using namespace core;
-    using namespace gfx_gl;
-    using core_str::String;
-
-    VertexShader vShader;
-    {
-      io::FileIO_ReadA file("../../../../../assets/SimpleVertexShader.glsl");
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      vShader.Load(code.c_str());
-    }
-
-    FragmentShader fShader;
-    {
-      io::FileIO_ReadA file("../../../../../assets/SimpleFragmentShader.glsl");
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      fShader.Load(code.c_str());
-    }
-
-    if (vShader.Compile().Failed() )
-    { printf("\n%s", vShader.GetError().c_str()); }
-    if (!fShader.Compile().Failed() )
-    { printf("\n%s", fShader.GetError().c_str()); }
-
-    VertexShader vs(vShader);
-
-    a_sp.AttachShaders(ShaderProgram::two_shader_components(&vShader, &fShader));
-    if (!a_sp.Link().Failed() )
-    { printf("\n%s", a_sp.GetError().c_str()); }
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
   core_conts::Array<math_t::Vec4f32> GetQuadColor()
   {
     using namespace core;
@@ -196,7 +156,7 @@ struct glProgram
 
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
-      m_cameraEnt->GetComponent<math_cs::Transformf32>();
+      *m_cameraEnt->GetComponent<math_cs::Transformf32>();
     math_cs::Transformf32 camTransInv = camTrans.Invert();
     math_t::Mat4f32 camTransMatInv = camTransInv.GetTransformation();
 
@@ -209,7 +169,7 @@ struct glProgram
           math_t::Ray3f32::direction(ray.GetDirection()) );
 
     // Set the mouse pointer
-    m_mouseFan->GetComponent<math_cs::Transform>().
+    m_mouseFan->GetComponent<math_cs::Transform>()->
       SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
                                   ray.GetOrigin()[1], 0.0f) );
 
@@ -217,10 +177,10 @@ struct glProgram
     // the intersection test
 
     math_t::Vec3f rayPos = ray.GetOrigin();
-    math_t::Mat3f rot = m_fanEnt->GetComponent<math_cs::Transform>().GetOrientation();
+    math_t::Mat3f rot = m_fanEnt->GetComponent<math_cs::Transform>()->GetOrientation();
     rot.Inverse();
 
-    math_t::Vec3f fanPos = m_fanEnt->GetComponent<math_cs::Transform>().GetPosition();
+    math_t::Vec3f fanPos = m_fanEnt->GetComponent<math_cs::Transform>()->GetPosition();
     rayPos = rayPos - fanPos;
     rayPos = rot * rayPos;
 
@@ -233,13 +193,17 @@ struct glProgram
     static tl_int intersectionCounter = 0;
     static tl_int nonIntersectionCounter = 0;
 
-    if (m_fanEnt->GetComponent<gfx_cs::Fan>().GetEllipseRef().Intersects(ray2))
+    if (m_fanEnt->GetComponent<gfx_cs::Fan>()->GetEllipseRef().Intersects(ray2))
     {
       nonIntersectionCounter = 0;
       ++intersectionCounter;
       if (intersectionCounter == 1)
       {
-        m_henryUniform->SetValueAs(m_texObjCrate);
+        auto mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+        if (mat != m_crateMat.get())
+        { *mat = *m_crateMat;}
+
         printf("\nIntersecting with circle!");
       }
     }
@@ -250,7 +214,11 @@ struct glProgram
 
       if (nonIntersectionCounter == 1)
       {
-        m_henryUniform->SetValueAs(m_texObjHenry);
+        auto mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+        if (mat != m_henryMat.get())
+        { *mat = *m_henryMat; }
+
         printf("\nNOT intersecting with circle!");
       }
     }
@@ -258,9 +226,47 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+  void AddShaders(gfx_cs::material_sptr a_mat)
+  {
+    {
+#if defined (TLOC_OS_WIN)
+      core_str::String shaderPath("/shaders/mvpTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+      core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
+#endif
+      shaderPath = GetAssetsPath() + shaderPath;
+      core_io::FileIO_ReadA file(shaderPath.c_str());
+
+      if(file.Open() != ErrorSuccess)
+      {
+        printf("\n%s", shaderPath.c_str());
+        printf("\nUnable to open vertex shader");
+        TLOC_ASSERT(false, "");
+      }
+
+      core_str::String code;
+      file.GetContents(code);
+      a_mat->SetVertexSource(code);
+    }
+
+    {
+#if defined (TLOC_OS_WIN)
+      core_str::String shaderPath("/shaders/mvpTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+      core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
+#endif
+      shaderPath = GetAssetsPath() + shaderPath;
+      core_io::FileIO_ReadA file(shaderPath.c_str());
+      file.Open();
+
+      core_str::String code;
+      file.GetContents(code);
+      a_mat->SetFragmentSource(code);
+    }
+  }
+
   void RunGame()
   {
-    using namespace tloc;
     using namespace core;
     using namespace math;
     using namespace graphics;
@@ -285,44 +291,11 @@ struct glProgram
 
     ComponentPoolManager poolMgr;
 
-    mat_type  mat, mat2;
-    {
-#if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
-#endif
-      shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file(shaderPath.c_str());
+    m_henryMat.reset(new gfx_cs::Material());
+    m_crateMat.reset(new gfx_cs::Material());
 
-      if(file.Open() != ErrorSuccess)
-      {
-        printf("\n%s", shaderPath.c_str());
-        printf("\nUnable to open vertex shader");
-        TLOC_ASSERT(false, "");
-      }
-
-      String code;
-      file.GetContents(code);
-      mat.SetVertexSource(code);
-      mat2.SetVertexSource(code);
-    }
-
-    {
-#if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
-#endif
-      shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file(shaderPath.c_str());
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      mat.SetFragmentSource(code);
-      mat2.SetFragmentSource(code);
-    }
+    AddShaders(m_henryMat);
+    AddShaders(m_crateMat);
 
     //------------------------------------------------------------------------
     // Add the shader operators
@@ -338,14 +311,14 @@ struct glProgram
       m_texObjHenry.reset(new gfx_gl::TextureObject());
       m_texObjHenry->Initialize(image.GetImage());
 
-      m_henryUniform.reset(new gl::Uniform());
-      m_henryUniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
+      gfx_gl::uniform_sptr uniform( (new gl::Uniform()) );
+      uniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
 
       gl::shader_operator_sptr so =
         gl::shader_operator_sptr(new gl::ShaderOperator());
-      so->AddUniform(m_henryUniform);
+      so->AddUniform(uniform);
 
-      mat.AddShaderOperator(so);
+      m_henryMat->AddShaderOperator(so);
     }
 
     {
@@ -360,14 +333,17 @@ struct glProgram
       m_texObjCrate.reset(new gfx_gl::TextureObject());
       m_texObjCrate->Initialize(image.GetImage());
 
-      m_crateUniform.reset(new gl::Uniform());
-      m_crateUniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
+      gfx_gl::uniform_sptr uniform(new gl::Uniform());
+      uniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
 
       auto so = gl::shader_operator_sptr(new gl::ShaderOperator());
-      so->AddUniform(m_crateUniform);
+      so->AddUniform(uniform);
 
-      mat2.AddShaderOperator(so);
+      m_crateMat->AddShaderOperator(so);
     }
+
+    // Create internal materials
+    auto matPool = poolMgr.CreateNewPool<gfx_cs::material_sptr>();
 
     {
       // Create a fan ent
@@ -378,10 +354,15 @@ struct glProgram
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
-      m_fanEnt->GetComponent<math_cs::Transform>().
+      m_fanEnt->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      m_entityMgr->InsertComponent(m_fanEnt, &mat);
+      auto matPoolItr = matPool->GetNext();
+      gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_henryMat) );
+      matPoolItr->SetValue(newMat);
+
+      m_entityMgr->InsertComponent(m_fanEnt, matPoolItr->GetValue().get());
+      m_entityMgr->InsertComponent(m_fanEnt, m_henryMat.get());
     }
 
     {
@@ -390,7 +371,12 @@ struct glProgram
       m_mouseFan =
         prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
 
-      m_entityMgr->InsertComponent(m_mouseFan, &mat2);
+      auto matPoolItr = matPool->GetNext();
+      gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_crateMat) );
+      matPoolItr->SetValue(newMat);
+
+      m_entityMgr->InsertComponent(m_mouseFan, matPoolItr->GetValue().get());
+      m_entityMgr->InsertComponent(m_mouseFan, m_crateMat.get());
     }
 
     tl_float winWidth = (tl_float)m_win.GetWidth();
@@ -480,15 +466,15 @@ struct glProgram
 
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
-        m_cameraEnt->GetComponent<math_cs::Transform>().
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, -1.0f));
-        m_cameraEnt->GetComponent<math_cs::Projection>().
+        m_cameraEnt->GetComponent<math_cs::Projection>()->
           SetFrustum(m_ortho);
       }
       else
       {
-        m_cameraEnt->GetComponent<math_cs::Transform>()
-          .SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
+          SetPosition(math_t::Vec3f32(0, 0, -30.0f));
 
         math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
                                math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
@@ -500,7 +486,7 @@ struct glProgram
         math_proj::FrustumPersp fr(params);
         fr.BuildFrustum();
 
-        m_cameraEnt->GetComponent<math_cs::Projection>().SetFrustum(fr);
+        m_cameraEnt->GetComponent<math_cs::Projection>()->SetFrustum(fr);
       }
     }
 
@@ -567,12 +553,10 @@ struct glProgram
 
   gfx_gl::texture_object_sptr m_texObjHenry;
   gfx_gl::texture_object_sptr m_texObjCrate;
-  gfx_gl::uniform_sptr      m_henryUniform;
-  gfx_gl::uniform_sptr      m_crateUniform;
+  gfx_cs::material_sptr       m_henryMat;
+  gfx_cs::material_sptr       m_crateMat;
 
   math_proj::FrustumOrtho m_ortho;
-
-  tl_int              m_accumulator;
 
   input::input_mgr_b_ptr     m_inputMgr;
   input::input_mgr_i_ptr     m_inputMgrImm;

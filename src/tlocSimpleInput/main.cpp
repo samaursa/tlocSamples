@@ -31,19 +31,19 @@ TLOC_DEF_TYPE(WindowCallback);
 
 void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
 {
-  math_cs::Transform& transform = a_ent->GetComponent<math_cs::Transform>();
+  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
 
-  math_cs::Transform::position_type position(transform.GetPosition());
+  math_cs::Transform::position_type position(transform->GetPosition());
   position[0] += a_deltaPos[0];
   position[1] += a_deltaPos[1];
 
-  transform.SetPosition(position);
+  transform->SetPosition(position);
 }
 
 void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_position)
 {
-  math_cs::Transform& transform = a_ent->GetComponent<math_cs::Transform>();
-  transform.SetPosition(a_position.ConvertTo<math_t::Vec3f>());
+  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
+  transform->SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 
 int TLOC_MAIN(int , char *[])

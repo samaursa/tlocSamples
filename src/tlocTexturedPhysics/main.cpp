@@ -470,14 +470,14 @@ struct glProgram
 
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
-        m_cameraEnt->GetComponent<math_cs::Transform>().
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, -1.0f));
-        m_cameraEnt->GetComponent<math_cs::Projection>().
+        m_cameraEnt->GetComponent<math_cs::Projection>()->
           SetFrustum(m_ortho);
       }
       else
       {
-        m_cameraEnt->GetComponent<math_cs::Transform>().
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, -30.0f));
 
         math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
@@ -490,7 +490,7 @@ struct glProgram
         math_proj::FrustumPersp fr(params);
         fr.BuildFrustum();
 
-        m_cameraEnt->GetComponent<math_cs::Projection>().SetFrustum(fr);
+        m_cameraEnt->GetComponent<math_cs::Projection>()->SetFrustum(fr);
       }
     }
 
