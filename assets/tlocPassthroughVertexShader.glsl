@@ -2,13 +2,12 @@
 
 // Input vertex data, different for all executions of this shader.
 in vec3 a_vPos;
-in vec2 a_tCoord;
 uniform mat4 u_mvp;
 
-out vec2 texCoord;
+out vec3 v_color;
 
 void main()
 { 
   gl_Position = u_mvp * vec4(a_vPos, 1);
-  texCoord = a_tCoord;
+  v_color = vec3(a_vPos[0], a_vPos[1], 0.3f);
 }

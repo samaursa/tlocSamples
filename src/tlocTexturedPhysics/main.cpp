@@ -356,7 +356,7 @@ struct glProgram
     m_ortho.BuildFrustum();
 
     m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
-                                            math_t::Vec3f(0, 0, -1.0f));
+                                            math_t::Vec3f(0, 0, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
@@ -471,14 +471,14 @@ struct glProgram
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
         m_cameraEnt->GetComponent<math_cs::Transform>()->
-          SetPosition(math_t::Vec3f32(0, 0, -1.0f));
+          SetPosition(math_t::Vec3f32(0, 0, 1.0f));
         m_cameraEnt->GetComponent<math_cs::Projection>()->
           SetFrustum(m_ortho);
       }
       else
       {
         m_cameraEnt->GetComponent<math_cs::Transform>()->
-          SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+          SetPosition(math_t::Vec3f32(0, 0, 30.0f));
 
         math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
                                math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );

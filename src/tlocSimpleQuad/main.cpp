@@ -105,10 +105,21 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q = prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect);
-  entityMgr->InsertComponent(q, &mat);
+  {
+    math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
+                         math_t::Rectf32::height(0.5f));
+    core_cs::Entity* q =
+      prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
+    entityMgr->InsertComponent(q, &mat);
+  }
+
+  {
+    math_t::Rectf32 rect(math_t::Rectf32::width(0.7f),
+                         math_t::Rectf32::height(0.7f));
+    core_cs::Entity* q =
+      prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
+    entityMgr->InsertComponent(q, &mat);
+  }
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

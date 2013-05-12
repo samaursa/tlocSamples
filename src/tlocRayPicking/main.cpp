@@ -157,8 +157,7 @@ struct glProgram
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
       *m_cameraEnt->GetComponent<math_cs::Transformf32>();
-    math_cs::Transformf32 camTransInv = camTrans.Invert();
-    math_t::Mat4f32 camTransMatInv = camTransInv.GetTransformation();
+    math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
 
     math_t::Vec3f32 rayPosTrans = ray.GetOrigin();
     rayPosTrans.ConvertFrom<f32, 4>
@@ -399,7 +398,7 @@ struct glProgram
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
     m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
-                                            math_t::Vec3f(posX, posY, -1.0f));
+                                            math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
