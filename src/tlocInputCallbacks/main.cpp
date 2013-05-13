@@ -228,7 +228,7 @@ int TLOC_MAIN(int, char**)
       }
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
       {
-        mouse->SetClamped(!mouse->GetClamped());
+        mouse->SetClamped(!mouse->IsClamped());
       }
 
       // The InputManager does not need to be reset while in buffered mode as
