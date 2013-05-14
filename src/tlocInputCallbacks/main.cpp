@@ -1,5 +1,5 @@
 #include <tlocCore/tloc_core.h>
-#include <tlocCore/tloc_core.inl>
+#include <tlocCore/tloc_core.inl.h>
 
 #include <tlocGraphics/tloc_graphics.h>
 #include <tlocMath/tloc_math.h>

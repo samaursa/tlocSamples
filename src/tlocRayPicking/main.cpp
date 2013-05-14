@@ -1,21 +1,21 @@
 #include <tlocCore/tloc_core.h>
-#include <tlocCore/tloc_core.inl>
+#include <tlocCore/tloc_core.inl.h>
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
 #include <tlocGraphics/tloc_graphics.h>
-#include <tlocGraphics/tloc_graphics.inl>
+#include <tlocGraphics/tloc_graphics.inl.h>
 
 #include <tlocMath/tloc_math.h>
-#include <tlocMath/tloc_math.inl>
+#include <tlocMath/tloc_math.inl.h>
 
 #include <tlocPhysics/tloc_physics.h>
-#include <tlocPhysics/tloc_physics.inl>
+#include <tlocPhysics/tloc_physics.inl.h>
 
 #include <tlocInput/tloc_input.h>
-#include <tlocInput/tloc_input.inl>
+#include <tlocInput/tloc_input.inl.h>
 
 #include <tlocPrefab/tloc_prefab.h>
-#include <tlocPrefab/tloc_prefab.inl>
+#include <tlocPrefab/tloc_prefab.inl.h>
 
 #include <samplesAssetsPath.h>
 
