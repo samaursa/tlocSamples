@@ -1,5 +1,6 @@
 #include <tlocCore/tloc_core.h>
 #include <tlocGraphics/tloc_graphics.h>
+#include <tlocInput/tloc_input.h>
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
 
@@ -26,6 +27,100 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
+//------------------------------------------------------------------------
+// KeyboardCallback
+
+class KeyboardCallback
+{
+public:
+  KeyboardCallback(core_cs::Entity* a_camera)
+    : m_camera(a_camera)
+  { }
+
+  //------------------------------------------------------------------------
+  // Called when a key is pressed. Currently will printf tloc's representation
+  // of the key.
+  bool OnKeyPress(const tl_size ,
+                  const input_hid::KeyboardEvent& a_event)
+  {
+    math_cs::Transform* camTransform =
+      m_camera->GetComponent<math_cs::Transform>();
+
+    math_t::Mat3f32 mat = camTransform->GetOrientation();
+
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
+    {
+      math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
+      camLeft.Norm();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
+      newPos.Norm();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    {
+      math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
+      camLeft.Neg();
+      camLeft.Norm();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
+      newPos.Norm();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::up)
+    {
+      math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
+      camUp.Norm();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
+      newPos.Norm();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::down)
+    {
+      math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
+      camUp.Neg();
+      camUp.Norm();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
+      newPos.Norm();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
+    }
+
+    math_t::Vec3f32 camDir = camTransform->GetPosition();
+    camDir.Norm();
+
+    math_t::Vec3f32 camUp(0, 1, 0);
+    math_t::Vec3f32 camLeft;
+    camLeft.Cross(camUp, camDir);
+    camUp.Cross(camDir, camLeft);
+
+    mat.SetCol(0, camLeft);
+    mat.SetCol(1, camUp);
+    mat.SetCol(2, camDir);
+
+    camTransform->SetOrientation(mat);
+
+    return false;
+  }
+
+  //------------------------------------------------------------------------
+  // Called when a key is released. Currently will printf tloc's representation
+  // of the key.
+  bool OnKeyRelease(const tl_size ,
+                    const input_hid::KeyboardEvent& )
+  {
+    return false;
+  }
+
+  core_cs::Entity* m_camera;
+};
+TLOC_DEF_TYPE(KeyboardCallback);
+
 int TLOC_MAIN(int argc, char *argv[])
 {
   TLOC_UNUSED_2(argc, argv);
@@ -42,6 +137,22 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::Renderer  renderer;
   if (renderer.Initialize() != ErrorSuccess)
   { printf("\nRenderer failed to initialize"); return 1; }
+
+  //------------------------------------------------------------------------
+  // Creating InputManager - This manager will handle all of our HIDs during
+  // its lifetime. More than one InputManager can be instantiated.
+  ParamList<core_t::Any> kbParams;
+  kbParams.m_param1 = win.GetWindowHandle();
+
+  input::input_mgr_b_ptr inputMgr =
+    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
+
+  //------------------------------------------------------------------------
+  // Creating a keyboard and mouse HID
+  input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+
+  // Check pointers
+  TLOC_ASSERT_NOT_NULL(keyboard);
 
   // -----------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -112,7 +223,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                       "/images/CrateTexture.png").c_str() );
+                       "/images/crateTexture.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -135,7 +246,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // ObjLoader can load (basic) .obj files
 
   path = core_io::Path( (core_str::String(GetAssetsPath()) +
-                         "/models/Crate.obj").c_str() );
+                         "/models/crate.obj").c_str() );
 
   core_io::FileIO_ReadA objFile(path);
   if (objFile.Open() != ErrorSuccess)
@@ -157,9 +268,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::mesh_sptr meshComp(new gfx_cs::Mesh());
   for (gfx_med::ObjLoader::vert_cont_type::iterator
     itr = vertices.begin(), itrEnd = vertices.end(); itr != itrEnd; ++itr)
-  {
-    meshComp->AddVertex(*itr);
-  }
+  { meshComp->AddVertex(*itr); }
 
   core_cs::Entity* meshEnt = entityMgr->CreateEntity();
   entityMgr->InsertComponent(meshEnt, meshComp.get());
@@ -183,9 +292,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::Entity*
     m_cameraEnt = prefab_gfx::CreateCamera(*entityMgr.get(), cpoolMgr, fr,
-                                          math_t::Vec3f(0, 1.0f, 3.0f));
+                                          math_t::Vec3f(0, 0.0f, 5.0f));
 
   meshSys.AttachCamera(m_cameraEnt);
+
+  KeyboardCallback keyboardCallback(m_cameraEnt);
+  keyboard->Register(&keyboardCallback);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
@@ -195,11 +307,17 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // Main loop
+
+  // Very important to enable depth testing
+  glEnable(GL_DEPTH_TEST);
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    inputMgr->Update();
 
     // Finally, process the fan
     meshSys.ProcessActiveEntities();
