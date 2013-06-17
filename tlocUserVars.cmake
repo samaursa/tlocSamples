@@ -1,5 +1,6 @@
 set(USER_EXECUTABLE_PROJECTS "tlocSimpleInput;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocInputCallbacks;")
+list(APPEND USER_EXECUTABLE_PROJECTS "tlocObjLoader;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocSimplePhysics;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocSimpleQuad;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocSimpleSprite;")
