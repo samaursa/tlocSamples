@@ -1,5 +1,5 @@
 #include <tlocCore/tloc_core.h>
-#include <tlocCore/tloc_core.inl>
+#include <tlocCore/tloc_core.inl.h>
 
 #include <tlocGraphics/tloc_graphics.h>
 #include <tlocMath/tloc_math.h>
@@ -29,29 +29,21 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
-math_cs::Transform& GetEntityTransformComponent(const core_cs::Entity* a_ent)
-{
-  core_cs::ComponentMapper<math_cs::Transform> transformComponents =
-    a_ent->GetComponents(math_cs::components::transform);
-
-  return transformComponents[0];
-}
-
 void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
 {
-  math_cs::Transform& transform = GetEntityTransformComponent(a_ent);
+  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
 
-  math_cs::Transform::position_type position(transform.GetPosition());
+  math_cs::Transform::position_type position(transform->GetPosition());
   position[0] += a_deltaPos[0];
   position[1] += a_deltaPos[1];
 
-  transform.SetPosition(position);
+  transform->SetPosition(position);
 }
 
 void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_position)
 {
-  math_cs::Transform& transform = GetEntityTransformComponent(a_ent);
-  transform.SetPosition(a_position.ConvertTo<math_t::Vec3f>());
+  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
+  transform->SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 
 int TLOC_MAIN(int , char *[])
@@ -69,7 +61,7 @@ int TLOC_MAIN(int , char *[])
   //------------------------------------------------------------------------
   // Initialize renderer
   gfx_rend::Renderer renderer;
-  if (renderer.Initialize() != ErrorSuccess())
+  if (renderer.Initialize() != ErrorSuccess)
   { printf("\nRenderer failed to initialize"); return 1; }
 
   //------------------------------------------------------------------------
@@ -94,6 +86,7 @@ int TLOC_MAIN(int , char *[])
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -126,10 +119,10 @@ int TLOC_MAIN(int , char *[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA file(shaderPath.c_str());
 
-    if (file.Open() != ErrorSuccess())
+    if (file.Open() != ErrorSuccess)
     { printf("\nUnable to open the vertex shader"); return 1;}
 
     core_str::String code;
@@ -143,10 +136,10 @@ int TLOC_MAIN(int , char *[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA file(shaderPath.c_str());
 
-    if (file.Open() != ErrorSuccess())
+    if (file.Open() != ErrorSuccess)
     { printf("\nUnable to open the fragment shader"); return 1;}
 
     core_str::String code;
@@ -158,7 +151,8 @@ int TLOC_MAIN(int , char *[])
   // The prefab library has some prefabricated entities for us
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* ent = prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect);
+  core_cs::Entity* ent =
+    prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
   entityMgr->InsertComponent(ent, &mat);
 
   //------------------------------------------------------------------------

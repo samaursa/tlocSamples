@@ -1,21 +1,21 @@
 #include <tlocCore/tloc_core.h>
-#include <tlocCore/tloc_core.inl>
+#include <tlocCore/tloc_core.inl.h>
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
 #include <tlocGraphics/tloc_graphics.h>
-#include <tlocGraphics/tloc_graphics.inl>
+#include <tlocGraphics/tloc_graphics.inl.h>
 
 #include <tlocMath/tloc_math.h>
-#include <tlocMath/tloc_math.inl>
+#include <tlocMath/tloc_math.inl.h>
 
 #include <tlocPhysics/tloc_physics.h>
-#include <tlocPhysics/tloc_physics.inl>
+#include <tlocPhysics/tloc_physics.inl.h>
 
 #include <tlocInput/tloc_input.h>
-#include <tlocInput/tloc_input.inl>
+#include <tlocInput/tloc_input.inl.h>
 
 #include <tlocPrefab/tloc_prefab.h>
-#include <tlocPrefab/tloc_prefab.inl>
+#include <tlocPrefab/tloc_prefab.inl.h>
 
 #include <samplesAssetsPath.h>
 
@@ -35,6 +35,7 @@ enum
 {
   key_pause = 0,
   key_exit,
+  key_cameraPersp,
   key_count
 };
 
@@ -63,7 +64,8 @@ struct glProgram
 
   void Initialize()
   {
-    m_win.Create(graphics_mode::Properties(1536, 1048),
+    // trying to match iPad retina display ratio (not resolution)
+    m_win.Create(graphics_mode::Properties(1024, 768),
                  gfx_win::WindowSettings("Atom & Eve"));
 
     ParamList<core_t::Any> params;
@@ -73,7 +75,7 @@ struct glProgram
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
 
-    if (m_renderer.Initialize() != ErrorSuccess())
+    if (m_renderer.Initialize() != ErrorSuccess)
     {
       TLOC_ASSERT(false, "Renderer failed to initialize");
       exit(0);
@@ -84,7 +86,7 @@ struct glProgram
                               phys_mgr_type::velocity_iterations(6),
                               phys_mgr_type::position_iterations(2));
 
-    TLOC_ASSERT(result == ErrorSuccess(), "Physics failed to initialize!");
+    TLOC_ASSERT(result == ErrorSuccess, "Physics failed to initialize!");
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -183,9 +185,6 @@ struct glProgram
     using core::component_system::ComponentPoolManager;
     using core_str::String;
 
-    //gfx_gl::ShaderProgram sp;
-    //LoadShaders(sp);
-
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
     core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
@@ -205,10 +204,10 @@ struct glProgram
 #elif defined (TLOC_OS_IPHONE)
       core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetPath() + shaderPath;
+      shaderPath = GetAssetsPath() + shaderPath;
       io::FileIO_ReadA file(shaderPath.c_str());
 
-      if(file.Open() != ErrorSuccess())
+      if(file.Open() != ErrorSuccess)
       {
         printf("\n%s", shaderPath.c_str());
         printf("\nUnable to open vertex shader");
@@ -227,7 +226,7 @@ struct glProgram
 #elif defined (TLOC_OS_IPHONE)
       core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetPath() + shaderPath;
+      shaderPath = GetAssetsPath() + shaderPath;
       io::FileIO_ReadA file(shaderPath.c_str());
       file.Open();
 
@@ -241,51 +240,51 @@ struct glProgram
     // Add the shader operators
     {
       gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetPath());
+      core_str::String filePath(GetAssetsPath());
       filePath += "/images/crate.png";
       core_io::Path path(filePath.c_str());
-      if (png.Load(path) != ErrorSuccess())
+      if (png.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
 
-      gl::UniformPtr  u_to(new gl::Uniform());
+      gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);
 
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
-      mat.SetMasterShaderOperator(so);
+      mat.AddShaderOperator(so);
     }
 
     {
       gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetPath());
+      core_str::String filePath(GetAssetsPath());
       filePath += "/images/henry.png";
       core_io::Path path(filePath.c_str());
 
-      if (png.Load(path) != ErrorSuccess())
+      if (png.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
 
-      gl::UniformPtr  u_to(new gl::Uniform());
+      gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);
 
-      gl::ShaderOperatorPtr so = gl::ShaderOperatorPtr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
       so->AddUniform(u_to);
 
-      mat2.SetMasterShaderOperator(so);
+      mat2.AddShaderOperator(so);
     }
 
     PROFILE_START();
-    const tl_int repeat = 300;
+    const tl_int repeat = 150;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-5.0f, 5.0f);
-      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 180.0f);
+      tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 480.0f);
 
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
       {
@@ -307,7 +306,7 @@ struct glProgram
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
         ent_type* fanEnt =
-          prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 24);
+          prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 8);
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
@@ -327,7 +326,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       ent_type* fanEnt =
-        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 30);
+        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
@@ -340,26 +339,24 @@ struct glProgram
       m_entityMgr->InsertComponent(fanEnt, &mat2);
     }
 
-    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr);
+    tl_float winWidth = (tl_float)m_win.GetWidth();
+    tl_float winHeight = (tl_float)m_win.GetHeight();
 
-    core_cs::ComponentMapper<math_cs::Transform> tform =
-      m_cameraEnt->GetComponents(math_cs::components::transform);
-    tform[0].SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+    // For some reason, if we remove the brackets, C++ assumes the following is
+    // a function declaration. Generally, something like math_t::Rectf proj();
+    // might be considered a function declaration but not when we give
+    // arguments
+    //
+    // TODO: Look into this problem and find a way to remove the extra
+    // brackets.
+    math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
+                         (math_t::Rectf::height(winHeight / 10.0f)) );
 
-    core_cs::ComponentMapper<gfx_cs::Projection> proj =
-    m_cameraEnt->GetComponents(gfx_cs::components::projection);
+    m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
+    m_ortho.BuildFrustum();
 
-    gfx_t::AspectRatio ar(gfx_t::AspectRatio::width(m_win.GetWidth()),
-                          gfx_t::AspectRatio::height(m_win.GetHeight()) );
-    gfx_t::FOV fov(math_t::Degree(60.0f), ar, gfx_t::p_FOV::vertical());
-
-    gfx_vp::Frustum::Params params(fov);
-    params.SetFar(100.0f).SetNear(0.1f);
-
-    gfx_vp::Frustum fr(params);
-    fr.BuildFrustum();
-
-    proj[0].SetFrustum(fr);
+    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
+                                            math_t::Vec3f(0, 0, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
@@ -424,7 +421,6 @@ struct glProgram
       // Window may have closed by this time
       if (m_win.IsValid() && m_renderFrameTime.ElapsedMilliSeconds() > 16)
       {
-        //tl_int renderFrameTime = m_renderFrameTime.ElapsedMilliSeconds();
         m_renderFrameTime.Reset();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -446,7 +442,7 @@ struct glProgram
 
         char buff[20];
         sprintf(buff, "%f", fps);
-//        m_win.SetTitle(buff);
+        m_win.SetTitle(buff);
       }
 
       m_frameTimeBuff.pop_back();
@@ -467,6 +463,35 @@ struct glProgram
     if (a_event.m_keyCode == input::hid::KeyboardEvent::q)
     {
       m_keyPresses.Toggle(key_exit);
+    }
+    if (a_event.m_keyCode == input::hid::KeyboardEvent::c)
+    {
+      m_keyPresses.Toggle(key_cameraPersp);
+
+      if (m_keyPresses.IsMarked(key_cameraPersp) == false)
+      {
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
+          SetPosition(math_t::Vec3f32(0, 0, 1.0f));
+        m_cameraEnt->GetComponent<math_cs::Projection>()->
+          SetFrustum(m_ortho);
+      }
+      else
+      {
+        m_cameraEnt->GetComponent<math_cs::Transform>()->
+          SetPosition(math_t::Vec3f32(0, 0, 30.0f));
+
+        math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
+                               math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
+        math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
+
+        math_proj::FrustumPersp::Params params(fov);
+        params.SetFar(100.0f).SetNear(1.0f);
+
+        math_proj::FrustumPersp fr(params);
+        fr.BuildFrustum();
+
+        m_cameraEnt->GetComponent<math_cs::Projection>()->SetFrustum(fr);
+      }
     }
 
     return false;
@@ -498,6 +523,8 @@ struct glProgram
   core_time::Timer32      m_renderFrameTime;
   core_time::Timer32      m_physFrameTime;
   const ent_type*         m_cameraEnt;
+
+  math_proj::FrustumOrtho m_ortho;
 
   tl_int              m_accumulator;
 

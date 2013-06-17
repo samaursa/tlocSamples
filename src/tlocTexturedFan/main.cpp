@@ -40,7 +40,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize renderer
   gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess())
+  if (renderer.Initialize() != ErrorSuccess)
   { printf("\nRenderer failed to initialize"); return 1; }
 
   //------------------------------------------------------------------------
@@ -74,10 +74,10 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the vertex shader"); return 1;}
 
     core_str::String code;
@@ -91,10 +91,10 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the fragment shader"); return 1;}
 
     core_str::String code;
@@ -117,26 +117,26 @@ int TLOC_MAIN(int argc, char *argv[])
 
 
   gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetPath()) +
+  core_io::Path path( (core_str::String(GetAssetsPath()) +
                       "/images/uv_grid_col.png").c_str() );
 
-  if (png.Load(path) != ErrorSuccess())
+  if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
   to->Initialize(png.GetImage());
 
-  gfx_gl::UniformPtr  u_to(new gfx_gl::Uniform());
+  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
   u_to->SetName("s_texture").SetValueAs(to);
 
-  gfx_gl::ShaderOperatorPtr so =
-    gfx_gl::ShaderOperatorPtr(new gfx_gl::ShaderOperator());
+  gfx_gl::shader_operator_sptr so =
+    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
   so->AddUniform(u_to);
 
   // Finally, set this shader operator as the master operator (aka user operator)
   // in our material.
-  mat.SetMasterShaderOperator(so);
+  mat.AddShaderOperator(so);
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us

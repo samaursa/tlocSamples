@@ -39,7 +39,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize renderer
   gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess())
+  if (renderer.Initialize() != ErrorSuccess)
   { printf("\nRenderer failed to initialize"); return 1; }
 
   //------------------------------------------------------------------------
@@ -72,10 +72,10 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the vertex shader"); return 1;}
 
     core_str::String code;
@@ -88,13 +88,13 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetPath() + shaderPath;
+    shaderPath = GetAssetsPath() + shaderPath;
     core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
 
-    if (shaderFile.Open() != ErrorSuccess())
+    if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the fragment shader"); return 1;}
 
-    TLOC_ASSERT(shaderFile.Open() == ErrorSuccess(),
+    TLOC_ASSERT(shaderFile.Open() == ErrorSuccess,
       "Fail");
 
     core_str::String code;
@@ -105,10 +105,21 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q = prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect);
-  entityMgr->InsertComponent(q, &mat);
+  {
+    math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
+                         math_t::Rectf32::height(0.5f));
+    core_cs::Entity* q =
+      prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
+    entityMgr->InsertComponent(q, &mat);
+  }
+
+  {
+    math_t::Rectf32 rect(math_t::Rectf32::width(0.7f),
+                         math_t::Rectf32::height(0.7f));
+    core_cs::Entity* q =
+      prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
+    entityMgr->InsertComponent(q, &mat);
+  }
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
