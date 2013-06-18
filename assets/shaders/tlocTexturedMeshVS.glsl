@@ -18,9 +18,9 @@ void main()
 
   // need this matrix for later calculations
   mat3 mvpRot;
-  mvpRot[0].xyz = u_mvp[0];
-  mvpRot[1].xyz = u_mvp[1];
-  mvpRot[2].xyz = u_mvp[2];
+  mvpRot[0] = u_mvp[0].xyz;
+  mvpRot[1] = u_mvp[1].xyz;
+  mvpRot[2] = u_mvp[2].xyz;
 
   // We need the light to be stationary. We can achieve
   // this by either not transforming the normals or 
