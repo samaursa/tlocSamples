@@ -183,7 +183,7 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPath("/shaders/tlocTexturedMeshVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+    core_str::String shaderPath("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
 #endif
 
     shaderPath = GetAssetsPath() + shaderPath;
@@ -200,7 +200,7 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPath("/shaders/tlocTexturedMeshFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+    core_str::String shaderPath("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
 #endif
 
     shaderPath = GetAssetsPath() + shaderPath;
