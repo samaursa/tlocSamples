@@ -47,49 +47,38 @@ public:
       m_camera->GetComponent<math_cs::Transform>();
 
     math_t::Mat3f32 mat = camTransform->GetOrientation();
+    math_t::Vec3f32 newPos;
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
       camLeft.Norm();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Norm();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
+      newPos = camTransform->GetPosition() + camLeft * 0.5f;
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
       camLeft.Neg();
       camLeft.Norm();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Norm();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
+      newPos = camTransform->GetPosition() + camLeft * 0.5f;
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::up)
     {
-      math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
+      math_t::Vec3f32 camUp(0, 1, 0);
       camUp.Norm();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Norm();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
+      newPos = camTransform->GetPosition() + camUp;
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::down)
     {
-      math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
+      math_t::Vec3f32 camUp(0, 1, 0);
       camUp.Neg();
       camUp.Norm();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Norm();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
+      newPos = camTransform->GetPosition() + camUp;
     }
+
+    newPos.Norm();
+    newPos = newPos * camTransform->GetPosition().Length();
+    camTransform->SetPosition(newPos);
 
     math_t::Vec3f32 camDir = camTransform->GetPosition();
     camDir.Norm();
@@ -265,20 +254,15 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::ObjLoader::vert_cont_type vertices;
   objLoader.GetUnpacked(vertices, 0);
 
-  gfx_cs::mesh_sptr meshComp(new gfx_cs::Mesh());
-  for (gfx_med::ObjLoader::vert_cont_type::iterator
-    itr = vertices.begin(), itrEnd = vertices.end(); itr != itrEnd; ++itr)
-  { meshComp->AddVertex(*itr); }
+  // -----------------------------------------------------------------------
+  // Create the mesh and add the material
 
-  core_cs::Entity* meshEnt = entityMgr->CreateEntity();
-  entityMgr->InsertComponent(meshEnt, meshComp.get());
-
-  math_cs::transform_sptr transPtr(new math_cs::Transform());
-  entityMgr->InsertComponent(meshEnt, transPtr.get());
-  entityMgr->InsertComponent(meshEnt, &mat);
+  core_cs::Entity* ent =
+    prefab_gfx::CreateMesh(*entityMgr.get(), cpoolMgr, vertices);
+  entityMgr->InsertComponent(ent, &mat);
 
   // -----------------------------------------------------------------------
-  // The prefab library has some prefabricated entities for us
+  // Create a camera from the prefab library
 
   math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)win.GetWidth()),
     math_t::AspectRatio::height( (tl_float)win.GetHeight()) );
