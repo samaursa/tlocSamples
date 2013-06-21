@@ -165,7 +165,7 @@ int TLOC_MAIN(int argc, char *argv[])
   ssp.Init(sspContents, gfx_t::Dimension2i(1820, 1260));
 
   prefab_gfx::AddSpriteAnimation(q, *entityMgr.get(), cpoolMgr,
-                                 ssp.begin(), ssp.end(), true, 60);
+                                 ssp.begin(), ssp.end(), true, 24);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

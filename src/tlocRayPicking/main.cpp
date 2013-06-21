@@ -198,7 +198,7 @@ struct glProgram
       ++intersectionCounter;
       if (intersectionCounter == 1)
       {
-        auto mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::Material* mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != m_crateMat.get())
         { *mat = *m_crateMat;}
@@ -213,7 +213,7 @@ struct glProgram
 
       if (nonIntersectionCounter == 1)
       {
-        auto mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::Material* mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != m_henryMat.get())
         { *mat = *m_henryMat; }
@@ -335,14 +335,15 @@ struct glProgram
       gfx_gl::uniform_sptr uniform(new gl::Uniform());
       uniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
 
-      auto so = gl::shader_operator_sptr(new gl::ShaderOperator());
+      gl::shader_operator_sptr so(new gl::ShaderOperator());
       so->AddUniform(uniform);
 
       m_crateMat->AddShaderOperator(so);
     }
 
     // Create internal materials
-    auto matPool = poolMgr.CreateNewPool<gfx_cs::material_sptr>();
+    gfx_cs::material_sptr_pool_sptr matPool =
+      poolMgr.CreateNewPool<gfx_cs::material_sptr>();
 
     {
       // Create a fan ent
@@ -356,7 +357,7 @@ struct glProgram
       m_fanEnt->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      auto matPoolItr = matPool->GetNext();
+      gfx_cs::material_sptr_pool::iterator matPoolItr = matPool->GetNext();
       gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_henryMat) );
       matPoolItr->SetValue(newMat);
 
@@ -370,7 +371,7 @@ struct glProgram
       m_mouseFan =
         prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
 
-      auto matPoolItr = matPool->GetNext();
+      gfx_cs::material_sptr_pool::iterator matPoolItr = matPool->GetNext();
       gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_crateMat) );
       matPoolItr->SetValue(newMat);
 
