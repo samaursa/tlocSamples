@@ -51,48 +51,48 @@ public:
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Norm();
+      camLeft.Normalize();
 
       math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Norm();
+      newPos.Normalize();
       newPos = newPos * camTransform->GetPosition().Length();
       camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Neg();
-      camLeft.Norm();
+      camLeft.Negate();
+      camLeft.Normalize();
 
       math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Norm();
+      newPos.Normalize();
       newPos = newPos * camTransform->GetPosition().Length();
       camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::up)
     {
       math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
-      camUp.Norm();
+      camUp.Normalize();
 
       math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Norm();
+      newPos.Normalize();
       newPos = newPos * camTransform->GetPosition().Length();
       camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::down)
     {
       math_t::Vec3f32 camUp; mat.GetCol(1, camUp);
-      camUp.Neg();
-      camUp.Norm();
+      camUp.Negate();
+      camUp.Normalize();
 
       math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Norm();
+      newPos.Normalize();
       newPos = newPos * camTransform->GetPosition().Length();
       camTransform->SetPosition(newPos);
     }
 
     math_t::Vec3f32 camDir = camTransform->GetPosition();
-    camDir.Norm();
+    camDir.Normalize();
 
     math_t::Vec3f32 camUp(0, 1, 0);
     math_t::Vec3f32 camLeft;
