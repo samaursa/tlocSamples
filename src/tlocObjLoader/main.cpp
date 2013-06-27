@@ -175,6 +175,10 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
 
   // -----------------------------------------------------------------------
+  // The camera's view transformations are calculated by the camera system
+  gfx_cs::CameraSystem      camSys(eventMgr, entityMgr);
+
+  // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
@@ -288,7 +292,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::Entity*
     m_cameraEnt = prefab_gfx::CreateCamera(*entityMgr.get(), cpoolMgr, fr,
-                                          math_t::Vec3f(0, 0.0f, 5.0f));
+                                          math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
   meshSys.AttachCamera(m_cameraEnt);
 
@@ -300,6 +304,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   meshSys.Initialize();
   matSys.Initialize();
+  camSys.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -315,7 +320,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    // Finally, process the fan
+    camSys.ProcessActiveEntities();
+    // Finally, process (render) the mesh
     meshSys.ProcessActiveEntities();
 
     win.SwapBuffers();

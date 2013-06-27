@@ -177,6 +177,7 @@ struct glProgram
     using math::types::Rectf32;
     using math::types::Circlef32;
 
+    using gfx_cs::CameraSystem;
     using gfx_cs::QuadRenderSystem;
     using gfx_cs::FanRenderSystem;
     using gfx_cs::MaterialSystem;
@@ -191,6 +192,7 @@ struct glProgram
 
     QuadRenderSystem quadSys(m_eventMgr, m_entityMgr);
     FanRenderSystem fanSys(m_eventMgr, m_entityMgr);
+    CameraSystem    camSys(m_eventMgr, m_entityMgr);
     MaterialSystem matSys(m_eventMgr, m_entityMgr);
     RigidBodySystem physicsSys(m_eventMgr, m_entityMgr,
                                &m_physicsMgr.GetWorld());
@@ -361,6 +363,8 @@ struct glProgram
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
 
+    camSys.Initialize();
+
     PROFILE_START();
     matSys.Initialize();
     PROFILE_END("Material System Init");
@@ -424,6 +428,7 @@ struct glProgram
         m_renderFrameTime.Reset();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        camSys.ProcessActiveEntities();
         physicsSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
         quadSys.ProcessActiveEntities();
@@ -472,7 +477,7 @@ struct glProgram
       {
         m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, 1.0f));
-        m_cameraEnt->GetComponent<math_cs::Projection>()->
+        m_cameraEnt->GetComponent<gfx_cs::Camera>()->
           SetFrustum(m_ortho);
       }
       else
@@ -490,7 +495,7 @@ struct glProgram
         math_proj::FrustumPersp fr(params);
         fr.BuildFrustum();
 
-        m_cameraEnt->GetComponent<math_cs::Projection>()->SetFrustum(fr);
+        m_cameraEnt->GetComponent<gfx_cs::Camera>()->SetFrustum(fr);
       }
     }
 

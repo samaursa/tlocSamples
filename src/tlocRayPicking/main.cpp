@@ -274,6 +274,7 @@ struct glProgram
     using math::types::Rectf32;
     using math::types::Circlef32;
 
+    using gfx_cs::CameraSystem;
     using gfx_cs::QuadRenderSystem;
     using gfx_cs::FanRenderSystem;
     using gfx_cs::MaterialSystem;
@@ -284,9 +285,10 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    QuadRenderSystem quadSys(m_eventMgr, m_entityMgr);
-    FanRenderSystem fanSys(m_eventMgr, m_entityMgr);
-    MaterialSystem matSys(m_eventMgr, m_entityMgr);
+    QuadRenderSystem  quadSys(m_eventMgr, m_entityMgr);
+    FanRenderSystem   fanSys(m_eventMgr, m_entityMgr);
+    CameraSystem      camSys(m_eventMgr, m_entityMgr);
+    MaterialSystem    matSys(m_eventMgr, m_entityMgr);
 
     ComponentPoolManager poolMgr;
 
@@ -407,6 +409,7 @@ struct glProgram
     matSys.Initialize();
     quadSys.Initialize();
     fanSys.Initialize();
+    camSys.Initialize();
 
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false)
     {
@@ -437,6 +440,7 @@ struct glProgram
         m_renderFrameTime.Reset();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
         quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
