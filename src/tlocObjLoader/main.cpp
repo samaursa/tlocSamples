@@ -52,36 +52,48 @@ public:
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Norm();
-      newPos = camTransform->GetPosition() + camLeft * 0.5f;
+      camLeft.Normalize();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
+      newPos.Normalize();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
       math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Neg();
-      camLeft.Norm();
-      newPos = camTransform->GetPosition() + camLeft * 0.5f;
+      camLeft.Negate();
+      camLeft.Normalize();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
+      newPos.Normalize();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::up)
     {
       math_t::Vec3f32 camUp(0, 1, 0);
-      camUp.Norm();
-      newPos = camTransform->GetPosition() + camUp;
+      camUp.Normalize();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
+      newPos.Normalize();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::down)
     {
       math_t::Vec3f32 camUp(0, 1, 0);
-      camUp.Neg();
-      camUp.Norm();
-      newPos = camTransform->GetPosition() + camUp;
+      camUp.Negate();
+      camUp.Normalize();
+
+      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
+      newPos.Normalize();
+      newPos = newPos * camTransform->GetPosition().Length();
+      camTransform->SetPosition(newPos);
     }
 
-    newPos.Norm();
-    newPos = newPos * camTransform->GetPosition().Length();
-    camTransform->SetPosition(newPos);
-
     math_t::Vec3f32 camDir = camTransform->GetPosition();
-    camDir.Norm();
+    camDir.Normalize();
 
     math_t::Vec3f32 camUp(0, 1, 0);
     math_t::Vec3f32 camLeft;
