@@ -74,12 +74,6 @@ public:
     {
       m_flags.Unmark(k_rotating);
     }
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::middle) == false)
-    {
-    }
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::right) == false)
-    {
-    }
 
     return false;
   }
@@ -307,10 +301,9 @@ int TLOC_MAIN(int argc, char *argv[])
     m_cameraEnt = prefab_gfx::CreateCamera(*entityMgr.get(), cpoolMgr, fr,
                                           math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  meshSys.AttachCamera(m_cameraEnt);
+  prefab_gfx::AddArcBall(m_cameraEnt, *entityMgr.get(), cpoolMgr);
 
-  gfx_cs::ArcBall ab;
-  entityMgr->InsertComponent(m_cameraEnt, &ab);
+  meshSys.AttachCamera(m_cameraEnt);
 
   MayaCam mayaCam(m_cameraEnt);
   keyboard->Register(&mayaCam);
