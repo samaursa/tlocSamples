@@ -30,12 +30,76 @@ TLOC_DEF_TYPE(WindowCallback);
 //------------------------------------------------------------------------
 // KeyboardCallback
 
-class KeyboardCallback
+class MayaCam
 {
+  enum
+  {
+    k_altPressed = 0,
+    k_rotating,
+    k_count
+  };
+
 public:
-  KeyboardCallback(core_cs::Entity* a_camera)
+  MayaCam(core_cs::Entity* a_camera)
     : m_camera(a_camera)
-  { }
+    , m_flags(k_count)
+  {
+    TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
+      "Camera does not have ArcBall component");
+  }
+
+  bool OnButtonPress(const tl_size ,
+                     const input_hid::MouseEvent& a_event,
+                     const input_hid::MouseEvent::button_code_type)
+  {
+    if (a_event.m_buttonCode & input_hid::MouseEvent::left)
+    {
+      if (m_flags.IsMarked(k_altPressed))
+      { m_flags.Mark(k_rotating); }
+      else
+      { m_flags.Unmark(k_rotating); }
+    }
+
+    return false;
+  }
+
+  //------------------------------------------------------------------------
+  // Called when a button is released. Currently will printf tloc's representation
+  // of all buttons.
+  bool OnButtonRelease(const tl_size ,
+                       const input_hid::MouseEvent& a_event,
+                       const input_hid::MouseEvent::button_code_type)
+  {
+    if ( (a_event.m_buttonCode & input_hid::MouseEvent::left) == false)
+    {
+      m_flags.Unmark(k_rotating);
+    }
+    if ( (a_event.m_buttonCode & input_hid::MouseEvent::middle) == false)
+    {
+    }
+    if ( (a_event.m_buttonCode & input_hid::MouseEvent::right) == false)
+    {
+    }
+
+    return false;
+  }
+
+  //------------------------------------------------------------------------
+  // Called when mouse is moved. Currently will printf mouse's relative and
+  // absolute position.
+  bool OnMouseMove(const tl_size ,
+                   const input_hid::MouseEvent& a_event)
+  {
+    if (m_flags.IsMarked(k_rotating))
+    {
+      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+
+      arcBall->MoveVertical(core_utils::CastNumber<f32>(a_event.m_Y.m_rel()) * 0.01f );
+      arcBall->MoveHorizontal(core_utils::CastNumber<f32>(a_event.m_X.m_rel()) * 0.01f );
+    }
+
+    return false;
+  }
 
   //------------------------------------------------------------------------
   // Called when a key is pressed. Currently will printf tloc's representation
@@ -43,69 +107,10 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    math_cs::Transform* camTransform =
-      m_camera->GetComponent<math_cs::Transform>();
-
-    math_t::Mat3f32 mat = camTransform->GetOrientation();
-    math_t::Vec3f32 newPos;
-
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
-      math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Normalize();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Normalize();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
+      m_flags.Mark(k_altPressed);
     }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
-    {
-      math_t::Vec3f32 camLeft; mat.GetCol(0, camLeft);
-      camLeft.Negate();
-      camLeft.Normalize();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camLeft;
-      newPos.Normalize();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::up)
-    {
-      math_t::Vec3f32 camUp(0, 1, 0);
-      camUp.Normalize();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Normalize();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::down)
-    {
-      math_t::Vec3f32 camUp(0, 1, 0);
-      camUp.Negate();
-      camUp.Normalize();
-
-      math_t::Vec3f32 newPos = camTransform->GetPosition() + camUp;
-      newPos.Normalize();
-      newPos = newPos * camTransform->GetPosition().Length();
-      camTransform->SetPosition(newPos);
-    }
-
-    math_t::Vec3f32 camDir = camTransform->GetPosition();
-    camDir.Normalize();
-
-    math_t::Vec3f32 camUp(0, 1, 0);
-    math_t::Vec3f32 camLeft;
-    camLeft.Cross(camUp, camDir);
-    camUp.Cross(camDir, camLeft);
-
-    mat.SetCol(0, camLeft);
-    mat.SetCol(1, camUp);
-    mat.SetCol(2, camDir);
-
-    camTransform->SetOrientation(mat);
-
     return false;
   }
 
@@ -113,14 +118,19 @@ public:
   // Called when a key is released. Currently will printf tloc's representation
   // of the key.
   bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& )
+                    const input_hid::KeyboardEvent& a_event)
   {
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
+    {
+      m_flags.Unmark(k_altPressed);
+    }
     return false;
   }
 
-  core_cs::Entity* m_camera;
+  core_cs::Entity*        m_camera;
+  core_utils::Checkpoints m_flags;
 };
-TLOC_DEF_TYPE(KeyboardCallback);
+TLOC_DEF_TYPE(MayaCam);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
@@ -151,9 +161,11 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
   input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::MouseB* mouse = inputMgr->CreateHID<input_hid::MouseB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
+  TLOC_ASSERT_NOT_NULL(mouse);
 
   // -----------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -177,6 +189,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // The camera's view transformations are calculated by the camera system
   gfx_cs::CameraSystem      camSys(eventMgr, entityMgr);
+  gfx_cs::ArcBallSystem     arcBallSys(eventMgr, entityMgr);
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
@@ -296,8 +309,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
   meshSys.AttachCamera(m_cameraEnt);
 
-  KeyboardCallback keyboardCallback(m_cameraEnt);
-  keyboard->Register(&keyboardCallback);
+  gfx_cs::ArcBall ab;
+  entityMgr->InsertComponent(m_cameraEnt, &ab);
+
+  MayaCam mayaCam(m_cameraEnt);
+  keyboard->Register(&mayaCam);
+  mouse->Register(&mayaCam);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
@@ -305,9 +322,12 @@ int TLOC_MAIN(int argc, char *argv[])
   meshSys.Initialize();
   matSys.Initialize();
   camSys.Initialize();
+  arcBallSys.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
+
+  printf("\nPress ALT and Left mouse button to rotate camera");
 
   // Very important to enable depth testing
   glEnable(GL_DEPTH_TEST);
@@ -320,6 +340,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    arcBallSys.ProcessActiveEntities();
     camSys.ProcessActiveEntities();
     // Finally, process (render) the mesh
     meshSys.ProcessActiveEntities();
