@@ -50,11 +50,13 @@ public:
       "Camera does not have ArcBall component");
   }
 
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent& a_event,
-                     const input_hid::MouseEvent::button_code_type)
+                     const input_hid::MouseEvent&,
+                     const input_hid::MouseEvent::button_code_type a_button)
   {
-    if (a_event.m_buttonCode & input_hid::MouseEvent::left)
+    if (a_button == input_hid::MouseEvent::left)
     {
       if (m_flags.IsMarked(k_altPressed))
       { m_flags.Mark(k_rotating); }
@@ -62,7 +64,7 @@ public:
       { m_flags.Unmark(k_rotating); }
     }
 
-    if (a_event.m_buttonCode & input_hid::MouseEvent::middle)
+    if (a_button == input_hid::MouseEvent::middle)
     {
       if (m_flags.IsMarked(k_altPressed))
       { m_flags.Mark(k_panning); }
@@ -70,7 +72,7 @@ public:
       { m_flags.Unmark(k_panning); }
     }
 
-    if (a_event.m_buttonCode & input_hid::MouseEvent::right)
+    if (a_button == input_hid::MouseEvent::right)
     {
       if (m_flags.IsMarked(k_altPressed))
       { m_flags.Mark(k_dolly); }
@@ -81,24 +83,23 @@ public:
     return false;
   }
 
-  //------------------------------------------------------------------------
-  // Called when a button is released. Currently will printf tloc's representation
-  // of all buttons.
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent& a_event,
-                       const input_hid::MouseEvent::button_code_type)
+                       const input_hid::MouseEvent&,
+                       const input_hid::MouseEvent::button_code_type a_button)
   {
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::left) == false)
+    if (a_button == input_hid::MouseEvent::left)
     {
       m_flags.Unmark(k_rotating);
     }
 
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::middle) == false)
+    if (a_button == input_hid::MouseEvent::middle)
     {
       m_flags.Unmark(k_panning);
     }
 
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::middle) == false)
+    if (a_button == input_hid::MouseEvent::right)
     {
       m_flags.Unmark(k_dolly);
     }
@@ -106,9 +107,8 @@ public:
     return false;
   }
 
-  //------------------------------------------------------------------------
-  // Called when mouse is moved. Currently will printf mouse's relative and
-  // absolute position.
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnMouseMove(const tl_size ,
                    const input_hid::MouseEvent& a_event)
   {
@@ -150,9 +150,8 @@ public:
     return false;
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is pressed. Currently will printf tloc's representation
-  // of the key.
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
