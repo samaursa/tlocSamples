@@ -292,7 +292,8 @@ struct glProgram
       {
         // Create a quad ent
         Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
-        ent_type* quadEnt = prefab_gfx::CreateQuad(*m_entityMgr, poolMgr, rect);
+        ent_type* quadEnt =
+          prefab_gfx::Quad(m_entityMgr.get(), &poolMgr).Dimensions(rect).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));

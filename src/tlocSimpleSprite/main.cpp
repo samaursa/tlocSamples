@@ -221,8 +221,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q = prefab_gfx::CreateQuad(*entityMgr.get(), cpoolMgr, rect);
-  entityMgr->InsertComponent(q, &mat);
+  core_cs::Entity* spriteEnt =
+    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
+  entityMgr->InsertComponent(spriteEnt, &mat);
 
   //------------------------------------------------------------------------
   // also has a sprite sheet loader
@@ -240,10 +241,10 @@ int TLOC_MAIN(int argc, char *argv[])
   shaderFile.GetContents(sspContents);
   ssp.Init(sspContents, gfx_t::Dimension2i(1820, 1260));
 
-  prefab_gfx::AddSpriteAnimation(q, *entityMgr.get(), cpoolMgr,
-                                 ssp.begin(), ssp.end(), true, 24);
+  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
+    Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
 
-  KeyboardCallback kb(q);
+  KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);
 
   //------------------------------------------------------------------------

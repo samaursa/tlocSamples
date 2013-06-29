@@ -106,8 +106,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
     math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q =
-    prefab_gfx::CreateQuad(*entityMgr.get(), cpoolMgr, rect, false);
+  core_cs::Entity* q = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).
+    AddTexCoords(false).Dimensions(rect).Create();
   entityMgr->InsertComponent(q, &mat);
 
   //------------------------------------------------------------------------
