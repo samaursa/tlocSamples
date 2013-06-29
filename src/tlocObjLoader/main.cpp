@@ -351,11 +351,11 @@ int TLOC_MAIN(int argc, char *argv[])
   math_proj::FrustumPersp fr(params);
   fr.BuildFrustum();
 
-  core_cs::Entity*
-    m_cameraEnt = prefab_gfx::CreateCamera(*entityMgr.get(), cpoolMgr, fr,
-                                          math_t::Vec3f(0.0f, 0.0f, 5.0f));
+  core_cs::Entity* m_cameraEnt =
+    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+    Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::AddArcBall(m_cameraEnt, *entityMgr.get(), cpoolMgr);
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEnt);
 
   meshSys.AttachCamera(m_cameraEnt);
 

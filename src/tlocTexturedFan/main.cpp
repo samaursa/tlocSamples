@@ -142,7 +142,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::Entity* q = prefab_gfx::CreateFan(*entityMgr.get(), cpoolMgr, circ, 64);
+  core_cs::Entity* q = prefab_gfx::Fan(entityMgr.get(), &cpoolMgr).
+    Sides(64).Circle(circ).Create();
   entityMgr->InsertComponent(q, &mat);
 
   //------------------------------------------------------------------------

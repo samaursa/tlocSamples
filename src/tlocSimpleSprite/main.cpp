@@ -188,11 +188,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //  * a TextureObject (preparing the image for OpenGL)
   //  * a Uniform (all textures are uniforms in shaders)
   //  * a ShaderOperator (this is what the material will take)
-  //
-  // The material takes in a 'MasterShaderOperator' which is the user defined
-  // shader operator and over-rides any shader operators that the systems
-  // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
-  // that have the same name as the one in the system will be given preference.
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +

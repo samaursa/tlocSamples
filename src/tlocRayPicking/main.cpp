@@ -350,8 +350,8 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      m_fanEnt =
-        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
+      m_fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
+        Sides(12).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -370,8 +370,8 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(0.5f) );
-      m_mouseFan =
-        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
+      m_mouseFan = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
+        Sides(12).Circle(circle).Create();
 
       gfx_cs::material_sptr_pool::iterator matPoolItr = matPool->GetNext();
       gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_crateMat) );
@@ -400,8 +400,8 @@ struct glProgram
     tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
-    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
-                                            math_t::Vec3f(posX, posY, 1.0f));
+    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
+      Create(m_ortho, math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
