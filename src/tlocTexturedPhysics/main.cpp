@@ -298,9 +298,9 @@ struct glProgram
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::AddRigidBody(quadEnt, *m_entityMgr, poolMgr, rbDef);
-
-        prefab_phys::AddRigidBodyShape(quadEnt, *m_entityMgr, poolMgr, rect, 1.0f);
+        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(quadEnt, rbDef);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).
+          Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(quadEnt, &mat);
       }
@@ -314,11 +314,11 @@ struct glProgram
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::AddRigidBody(fanEnt, *m_entityMgr, poolMgr, rbDef);
+        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
 
         box2d::RigidBodyShapeDef rbShape(circle);
         rbShape.SetRestitution(1.0f);
-        prefab_phys::AddRigidBodyShape(fanEnt, *m_entityMgr, poolMgr, rbShape);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbShape);
 
         m_entityMgr->InsertComponent(fanEnt, &mat2);
       }
@@ -334,10 +334,10 @@ struct glProgram
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      prefab_phys::AddRigidBody(fanEnt, *m_entityMgr, poolMgr, rbDef);
+      prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
 
       box2d::RigidBodyShapeDef rbCircleShape(circle);
-      prefab_phys::AddRigidBodyShape(fanEnt, *m_entityMgr, poolMgr, rbCircleShape);
+      prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbCircleShape);
 
       m_entityMgr->InsertComponent(fanEnt, &mat2);
     }
