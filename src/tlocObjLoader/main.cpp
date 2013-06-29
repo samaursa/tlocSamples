@@ -335,7 +335,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create the mesh and add the material
 
   core_cs::Entity* ent =
-    prefab_gfx::CreateMesh(*entityMgr.get(), cpoolMgr, vertices);
+    prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
   entityMgr->InsertComponent(ent, &mat);
 
   // -----------------------------------------------------------------------
