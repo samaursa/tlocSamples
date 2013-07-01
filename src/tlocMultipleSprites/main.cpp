@@ -68,6 +68,37 @@ public:
       { ta->SetPaused(true); }
     }
 
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    {
+      const tl_size numSprites = ta->GetNumSpriteSets();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+
+      ++currSpriteSet;
+
+      if (currSpriteSet == numSprites)
+      {
+        currSpriteSet = 0;
+      }
+
+      ta->SetCurrentSpriteSet(currSpriteSet);
+    }
+
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
+    {
+      const tl_size numSprites = ta->GetNumSpriteSets();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+
+      if (currSpriteSet == 0)
+      {
+        currSpriteSet = numSprites;
+      }
+
+      --currSpriteSet;
+
+
+      ta->SetCurrentSpriteSet(currSpriteSet);
+    }
+
     if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
       const tl_size fps = ta->GetFPS();
@@ -76,7 +107,8 @@ public:
       // produces rounding errors with the result that adding 1 to the current
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
-      printf("\nNew FPS: %u", ta->GetFPS());
+      printf("\nNew FPS for SpriteSet #%u: %u",
+        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
@@ -86,7 +118,8 @@ public:
       // See note above for why we -2
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS: %u", ta->GetFPS());
+      printf("\nNew FPS for SpriteSet #%u: %u",
+        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
     }
 
     return false;
@@ -212,7 +245,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/red_idle_all.png").c_str() );
+                      "/images/idle_and_spawn.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -236,7 +269,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
+                        math_t::Rectf32::height(0.5f));
   core_cs::Entity* spriteEnt =
     prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
   entityMgr->InsertComponent(spriteEnt, &mat);
@@ -244,7 +277,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // also has a sprite sheet loader
 
-  core_str::String shaderPath("/misc/red_idle_all.txt");
+  core_str::String shaderPath("/misc/idle_and_spawn.txt");
   shaderPath = GetAssetsPath() + shaderPath;
 
   core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
@@ -259,7 +292,14 @@ int TLOC_MAIN(int argc, char *argv[])
                                            png.GetImage().GetHeight()));
 
   prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
-    Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
+    Loop(true).Append(true).Fps(24).
+    Add(spriteEnt, ssp.begin("animation_idle"),
+                   ssp.end("animation_idle"));
+
+  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
+    Loop(true).Append(true).Fps(24).
+    Add(spriteEnt, ssp.begin("animation_spawn_diffuse"),
+                   ssp.end("animation_spawn_diffuse"));
 
   KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);
@@ -280,8 +320,15 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
 
+  printf("\n\nRight Aroow - goto next animation sequence");
+  printf("\nLeft Aroow  - goto previous animation sequence");
+
   core_time::Timer64 t;
 
+  glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -294,6 +341,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (deltaT > 1.0f/60.0f)
     {
+      glClear(GL_COLOR_BUFFER_BIT);
       // Finally, process the fan
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
