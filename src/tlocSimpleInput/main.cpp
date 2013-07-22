@@ -151,8 +151,8 @@ int TLOC_MAIN(int , char *[])
   // The prefab library has some prefabricated entities for us
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* ent =
-    prefab_gfx::CreateQuad(*entityMgr.get(), compMgr, rect, false);
+  core_cs::Entity* ent = prefab_gfx::Quad(entityMgr.get(), &compMgr).
+    TexCoords(false).Dimensions(rect).Create();
   entityMgr->InsertComponent(ent, &mat);
 
   //------------------------------------------------------------------------

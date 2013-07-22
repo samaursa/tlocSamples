@@ -36,6 +36,8 @@ class MayaCam
   {
     k_altPressed = 0,
     k_rotating,
+    k_panning,
+    k_dolly,
     k_count
   };
 
@@ -48,11 +50,13 @@ public:
       "Camera does not have ArcBall component");
   }
 
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent& a_event,
-                     const input_hid::MouseEvent::button_code_type)
+                     const input_hid::MouseEvent&,
+                     const input_hid::MouseEvent::button_code_type a_button)
   {
-    if (a_event.m_buttonCode & input_hid::MouseEvent::left)
+    if (a_button == input_hid::MouseEvent::left)
     {
       if (m_flags.IsMarked(k_altPressed))
       { m_flags.Mark(k_rotating); }
@@ -60,44 +64,94 @@ public:
       { m_flags.Unmark(k_rotating); }
     }
 
+    if (a_button == input_hid::MouseEvent::middle)
+    {
+      if (m_flags.IsMarked(k_altPressed))
+      { m_flags.Mark(k_panning); }
+      else
+      { m_flags.Unmark(k_panning); }
+    }
+
+    if (a_button == input_hid::MouseEvent::right)
+    {
+      if (m_flags.IsMarked(k_altPressed))
+      { m_flags.Mark(k_dolly); }
+      else
+      { m_flags.Unmark(k_dolly); }
+    }
+
     return false;
   }
 
-  //------------------------------------------------------------------------
-  // Called when a button is released. Currently will printf tloc's representation
-  // of all buttons.
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent& a_event,
-                       const input_hid::MouseEvent::button_code_type)
+                       const input_hid::MouseEvent&,
+                       const input_hid::MouseEvent::button_code_type a_button)
   {
-    if ( (a_event.m_buttonCode & input_hid::MouseEvent::left) == false)
+    if (a_button == input_hid::MouseEvent::left)
     {
       m_flags.Unmark(k_rotating);
     }
 
-    return false;
-  }
-
-  //------------------------------------------------------------------------
-  // Called when mouse is moved. Currently will printf mouse's relative and
-  // absolute position.
-  bool OnMouseMove(const tl_size ,
-                   const input_hid::MouseEvent& a_event)
-  {
-    if (m_flags.IsMarked(k_rotating))
+    if (a_button == input_hid::MouseEvent::middle)
     {
-      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      m_flags.Unmark(k_panning);
+    }
 
-      arcBall->MoveVertical(core_utils::CastNumber<f32>(a_event.m_Y.m_rel()) * 0.01f );
-      arcBall->MoveHorizontal(core_utils::CastNumber<f32>(a_event.m_X.m_rel()) * 0.01f );
+    if (a_button == input_hid::MouseEvent::right)
+    {
+      m_flags.Unmark(k_dolly);
     }
 
     return false;
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is pressed. Currently will printf tloc's representation
-  // of the key.
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  bool OnMouseMove(const tl_size ,
+                   const input_hid::MouseEvent& a_event)
+  {
+    f32 xRel = core_utils::CastNumber<f32>(a_event.m_X.m_rel());
+    f32 yRel = core_utils::CastNumber<f32>(a_event.m_Y.m_rel());
+
+    if (m_flags.IsMarked(k_rotating))
+    {
+      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+
+      arcBall->MoveVertical(yRel * 0.01f );
+      arcBall->MoveHorizontal(xRel * 0.01f );
+    }
+    else if (m_flags.IsMarked(k_panning))
+    {
+      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
+      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+
+      math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
+      math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
+
+      leftVec *= xRel * 0.01f;
+      upVec *= yRel * 0.01f;
+
+      t->SetPosition(t->GetPosition() - leftVec + upVec);
+      arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
+    }
+    else if (m_flags.IsMarked(k_dolly))
+    {
+      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
+
+      math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
+
+      dirVec *= xRel * 0.01f;
+
+      t->SetPosition(t->GetPosition() - dirVec);
+    }
+
+    return false;
+  }
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
@@ -134,7 +188,7 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
+  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
     gfx_win::WindowSettings("tlocTexturedFan") );
 
   // -----------------------------------------------------------------------
@@ -281,7 +335,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create the mesh and add the material
 
   core_cs::Entity* ent =
-    prefab_gfx::CreateMesh(*entityMgr.get(), cpoolMgr, vertices);
+    prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
   entityMgr->InsertComponent(ent, &mat);
 
   // -----------------------------------------------------------------------
@@ -297,11 +351,11 @@ int TLOC_MAIN(int argc, char *argv[])
   math_proj::FrustumPersp fr(params);
   fr.BuildFrustum();
 
-  core_cs::Entity*
-    m_cameraEnt = prefab_gfx::CreateCamera(*entityMgr.get(), cpoolMgr, fr,
-                                          math_t::Vec3f(0.0f, 0.0f, 5.0f));
+  core_cs::Entity* m_cameraEnt =
+    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+    Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::AddArcBall(m_cameraEnt, *entityMgr.get(), cpoolMgr);
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEnt);
 
   meshSys.AttachCamera(m_cameraEnt);
 
@@ -320,7 +374,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Main loop
 
-  printf("\nPress ALT and Left mouse button to rotate camera");
+  printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
 
   // Very important to enable depth testing
   glEnable(GL_DEPTH_TEST);

@@ -292,14 +292,15 @@ struct glProgram
       {
         // Create a quad ent
         Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
-        ent_type* quadEnt = prefab_gfx::CreateQuad(*m_entityMgr, poolMgr, rect);
+        ent_type* quadEnt =
+          prefab_gfx::Quad(m_entityMgr.get(), &poolMgr).Dimensions(rect).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::AddRigidBody(quadEnt, *m_entityMgr, poolMgr, rbDef);
-
-        prefab_phys::AddRigidBodyShape(quadEnt, *m_entityMgr, poolMgr, rect, 1.0f);
+        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(quadEnt, rbDef);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).
+          Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(quadEnt, &mat);
       }
@@ -307,17 +308,17 @@ struct glProgram
       {
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
-        ent_type* fanEnt =
-          prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 8);
+        ent_type* fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
+          Sides(8).Circle(circle).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::AddRigidBody(fanEnt, *m_entityMgr, poolMgr, rbDef);
+        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
 
         box2d::RigidBodyShapeDef rbShape(circle);
         rbShape.SetRestitution(1.0f);
-        prefab_phys::AddRigidBodyShape(fanEnt, *m_entityMgr, poolMgr, rbShape);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbShape);
 
         m_entityMgr->InsertComponent(fanEnt, &mat2);
       }
@@ -327,16 +328,16 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      ent_type* fanEnt =
-        prefab_gfx::CreateFan(*m_entityMgr, poolMgr, circle, 12);
+      ent_type* fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
+        Sides(12).Circle(circle).Create();
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      prefab_phys::AddRigidBody(fanEnt, *m_entityMgr, poolMgr, rbDef);
+      prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
 
       box2d::RigidBodyShapeDef rbCircleShape(circle);
-      prefab_phys::AddRigidBodyShape(fanEnt, *m_entityMgr, poolMgr, rbCircleShape);
+      prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbCircleShape);
 
       m_entityMgr->InsertComponent(fanEnt, &mat2);
     }
@@ -357,8 +358,8 @@ struct glProgram
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
-    m_cameraEnt = prefab_gfx::CreateCamera(*m_entityMgr, poolMgr, m_ortho,
-                                            math_t::Vec3f(0, 0, 1.0f));
+    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
+      Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);

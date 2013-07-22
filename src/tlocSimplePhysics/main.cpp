@@ -106,8 +106,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
     math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q =
-    prefab_gfx::CreateQuad(*entityMgr.get(), cpoolMgr, rect, false);
+  core_cs::Entity* q = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).
+    TexCoords(false).Dimensions(rect).Create();
   entityMgr->InsertComponent(q, &mat);
 
   //------------------------------------------------------------------------
@@ -124,8 +124,9 @@ int TLOC_MAIN(int argc, char *argv[])
   rbDef->SetPosition(phys_box2d::RigidBodyDef::vec_type(0, 1.0f));
   rbDef->SetType<phys_box2d::p_rigid_body::DynamicBody>();
 
-  prefab_phys::AddRigidBody(q, *entityMgr.get(), cpoolMgr, rbDef);
-  prefab_phys::AddRigidBodyShape(q, *entityMgr.get(), cpoolMgr, rect, 1.0f);
+  prefab_phys::RigidBody(entityMgr.get(), &cpoolMgr).Add(q, rbDef);
+  prefab_phys::RigidBodyShape(entityMgr.get(), &cpoolMgr).
+    Add(q, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
