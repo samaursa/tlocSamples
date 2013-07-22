@@ -9,6 +9,7 @@ list(APPEND USER_EXECUTABLE_PROJECTS "tlocTexturedFan")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocWindow;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocTexturedPhysics;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocRayPicking;")
+list(APPEND USER_EXECUTABLE_PROJECTS "tlocRayPicking3d;")
 
 set(USER_LIBRARY_PROJECTS "tlocSimpleLibrary")
 
