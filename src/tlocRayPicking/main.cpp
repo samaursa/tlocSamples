@@ -159,13 +159,7 @@ struct glProgram
       *m_cameraEnt->GetComponent<math_cs::Transformf32>();
     math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
 
-    math_t::Vec3f32 rayPosTrans = ray.GetOrigin();
-    rayPosTrans.ConvertFrom<f32, 4>
-      (camTransMatInv *
-       rayPosTrans.ConvertTo<math_t::Vec4f32, core_ds::p_tuple::overflow_one>());
-
-    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPosTrans),
-          math_t::Ray3f32::direction(ray.GetDirection()) );
+    ray = ray * camTransMatInv;
 
     // Set the mouse pointer
     m_mouseFan->GetComponent<math_cs::Transform>()->
@@ -175,15 +169,9 @@ struct glProgram
     // Now start transform the ray from world to fan entity co-ordinates for
     // the intersection test
 
-    math_t::Vec3f rayPos = ray.GetOrigin();
-    math_t::Mat3f rot = m_fanEnt->GetComponent<math_cs::Transform>()->GetOrientation();
-    rot.Inverse();
+    ray = ray * m_fanEnt->GetComponent<math_cs::Transform>()->Invert().GetTransformation();
 
-    math_t::Vec3f fanPos = m_fanEnt->GetComponent<math_cs::Transform>()->GetPosition();
-    rayPos = rayPos - fanPos;
-    rayPos = rot * rayPos;
-
-    math_t::Vec2f rayPos2f = rayPos.ConvertTo<math_t::Vec2f32>();
+    math_t::Vec2f rayPos2f = ray.GetOrigin().ConvertTo<math_t::Vec2f32>();
     math_t::Vec2f rayDir2f = ray.GetDirection().ConvertTo<math_t::Vec2f32>();
 
     math_t::Ray2f ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),

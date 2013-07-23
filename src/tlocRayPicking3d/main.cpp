@@ -218,32 +218,14 @@ public:
     math_cs::Transformf32 camTrans =
       *m_camera->GetComponent<math_cs::Transformf32>();
     math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
-    math_t::Mat3f32 camRot = camTrans.GetOrientation();
 
-    math_t::Vec3f32 rayPosTrans = ray.GetOrigin();
-    rayPosTrans.ConvertFrom<f32, 4>
-      (camTransMatInv *
-      rayPosTrans.ConvertTo<math_t::Vec4f32, core_ds::p_tuple::overflow_one>());
-
-    math_t::Vec3f32 rayDirTrans = ray.GetDirection();
-    rayDirTrans = camRot * rayDirTrans;
-
-    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPosTrans),
-      math_t::Ray3f32::direction(rayDirTrans) );
+    ray = ray * camTransMatInv;
 
     // Now start transform the ray from world to fan entity co-ordinates for
     // the intersection test
 
-    math_t::Vec3f rayPos = ray.GetOrigin();
-    math_t::Mat3f rotInv = m_cube->GetComponent<math_cs::Transform>()->GetOrientation();
-    rotInv.Inverse();
-
-    math_t::Vec3f fanPos = m_cube->GetComponent<math_cs::Transform>()->GetPosition();
-    rayPos = rayPos - fanPos;
-    rayPos = rotInv * rayPos;
-
-    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPos),
-                          math_t::Ray3f32::direction(ray.GetDirection()) );
+    ray = ray * m_cube->GetComponent
+      <math_cs::Transform>()->Invert().GetTransformation();
 
     static tl_int intersectionCounter = 0;
     static tl_int nonIntersectionCounter = 0;
