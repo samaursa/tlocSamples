@@ -10,6 +10,12 @@
 
 using namespace tloc;
 
+// -----------------------------------------------------------------------
+//
+
+// -----------------------------------------------------------------------
+// WindowCallback
+
 class WindowCallback
 {
 public:
@@ -42,9 +48,12 @@ class MayaCam
   };
 
 public:
-  MayaCam(core_cs::Entity* a_camera)
+  MayaCam(core_cs::Entity* a_camera, core_cs::Entity* a_cube,
+          math_proj::FrustumPersp a_frustum)
     : m_camera(a_camera)
     , m_flags(k_count)
+    , m_frustum(a_frustum)
+    , m_cube(a_cube)
   {
     TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
       "Camera does not have ArcBall component");
@@ -121,6 +130,8 @@ public:
 
       arcBall->MoveVertical(yRel * 0.01f );
       arcBall->MoveHorizontal(xRel * 0.01f );
+
+      return true;
     }
     else if (m_flags.IsMarked(k_panning))
     {
@@ -135,6 +146,8 @@ public:
 
       t->SetPosition(t->GetPosition() - leftVec + upVec);
       arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
+
+      return true;
     }
     else if (m_flags.IsMarked(k_dolly))
     {
@@ -145,7 +158,14 @@ public:
       dirVec *= xRel * 0.01f;
 
       t->SetPosition(t->GetPosition() - dirVec);
+
+      return true;
     }
+
+    // otherwise, start picking
+
+    CheckCollisionWithRay((f32)a_event.m_X.m_abs().Get(),
+                          (f32)a_event.m_Y.m_abs().Get());
 
     return false;
   }
@@ -175,8 +195,87 @@ public:
     return false;
   }
 
+  void CheckCollisionWithRay(f32 absX, f32 absY)
+  {
+    using math_utils::scale_f32_f32;
+    typedef math_utils::scale_f32_f32::range_small range_small;
+    typedef math_utils::scale_f32_f32::range_large range_large;
+    using namespace core::component_system;
+
+    //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+
+    range_small smallR(-1.0f, 1.0f);
+    range_large largeRX(0.0f, 1024.0f);
+    range_large largeRY(0.0f, 768.0f);
+    scale_f32_f32 scx(smallR, largeRX);
+    scale_f32_f32 scy(smallR, largeRY);
+
+    math_t::Vec3f32 xyz(scx.ScaleDown((f32)(absX) ),
+      scy.ScaleDown((f32)(768.0f - absY - 1 )), -1.0f);
+    math_t::Ray3f ray = m_frustum.GetRay(xyz);
+
+    // Transform with inverse of camera
+    math_cs::Transformf32 camTrans =
+      *m_camera->GetComponent<math_cs::Transformf32>();
+    math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
+    math_t::Mat3f32 camRot = camTrans.GetOrientation();
+
+    math_t::Vec3f32 rayPosTrans = ray.GetOrigin();
+    rayPosTrans.ConvertFrom<f32, 4>
+      (camTransMatInv *
+      rayPosTrans.ConvertTo<math_t::Vec4f32, core_ds::p_tuple::overflow_one>());
+
+    math_t::Vec3f32 rayDirTrans = ray.GetDirection();
+    rayDirTrans = camRot * rayDirTrans;
+
+    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPosTrans),
+      math_t::Ray3f32::direction(rayDirTrans) );
+
+    // Now start transform the ray from world to fan entity co-ordinates for
+    // the intersection test
+
+    math_t::Vec3f rayPos = ray.GetOrigin();
+    math_t::Mat3f rotInv = m_cube->GetComponent<math_cs::Transform>()->GetOrientation();
+    rotInv.Inverse();
+
+    math_t::Vec3f fanPos = m_cube->GetComponent<math_cs::Transform>()->GetPosition();
+    rayPos = rayPos - fanPos;
+    rayPos = rotInv * rayPos;
+
+    ray = math_t::Ray3f32(math_t::Ray3f32::origin(rayPos),
+                          math_t::Ray3f32::direction(ray.GetDirection()) );
+
+    static tl_int intersectionCounter = 0;
+    static tl_int nonIntersectionCounter = 0;
+
+    using math_t::Cuboidf32;
+    Cuboidf32 cuboid(Cuboidf32::width(1), Cuboidf32::height(1), Cuboidf32::depth(1));
+
+    if (cuboid.Intersects(ray))
+    {
+      nonIntersectionCounter = 0;
+      ++intersectionCounter;
+      if (intersectionCounter == 1)
+      {
+        printf("\nIntersecting with cube!");
+      }
+    }
+    else
+    {
+      intersectionCounter = 0;
+      ++nonIntersectionCounter;
+
+      if (nonIntersectionCounter == 1)
+      {
+        printf("\nNOT intersecting with cube!");
+      }
+    }
+  }
+
   core_cs::Entity*        m_camera;
+  core_cs::Entity*        m_cube;
   core_utils::Checkpoints m_flags;
+  math_proj::FrustumPersp m_frustum;
 };
 TLOC_DEF_TYPE(MayaCam);
 
@@ -311,9 +410,18 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
+  using namespace tloc::core;
+
+  tl_float posX = rng::g_defaultRNG.GetRandomFloat(-2.0f, 2.0f);
+  tl_float posY = rng::g_defaultRNG.GetRandomFloat(-2.0f, 2.0f);
+  tl_float posZ = rng::g_defaultRNG.GetRandomFloat(-2.0f, 2.0f);
+
+  printf("\nCube position: %f, %f, %f", posX, posY, posZ);
+
   core_cs::Entity* ent =
     prefab_gfx::Cuboid(entityMgr.get(), &cpoolMgr).Create();
   entityMgr->InsertComponent(ent, &mat);
+  ent->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(posX, posY, posZ));
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -336,7 +444,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   meshSys.AttachCamera(m_cameraEnt);
 
-  MayaCam mayaCam(m_cameraEnt);
+  MayaCam mayaCam(m_cameraEnt, ent, fr);
   keyboard->Register(&mayaCam);
   mouse->Register(&mayaCam);
 
