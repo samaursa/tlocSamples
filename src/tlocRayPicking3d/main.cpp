@@ -13,6 +13,8 @@ using namespace tloc;
 // -----------------------------------------------------------------------
 //
 
+math_t::Cuboidf32 g_cuboid;
+
 // -----------------------------------------------------------------------
 // WindowCallback
 
@@ -230,10 +232,7 @@ public:
     static tl_int intersectionCounter = 0;
     static tl_int nonIntersectionCounter = 0;
 
-    using math_t::Cuboidf32;
-    Cuboidf32 cuboid(Cuboidf32::width(1), Cuboidf32::height(1), Cuboidf32::depth(1));
-
-    if (cuboid.Intersects(ray))
+    if (g_cuboid.Intersects(ray))
     {
       nonIntersectionCounter = 0;
       ++intersectionCounter;
@@ -400,10 +399,18 @@ int TLOC_MAIN(int argc, char *argv[])
 
   printf("\nCube position: %f, %f, %f", posX, posY, posZ);
 
+  using math_t::Cuboidf32;
+  g_cuboid = math_t::Cuboidf32
+    ( (Cuboidf32::width(posX + 2.0f)), (Cuboidf32::height(posY + 2.0f)),
+      (Cuboidf32::depth(posZ + 2.0f)) );
+
   core_cs::Entity* ent =
-    prefab_gfx::Cuboid(entityMgr.get(), &cpoolMgr).Create();
+    prefab_gfx::Cuboid(entityMgr.get(), &cpoolMgr).
+    Dimensions(g_cuboid).
+    Create();
   entityMgr->InsertComponent(ent, &mat);
-  ent->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(posX, posY, posZ));
+  ent->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(posX, posY, posZ));
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
