@@ -50,11 +50,9 @@ class MayaCam
   };
 
 public:
-  MayaCam(core_cs::Entity* a_camera, core_cs::Entity* a_cube,
-          math_proj::FrustumPersp a_frustum)
+  MayaCam(core_cs::Entity* a_camera, core_cs::Entity* a_cube)
     : m_camera(a_camera)
     , m_flags(k_count)
-    , m_frustum(a_frustum)
     , m_cube(a_cube)
   {
     TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
@@ -214,7 +212,8 @@ public:
 
     math_t::Vec3f32 xyz(scx.ScaleDown((f32)(absX) ),
       scy.ScaleDown((f32)(768.0f - absY - 1 )), -1.0f);
-    math_t::Ray3f ray = m_frustum.GetRay(xyz);
+    math_t::Ray3f ray =
+      m_camera->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
 
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
@@ -256,7 +255,6 @@ public:
   core_cs::Entity*        m_camera;
   core_cs::Entity*        m_cube;
   core_utils::Checkpoints m_flags;
-  math_proj::FrustumPersp m_frustum;
 };
 TLOC_DEF_TYPE(MayaCam);
 
@@ -433,7 +431,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   meshSys.AttachCamera(m_cameraEnt);
 
-  MayaCam mayaCam(m_cameraEnt, ent, fr);
+  MayaCam mayaCam(m_cameraEnt, ent);
   keyboard->Register(&mayaCam);
   mouse->Register(&mayaCam);
 

@@ -152,7 +152,8 @@ struct glProgram
                         scy.ScaleDown((f32)(m_win.GetHeight() -
                                             absY - 1 )),
                         -1.0f);
-    math_t::Ray3f ray = m_ortho.GetRay(xyz);
+    math_t::Ray3f ray =
+      m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
 
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
@@ -382,14 +383,15 @@ struct glProgram
     math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
                          (math_t::Rectf::height(winHeight / 10.0f)) );
 
-    m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
-    m_ortho.BuildFrustum();
+    math_proj::frustum_ortho_f32 fr =
+      math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
+    fr.BuildFrustum();
 
     tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
     m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
-      Create(m_ortho, math_t::Vec3f(posX, posY, 1.0f));
+      Create(fr, math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.AttachCamera(m_cameraEnt);
     fanSys.AttachCamera(m_cameraEnt);
@@ -458,10 +460,18 @@ struct glProgram
 
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
+        math_t::Rectf fRect(
+          (math_t::Rectf::width((tl_float)m_win.GetWidth() / 10.0f)),
+          (math_t::Rectf::height((tl_float)m_win.GetHeight() / 10.0f)) );
+
+        math_proj::frustum_ortho_f32 fr =
+          math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
+        fr.BuildFrustum();
+
         m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, -1.0f));
         m_cameraEnt->GetComponent<math_cs::Projection>()->
-          SetFrustum(m_ortho);
+          SetFrustum(fr);
       }
       else
       {
@@ -547,8 +557,6 @@ struct glProgram
   gfx_gl::texture_object_sptr m_texObjCrate;
   gfx_cs::material_sptr       m_henryMat;
   gfx_cs::material_sptr       m_crateMat;
-
-  math_proj::FrustumOrtho m_ortho;
 
   input::input_mgr_b_ptr     m_inputMgr;
   input::input_mgr_i_ptr     m_inputMgrImm;
