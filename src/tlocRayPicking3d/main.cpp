@@ -398,9 +398,10 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\nCube position: %f, %f, %f", posX, posY, posZ);
 
   using math_t::Cuboidf32;
-  g_cuboid = math_t::Cuboidf32
+  g_cuboid = Cuboidf32
     ( (Cuboidf32::width(posX + 2.0f)), (Cuboidf32::height(posY + 2.0f)),
       (Cuboidf32::depth(posZ + 2.0f)) );
+  g_cuboid.SetPosition(Cuboidf32::point_type(posX, posY, posZ));
 
   core_cs::Entity* ent =
     prefab_gfx::Cuboid(entityMgr.get(), &cpoolMgr).
