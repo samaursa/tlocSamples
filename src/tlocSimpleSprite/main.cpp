@@ -134,11 +134,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
   input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::MouseB* mouse = inputMgr->CreateHID<input_hid::MouseB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
-  TLOC_ASSERT_NOT_NULL(mouse);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -163,52 +161,29 @@ int TLOC_MAIN(int argc, char *argv[])
   // TextureAnimation system to animate sprites
   gfx_cs::TextureAnimatorSystem taSys(eventMgr, entityMgr);
 
+  //------------------------------------------------------------------------
+  // The prefab library has some prefabricated entities for us
+
+  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
+                       math_t::Rectf32::height(0.5f));
+  core_cs::Entity* spriteEnt =
+    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
+
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
-  gfx_cs::Material  mat;
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
+    core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+    core_str::String vsPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
+    core_str::String fsPath("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+    core_str::String fsPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
-
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
-
-  //------------------------------------------------------------------------
-  // Add a texture to the material. We need:
-  //  * an image
-  //  * a TextureObject (preparing the image for OpenGL)
-  //  * a Uniform (all textures are uniforms in shaders)
-  //  * a ShaderOperator (this is what the material will take)
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
@@ -224,25 +199,13 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
   u_to->SetName("s_texture").SetValueAs(to);
 
-  gfx_gl::shader_operator_sptr so =
-    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  so->AddUniform(u_to);
-
-  // Finally, set this shader operator as the master operator (aka user operator)
-  // in our material.
-  mat.AddShaderOperator(so);
+  prefab_gfx::Material matPrefab(entityMgr.get(), &cpoolMgr);
+  matPrefab.AddUniform(u_to).AssetsPath(GetAssetsPath());
+  matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
+                core_io::Path(fsPath.c_str()) );
 
   //------------------------------------------------------------------------
-  // The prefab library has some prefabricated entities for us
-
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
-  core_cs::Entity* spriteEnt =
-    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
-  entityMgr->InsertComponent(spriteEnt, &mat);
-
-  //------------------------------------------------------------------------
-  // also has a sprite sheet loader
+  // Prefab library also has a sprite sheet loader
 
   core_str::String shaderPath("/misc/red_idle_all.txt");
   shaderPath = GetAssetsPath() + shaderPath;
