@@ -241,17 +241,17 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // also has a sprite sheet loader
 
-  core_str::String shaderPath("/misc/idle_and_spawn.txt");
-  shaderPath = GetAssetsPath() + shaderPath;
+  core_str::String spriteSheetDataPath("/misc/idle_and_spawn.txt");
+  spriteSheetDataPath = GetAssetsPath() + spriteSheetDataPath;
 
-  core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+  core_io::FileIO_ReadA spriteData(spriteSheetDataPath.c_str());
 
-  if (shaderFile.Open() != ErrorSuccess)
+  if (spriteData.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }
 
   gfx_med::SpriteLoader_SpriteSheetPacker ssp;
   core_str::String sspContents;
-  shaderFile.GetContents(sspContents);
+  spriteData.GetContents(sspContents);
   ssp.Init(sspContents, gfx_t::Dimension2i(png.GetImage().GetWidth(),
                                            png.GetImage().GetHeight()));
 
@@ -290,7 +290,6 @@ int TLOC_MAIN(int argc, char *argv[])
   core_time::Timer64 t;
 
   glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   while (win.IsValid() && !winCallback.m_endProgram)

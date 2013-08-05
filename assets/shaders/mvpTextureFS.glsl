@@ -8,5 +8,5 @@ uniform sampler2D shaderTexture;
 
 void main()
 {
-	color = texture2D(shaderTexture, texCoord).rgb;
+	color = texture2D(shaderTexture, vec2(texCoord[0], 1.0 - texCoord[1])).rgb;
 }

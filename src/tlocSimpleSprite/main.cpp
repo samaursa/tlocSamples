@@ -68,6 +68,16 @@ public:
       { ta->SetPaused(true); }
     }
 
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    {
+      ta->NextFrame();
+    }
+
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
+    {
+      ta->PrevFrame();
+    }
+
     if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
       const tl_size fps = ta->GetFPS();
@@ -243,8 +253,13 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
 
+  printf("\n\nRight Aroow - goto previous frame");
+  printf("\nLeft Aroow  - goto next frame");
+
   core_time::Timer64 t;
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -257,6 +272,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (deltaT > 1.0f/60.0f)
     {
+      glClear(GL_COLOR_BUFFER_BIT);
       // Finally, process the fan
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
