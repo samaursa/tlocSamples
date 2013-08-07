@@ -30,10 +30,47 @@ TLOC_DEF_TYPE(WindowCallback);
 class KeyboardCallback
 {
 public:
+
   KeyboardCallback(core_cs::Entity* a_spriteEnt)
     : m_spriteEnt(a_spriteEnt)
   { }
-
+  
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  bool OnTouchPress(const tl_size,
+                    const input::TouchSurfaceEvent&)
+  {
+    gfx_cs::TextureAnimator* ta =
+    m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
+    
+    TLOC_ASSERT_NOT_NULL(ta);
+    
+    const tl_size numSprites = ta->GetNumSpriteSets();
+    tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+    
+    ++currSpriteSet;
+    
+    if (currSpriteSet == numSprites)
+    {
+      currSpriteSet = 0;
+    }
+    
+    ta->SetCurrentSpriteSet(currSpriteSet);
+    return false;
+  }
+  
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  bool OnTouchRelease(const tl_size,
+                      const input::TouchSurfaceEvent&)
+  { return false;  }
+  
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  
+  bool OnTouchMove(const tl_size,
+                   const input::TouchSurfaceEvent&)
+  { return false;  }
+  
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   bool OnKeyPress(const tl_size ,
@@ -167,9 +204,12 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
   input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::TouchSurfaceB* touchSurface =
+    inputMgr->CreateHID<input_hid::TouchSurfaceB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -267,6 +307,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);
+  touchSurface->Register(&kb);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
