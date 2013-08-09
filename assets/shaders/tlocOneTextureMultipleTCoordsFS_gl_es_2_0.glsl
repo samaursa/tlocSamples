@@ -15,7 +15,7 @@ void main()
  
   if (tex2Col.rgb == vec3(1.0, 1.0, 1.0))
   {
-    lowp vec4 currCol = o_color;
+    lowp vec4 currCol = gl_FragColor;
 
     if (currCol[0] > 0.5)
     { currCol[0] = 1.0 - 2.0 * (1.0 - currCol[0]) * (1.0 - u_blockColor[0]); }
