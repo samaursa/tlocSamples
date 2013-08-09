@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with TexturePacker http://www.codeandweb.com/texturepacker-->
-<!-- $TexturePacker:SmartUpdate:c1189a0b1ddbf490b537e4a55d4496c6:1/1$ -->
+<!-- $TexturePacker:SmartUpdate:00fef4ac16e9864f283377f5237dd33e:1/1$ -->
 <!--Format:
 n  => name of the sprite
 x  => sprite x pos in texture
@@ -13,24 +13,24 @@ oW => sprite's original width (only available if trimmed)
 oH => sprite's original height (only available if trimmed)
 r => 'y' only set if sprite is rotated
 -->
-<TextureAtlas imagePath="blocksprites.png" width="1684" height="406">
-    <sprite n="block_bombcatchblock.png" x="1214" y="204" w="200" h="200"/>
-    <sprite n="block_bombcatchblock_alpha.png" x="1214" y="2" w="200" h="200"/>
-    <sprite n="block_bombcatchnoblock.png" x="1554" y="164" w="128" h="160" oX="39" oY="19" oW="200" oH="200"/>
-    <sprite n="block_bombpiece.png" x="1416" y="164" w="136" h="178" oX="36" oY="13" oW="200" oH="200"/>
-    <sprite n="block_glass.png" x="1012" y="204" w="200" h="200"/>
-    <sprite n="block_glass_alpha.png" x="1012" y="2" w="200" h="200"/>
-    <sprite n="block_glassshatter.png" x="810" y="204" w="200" h="200"/>
-    <sprite n="block_glassshatter_alpha.png" x="1012" y="2" w="200" h="200"/>
-    <sprite n="block_glasswall.png" x="810" y="2" w="200" h="200"/>
-    <sprite n="block_glasswall_shatter.png" x="608" y="204" w="200" h="200"/>
-    <sprite n="block_none.png" x="608" y="2" w="200" h="200"/>
-    <sprite n="block_regular.png" x="406" y="204" w="200" h="200"/>
-    <sprite n="block_regular_alpha.png" x="406" y="2" w="200" h="200"/>
-    <sprite n="block_spawner.png" x="204" y="204" w="200" h="200"/>
-    <sprite n="block_starblock.png" x="204" y="2" w="200" h="200"/>
-    <sprite n="block_starblock_alpha.png" x="406" y="2" w="200" h="200"/>
-    <sprite n="block_starblockcatch.png" x="2" y="204" w="200" h="200"/>
-    <sprite n="block_starblockcatch_alpha.png" x="2" y="2" w="200" h="200"/>
-    <sprite n="block_starpiece.png" x="1416" y="2" w="168" h="160" oX="15" oY="25" oW="200" oH="200"/>
+<TextureAtlas imagePath="blocksprites.png" width="2022" height="406">
+    <sprite n="block_bombcatchblock.png" x="1820" y="2" w="200" h="200"/>
+    <sprite n="block_bombcatchblock_alpha.png" x="1618" y="204" w="200" h="200"/>
+    <sprite n="block_bombcatchnoblock.png" x="1618" y="2" w="200" h="200"/>
+    <sprite n="block_bombpiece.png" x="1416" y="204" w="200" h="200"/>
+    <sprite n="block_glass.png" x="1416" y="2" w="200" h="200"/>
+    <sprite n="block_glass_alpha.png" x="1214" y="204" w="200" h="200"/>
+    <sprite n="block_glassshatter.png" x="1214" y="2" w="200" h="200"/>
+    <sprite n="block_glassshatter_alpha.png" x="1012" y="204" w="200" h="200"/>
+    <sprite n="block_glasswall.png" x="1012" y="2" w="200" h="200"/>
+    <sprite n="block_glasswall_shatter.png" x="810" y="204" w="200" h="200"/>
+    <sprite n="block_none.png" x="810" y="2" w="200" h="200"/>
+    <sprite n="block_regular.png" x="608" y="204" w="200" h="200"/>
+    <sprite n="block_regular_alpha.png" x="608" y="2" w="200" h="200"/>
+    <sprite n="block_spawner.png" x="406" y="204" w="200" h="200"/>
+    <sprite n="block_starblock.png" x="406" y="2" w="200" h="200"/>
+    <sprite n="block_starblock_alpha.png" x="204" y="204" w="200" h="200"/>
+    <sprite n="block_starblockcatch.png" x="204" y="2" w="200" h="200"/>
+    <sprite n="block_starblockcatch_alpha.png" x="2" y="204" w="200" h="200"/>
+    <sprite n="block_starpiece.png" x="2" y="2" w="200" h="200"/>
 </TextureAtlas>
