@@ -253,8 +253,8 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
 
-  printf("\n\nRight Aroow - goto previous frame");
-  printf("\nLeft Aroow  - goto next frame");
+  printf("\n\nRight Arrow - goto previous frame");
+  printf("\nLeft Arrow  - goto next frame");
 
   core_time::Timer64 t;
 

@@ -10,6 +10,13 @@
 
 using namespace tloc;
 
+gfx_t::Color red(255, 65, 65, 255);
+gfx_t::Color green(92, 255, 54, 255);
+gfx_t::Color blue(37, 201, 255, 255);
+gfx_t::Color yellow(255, 201, 37, 255);
+gfx_t::Color violet(186, 37, 255, 255);
+gfx_t::Color orange(255, 114, 37, 255);
+
 class WindowCallback
 {
 public:
@@ -31,8 +38,9 @@ class KeyboardCallback
 {
 public:
 
-  KeyboardCallback(core_cs::Entity* a_spriteEnt)
+  KeyboardCallback(core_cs::Entity* a_spriteEnt, gfx_gl::uniform_sptr a_spriteColor)
     : m_spriteEnt(a_spriteEnt)
+    , m_spriteColor(a_spriteColor)
   { }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -77,33 +85,12 @@ public:
                   const input_hid::KeyboardEvent& a_event)
   {
     gfx_cs::TextureAnimator* ta =
-      m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
+      m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(0);
+
+    gfx_cs::TextureAnimator* ta2 =
+      m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(1);
 
     TLOC_ASSERT_NOT_NULL(ta);
-
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::s)
-    {
-      if (ta->IsStopped())
-      { ta->SetStopped(false); }
-      else
-      { ta->SetStopped(true); }
-    }
-
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::l)
-    {
-      if (ta->IsLooping())
-      { ta->SetLooping(false); }
-      else
-      { ta->SetLooping(true); }
-    }
-
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::p)
-    {
-      if (ta->IsPaused())
-      { ta->SetPaused(false); }
-      else
-      { ta->SetPaused(true); }
-    }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
@@ -118,9 +105,10 @@ public:
       }
 
       ta->SetCurrentSpriteSet(currSpriteSet);
+      ta2->SetCurrentSpriteSet(currSpriteSet);
     }
 
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
       const tl_size numSprites = ta->GetNumSpriteSets();
       tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
@@ -134,29 +122,33 @@ public:
 
 
       ta->SetCurrentSpriteSet(currSpriteSet);
+      ta2->SetCurrentSpriteSet(currSpriteSet);
     }
 
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)
     {
-      const tl_size fps = ta->GetFPS();
-
-      // Note that FPS is converted to a float value by doing 1.0/FPS. This
-      // produces rounding errors with the result that adding 1 to the current
-      // FPS may not produce any change which is why we add 2
-      ta->SetFPS(fps + 2);
-      printf("\nNew FPS for SpriteSet #%u: %u",
-        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
+      m_spriteColor->
+        SetValueAs(red.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
     }
-
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n2)
     {
-      const tl_size fps = ta->GetFPS();
-
-      // See note above for why we -2
-      if (fps > 0)
-      { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS for SpriteSet #%u: %u",
-        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
+      m_spriteColor->
+        SetValueAs(green.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n3)
+    {
+      m_spriteColor->
+        SetValueAs(yellow.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n4)
+    {
+      m_spriteColor->
+        SetValueAs(violet.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n5)
+    {
+      m_spriteColor->
+        SetValueAs(orange.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
     }
 
     return false;
@@ -171,6 +163,7 @@ public:
 private:
 
   core_cs::Entity* m_spriteEnt;
+  gfx_gl::uniform_sptr  m_spriteColor;
 
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -242,6 +235,10 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::Entity* spriteEnt =
     prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
 
+  // Copy the texture-coords
+  gfx_cs::texture_coords_sptr tcoord2(new gfx_cs::TextureCoords());
+  entityMgr->InsertComponent(spriteEnt, tcoord2.get());
+
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
@@ -249,7 +246,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/idle_and_spawn.png").c_str() );
+                      "/images/blocksprites.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -262,26 +259,32 @@ int TLOC_MAIN(int argc, char *argv[])
   u_to->SetName("s_texture").SetValueAs(to);
 
 #if defined (TLOC_OS_WIN)
-    core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
+  core_str::String vsPath("/shaders/tlocOneTextureMultipleTCoordsVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String vsPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+  core_str::String vsPath("/shaders/tlocOneTextureMultipleTCoordsVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
-    core_str::String fsPath("/shaders/tlocOneTextureFS.glsl");
+  core_str::String fsPath("/shaders/tlocOneTextureMultipleTCoordsFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String fsPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+  core_str::String fsPath("/shaders/tlocOneTextureMultipleTCoordsFS_gl_es_2_0.glsl");
 #endif
+
+  gfx_gl::uniform_sptr u_blockColor(new gfx_gl::Uniform());
+
+  u_blockColor->SetName("u_blockColor").
+    SetValueAs(red.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
 
   prefab_gfx::Material matPrefab(entityMgr.get(), &cpoolMgr);
   matPrefab.AddUniform(u_to).AssetsPath(GetAssetsPath());
+  matPrefab.AddUniform(u_blockColor);
   matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
                 core_io::Path(fsPath.c_str()) );
 
   //------------------------------------------------------------------------
   // also has a sprite sheet loader
 
-  core_str::String spriteSheetDataPath("/misc/idle_and_spawn.txt");
+  core_str::String spriteSheetDataPath("/misc/blocksprites.xml");
   spriteSheetDataPath = GetAssetsPath() + spriteSheetDataPath;
 
   core_io::FileIO_ReadA spriteData(spriteSheetDataPath.c_str());
@@ -289,23 +292,59 @@ int TLOC_MAIN(int argc, char *argv[])
   if (spriteData.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }
 
-  gfx_med::SpriteLoader_SpriteSheetPacker ssp;
+  gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   spriteData.GetContents(sspContents);
   ssp.Init(sspContents, gfx_t::Dimension2i(png.GetImage().GetWidth(),
                                            png.GetImage().GetHeight()));
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
-    Loop(true).Fps(24).
-    Add(spriteEnt, ssp.begin("animation_idle"),
-                   ssp.end("animation_idle"));
+  const char* spriteNames [] =
+  {
+    "block_bombcatchblock.png",
+    "block_bombcatchnoblock.png",
+    "block_bombpiece.png",
+    "block_glass.png",
+    "block_glassshatter.png",
+    "block_glasswall.png",
+    "block_glasswall_shatter.png",
+    "block_regular.png",
+    "block_spawner.png",
+    "block_starblock.png",
+    "block_starblockcatch.png",
+    "block_starpiece.png",
+  };
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
-    Loop(true).Fps(24).
-    Add(spriteEnt, ssp.begin("animation_spawn_diffuse"),
-                   ssp.end("animation_spawn_diffuse"));
+  const char* spriteNamesAlpha [] =
+  {
+    "block_bombcatchblock_alpha.png",
+    "block_none.png",
+    "block_none.png",
+    "block_glass_alpha.png",
+    "block_glassshatter_alpha.png",
+    "block_none.png",
+    "block_none.png",
+    "block_regular_alpha.png",
+    "block_none.png",
+    "block_starblock_alpha.png",
+    "block_starblockcatch_alpha.png",
+    "block_none.png",
+  };
 
-  KeyboardCallback kb(spriteEnt);
+  TLOC_ASSERT(core_utils::ArraySize(spriteNames) == core_utils::ArraySize(spriteNamesAlpha),
+    "Mismatched sprites and alphas");
+
+  for (tl_size i = 0; i < core_utils::ArraySize(spriteNames); ++i)
+  {
+    prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
+      Fps(24).Paused(true).SetIndex(0). /* 0 is the default index */
+      Add(spriteEnt, ssp.begin(spriteNames[i]), ssp.end(spriteNames[i]));
+
+    prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
+      Fps(24).Paused(true).SetIndex(1).
+      Add(spriteEnt, ssp.begin(spriteNamesAlpha[i]), ssp.end(spriteNamesAlpha[i]));
+  }
+
+  KeyboardCallback kb(spriteEnt, u_blockColor);
   keyboard->Register(&kb);
   touchSurface->Register(&kb);
 
@@ -319,14 +358,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nP - to toggle pause");
-  printf("\nL - to toggle looping");
-  printf("\nS - to toggle stop");
-  printf("\n= - increase FPS");
-  printf("\n- - decrease FPS");
-
   printf("\n\nRight Arrow - goto next animation sequence");
   printf("\nLeft Arrow  - goto previous animation sequence");
+  printf("\n1 to 5 - change sprite color");
 
   core_time::Timer64 t;
 
