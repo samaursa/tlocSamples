@@ -73,7 +73,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
     shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
 
     if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the vertex shader"); return 1;}
@@ -89,7 +89,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
     shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
 
     if (shaderFile.Open() != ErrorSuccess)
     { printf("\nUnable to open the fragment shader"); return 1;}

@@ -223,7 +223,7 @@ struct glProgram
       core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
-      core_io::FileIO_ReadA file(shaderPath.c_str());
+      core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
       if(file.Open() != ErrorSuccess)
       {
@@ -244,7 +244,7 @@ struct glProgram
       core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
-      core_io::FileIO_ReadA file(shaderPath.c_str());
+      core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
       file.Open();
 
       core_str::String code;

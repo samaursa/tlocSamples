@@ -197,7 +197,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/red_idle_all.png").c_str() );
+                      "/images/red_idle.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -217,15 +217,15 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Prefab library also has a sprite sheet loader
 
-  core_str::String shaderPath("/misc/red_idle_all.txt");
+  core_str::String shaderPath("/misc/red_idle.xml");
   shaderPath = GetAssetsPath() + shaderPath;
 
-  core_io::FileIO_ReadA shaderFile(shaderPath.c_str());
+  core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
 
   if (shaderFile.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }
 
-  gfx_med::SpriteLoader_SpriteSheetPacker ssp;
+  gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   shaderFile.GetContents(sspContents);
   ssp.Init(sspContents, gfx_t::Dimension2i(png.GetImage().GetWidth(),

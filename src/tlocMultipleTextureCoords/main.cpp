@@ -287,7 +287,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String spriteSheetDataPath("/misc/blocksprites.xml");
   spriteSheetDataPath = GetAssetsPath() + spriteSheetDataPath;
 
-  core_io::FileIO_ReadA spriteData(spriteSheetDataPath.c_str());
+  core_io::FileIO_ReadA spriteData( (core_io::Path(spriteSheetDataPath)) );
 
   if (spriteData.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }

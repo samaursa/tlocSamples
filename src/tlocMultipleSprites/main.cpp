@@ -284,7 +284,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String spriteSheetDataPath("/misc/idle_and_spawn.txt");
   spriteSheetDataPath = GetAssetsPath() + spriteSheetDataPath;
 
-  core_io::FileIO_ReadA spriteData(spriteSheetDataPath.c_str());
+  core_io::FileIO_ReadA spriteData( core_io::Path(spriteSheetDataPath.c_str()) );
 
   if (spriteData.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }

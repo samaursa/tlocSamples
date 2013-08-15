@@ -99,7 +99,7 @@ struct glProgram
 
     VertexShader vShader;
     {
-      io::FileIO_ReadA file("../../../../../assets/SimpleVertexShader.glsl");
+      io::FileIO_ReadA file( (core_io::Path("../../../../../assets/SimpleVertexShader.glsl")) );
       file.Open();
 
       String code;
@@ -109,7 +109,7 @@ struct glProgram
 
     FragmentShader fShader;
     {
-      io::FileIO_ReadA file("../../../../../assets/SimpleFragmentShader.glsl");
+      io::FileIO_ReadA file( (core_io::Path("../../../../../assets/SimpleFragmentShader.glsl")) );
       file.Open();
 
       String code;
@@ -207,7 +207,7 @@ struct glProgram
       core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file(shaderPath.c_str());
+      io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
       if(file.Open() != ErrorSuccess)
       {
@@ -229,7 +229,7 @@ struct glProgram
       core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file(shaderPath.c_str());
+      io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
       file.Open();
 
       String code;
