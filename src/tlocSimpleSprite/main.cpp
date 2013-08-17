@@ -10,6 +10,8 @@
 
 using namespace tloc;
 
+gfx_gl::texture_object_sptr g_to;
+
 class WindowCallback
 {
 public:
@@ -32,6 +34,7 @@ class KeyboardCallback
 public:
   KeyboardCallback(core_cs::Entity* a_spriteEnt)
     : m_spriteEnt(a_spriteEnt)
+    , m_filterNearest(false)
   { }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -99,6 +102,25 @@ public:
       printf("\nNew FPS: %u", ta->GetFPS());
     }
 
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::f)
+    {
+      gfx_gl::TextureObject::Params texParams;
+
+      if (m_filterNearest)
+      {
+        m_filterNearest = false;
+        texParams.MinFilter<gfx_gl::p_texture_object::filter::Linear>();
+      }
+      else
+      {
+        m_filterNearest = true;
+        texParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+      }
+
+      g_to->SetParams(texParams);
+      g_to->Update();
+    }
+
     return false;
   }
 
@@ -111,6 +133,7 @@ public:
 private:
 
   core_cs::Entity* m_spriteEnt;
+  bool             m_filterNearest;
 
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -124,7 +147,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-    gfx_win::WindowSettings("tlocTexturedFan") );
+    gfx_win::WindowSettings("Simple Sprite") );
 
   //------------------------------------------------------------------------
   // Initialize renderer
@@ -203,11 +226,11 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
+  g_to.reset(new gfx_gl::TextureObject());
+  g_to->Initialize(png.GetImage());
 
   gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
+  u_to->SetName("s_texture").SetValueAs(g_to);
 
   prefab_gfx::Material matPrefab(entityMgr.get(), &cpoolMgr);
   matPrefab.AddUniform(u_to).AssetsPath(GetAssetsPath());
@@ -252,6 +275,8 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\nS - to toggle stop");
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
+
+  printf("\n\nf - toggle MinFilter between Linear and Nearest");
 
   printf("\n\nRight Arrow - goto previous frame");
   printf("\nLeft Arrow  - goto next frame");
