@@ -3,6 +3,7 @@
 #include <tlocInput/tloc_input.h>
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
+#include <tlocAnimation/tloc_animation.h>
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
@@ -235,6 +236,10 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
 
   // -----------------------------------------------------------------------
+  // One of the keyframe animation systems
+  anim_cs::TransformAnimationSystem taSys(eventMgr, entityMgr);
+
+  // -----------------------------------------------------------------------
   // The camera's view transformations are calculated by the camera system
   gfx_cs::CameraSystem      camSys(eventMgr, entityMgr);
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr, entityMgr);
@@ -338,6 +343,31 @@ int TLOC_MAIN(int argc, char *argv[])
     prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
   entityMgr->InsertComponent(ent, &mat);
 
+  anim_t::keyframe_set_mat4f32 KFs;
+
+  math_cs::Transform transform;
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0);
+    KFs.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 60);
+    KFs.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 120);
+    KFs.AddKeyframe(kf);
+  }
+
+  prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
+  ta.Add(ent, KFs);
+
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
@@ -353,7 +383,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::Entity* m_cameraEnt =
     prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
-    Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+    Create(fr, math_t::Vec3f(0.0f, 0.0f, 50.0f));
 
   prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEnt);
 
@@ -368,6 +398,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   meshSys.Initialize();
   matSys.Initialize();
+  taSys.Initialize();
   camSys.Initialize();
   arcBallSys.Initialize();
 
@@ -376,6 +407,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
 
+  core_time::Timer64 t;
+
   // Very important to enable depth testing
   glEnable(GL_DEPTH_TEST);
   while (win.IsValid() && !winCallback.m_endProgram)
@@ -383,16 +416,24 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     inputMgr->Update();
 
-    arcBallSys.ProcessActiveEntities();
-    camSys.ProcessActiveEntities();
-    // Finally, process (render) the mesh
-    meshSys.ProcessActiveEntities();
+    f64 deltaT = t.ElapsedSeconds();
 
-    win.SwapBuffers();
+    if (deltaT > 1.0f/60.0f)
+    {
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      arcBallSys.ProcessActiveEntities();
+      camSys.ProcessActiveEntities();
+      taSys.ProcessActiveEntities(deltaT);
+      // Finally, process (render) the mesh
+      meshSys.ProcessActiveEntities();
+
+      win.SwapBuffers();
+      t.Reset();
+    }
   }
 
   // -----------------------------------------------------------------------

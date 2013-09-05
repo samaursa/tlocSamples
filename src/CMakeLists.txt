@@ -9,6 +9,7 @@ function(add_common_libraries EXEC_NAME)
     tlocInput
     tlocPhysics
     tlocPrefab
+    tlocAnimation
     Box2D
     )
 
@@ -157,6 +158,7 @@ link_directories(
   ${TLOC_ENGINE_BUILD_PATH}/src/tlocInput/
   ${TLOC_ENGINE_BUILD_PATH}/src/tlocPhysics/
   ${TLOC_ENGINE_BUILD_PATH}/src/tlocPrefab/
+  ${TLOC_ENGINE_BUILD_PATH}/src/tlocAnimation/
 
   ${TLOC_DEP_BUILD_PATH}/src/Box2D/
   )
