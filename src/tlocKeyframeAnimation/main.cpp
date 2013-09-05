@@ -355,13 +355,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 60);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 1);
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 120);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 2);
     KFs.AddKeyframe(kf);
   }
 
@@ -383,9 +383,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::Entity* m_cameraEnt =
     prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
-    Create(fr, math_t::Vec3f(0.0f, 0.0f, 50.0f));
+    Create(fr, math_t::Vec3f(5.0f, 5.0f, 10.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEnt);
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).
+    Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
 
   meshSys.AttachCamera(m_cameraEnt);
 
