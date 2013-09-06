@@ -343,7 +343,7 @@ int TLOC_MAIN(int argc, char *argv[])
     prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
   entityMgr->InsertComponent(ent, &mat);
 
-  anim_t::keyframe_set_mat4f32 KFs;
+  anim_t::keyframe_sequence_mat4f32 KFs;
 
   math_cs::Transform transform;
 
