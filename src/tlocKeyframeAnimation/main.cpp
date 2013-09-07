@@ -365,8 +365,20 @@ int TLOC_MAIN(int argc, char *argv[])
     KFs.AddKeyframe(kf);
   }
 
+  {
+    transform.SetPosition(math_t::Vec3f32(5.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4);
+    KFs.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8);
+    KFs.AddKeyframe(kf);
+  }
+
   prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
-  ta.Add(ent, KFs);
+  ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
