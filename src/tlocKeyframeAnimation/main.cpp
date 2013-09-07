@@ -11,6 +11,9 @@
 
 using namespace tloc;
 
+anim_cs::TransformAnimation* g_tformAnimComp = nullptr;
+const tl_size g_fpsInterval = 5;
+
 class WindowCallback
 {
 public:
@@ -173,6 +176,32 @@ public:
     {
       m_flags.Unmark(k_altPressed);
     }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::r)
+    { g_tformAnimComp->SetReverse(!g_tformAnimComp->IsReversed()); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::l)
+    { g_tformAnimComp->SetLooping(!g_tformAnimComp->IsLooping()); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::p)
+    { g_tformAnimComp->SetPaused(!g_tformAnimComp->IsPaused()); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::s)
+    { g_tformAnimComp->SetStopped(!g_tformAnimComp->IsStopped()); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    { g_tformAnimComp->NextFrame(); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    { g_tformAnimComp->PrevFrame(); }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
+    {
+      g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() + g_fpsInterval);
+      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
+    {
+      if (g_tformAnimComp->GetFPS() >= g_fpsInterval)
+      {
+        g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() - g_fpsInterval);
+      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
+      }
+    }
+
     return false;
   }
 
@@ -380,6 +409,8 @@ int TLOC_MAIN(int argc, char *argv[])
   prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
+  g_tformAnimComp = ent->GetComponent<anim_cs::TransformAnimation>();
+
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
@@ -419,6 +450,15 @@ int TLOC_MAIN(int argc, char *argv[])
   // Main loop
 
   printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
+
+  printf("\nP - to toggle pause");
+  printf("\nL - to toggle looping");
+  printf("\nS - to toggle stop");
+  printf("\n= - increase FPS");
+  printf("\n- - decrease FPS");
+
+  printf("\n\nRight Arrow - goto previous frame");
+  printf("\nLeft Arrow  - goto next frame");
 
   core_time::Timer64 t;
 
