@@ -201,6 +201,54 @@ public:
       printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
       }
     }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::i)
+    {
+
+      anim_cs::TransformAnimation::kf_seq_type& kfSeq = g_tformAnimComp->
+        GetKeyframeSequence(g_tformAnimComp->GetCurrentKFSequence());
+
+      for (tl_size i = 0; i < kfSeq.size(); ++i)
+      {
+        kfSeq[i].SetInterpolationType(kfSeq[i].GetInterpolationType() + 1);
+
+        if (kfSeq[i].GetInterpolationType() == anim_t::p_keyframe::k_count)
+        { kfSeq[i].SetInterpolationType(anim_t::p_keyframe::k_linear); }
+      }
+
+      switch(kfSeq[0].GetInterpolationType())
+      {
+      case anim_t::p_keyframe::k_linear:
+        printf("\nInterpolation type: linear");
+        break;
+      case anim_t::p_keyframe::k_ease_in_cubic:
+        printf("\nInterpolation type: ease in (cubic)");
+        break;
+      case anim_t::p_keyframe::k_ease_out_cubic:
+        printf("\nInterpolation type: ease out (cubic)");
+        break;
+      case anim_t::p_keyframe::k_ease_in_out_cubic:
+        printf("\nInterpolation type: ease in-out (cubic)");
+        break;
+      case anim_t::p_keyframe::k_ease_in_quadratic:
+        printf("\nInterpolation type: ease in (quadratic)");
+        break;
+      case anim_t::p_keyframe::k_ease_out_quadratic:
+        printf("\nInterpolation type: ease out (quadratic)");
+        break;
+      case anim_t::p_keyframe::k_ease_in_out_quadratic:
+        printf("\nInterpolation type: ease in-out (quadratic)");
+        break;
+      case anim_t::p_keyframe::k_ease_in_sin:
+        printf("\nInterpolation type: ease in (sin)");
+        break;
+      case anim_t::p_keyframe::k_ease_out_sin:
+        printf("\nInterpolation type: ease out (sin)");
+        break;
+      case anim_t::p_keyframe::k_ease_in_out_sin:
+        printf("\nInterpolation type: ease in-out (sin)");
+        break;
+      }
+    }
 
     return false;
   }
@@ -376,35 +424,39 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_cs::Transform transform;
 
+  using namespace anim_t::p_keyframe;
   {
     transform.SetPosition(math_t::Vec3f32(0, 0, 0));
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
-      anim_t::keyframe_mat4f32::interpolation_type(anim_t::keyframe_mat4f32::k_ease_out_quadratic));
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
-      anim_t::keyframe_mat4f32::interpolation_type(anim_t::keyframe_mat4f32::k_ease_out_quadratic));
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(5.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 10);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 10,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 12);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 12,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
   }
 
@@ -456,6 +508,7 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\nP - to toggle pause");
   printf("\nL - to toggle looping");
   printf("\nS - to toggle stop");
+  printf("\nI - to change interpolation type");
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
 
