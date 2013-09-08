@@ -378,31 +378,33 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     transform.SetPosition(math_t::Vec3f32(0, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
+      anim_t::keyframe_mat4f32::interpolation_type(anim_t::keyframe_mat4f32::k_ease_out_quadratic));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 1);
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 2);
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(5.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4);
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
+      anim_t::keyframe_mat4f32::interpolation_type(anim_t::keyframe_mat4f32::k_ease_out_quadratic));
     KFs.AddKeyframe(kf);
   }
 
   {
     transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8);
+    KFs.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(5.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 10);
+    KFs.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 12);
     KFs.AddKeyframe(kf);
   }
 
