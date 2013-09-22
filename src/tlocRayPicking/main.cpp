@@ -57,6 +57,7 @@ struct glProgram
     , m_eventMgr(new core_cs::EventManager())
     , m_entityMgr(new core_cs::EntityManager(m_eventMgr))
     , m_quadSys(m_eventMgr, m_entityMgr)
+    , m_mouseVisible(true)
 
   { m_win.Register(this); }
 
@@ -67,7 +68,6 @@ struct glProgram
     // trying to match iPad retina display ratio (not resolution)
     m_win.Create(graphics_mode::Properties(1024, 768),
                  gfx_win::WindowSettings("Atom & Eve"));
-    m_win.SetMouseVisibility(true);
 
     ParamList<core_t::Any> params;
     params.m_param1 = m_win.GetWindowHandle();
@@ -401,6 +401,8 @@ struct glProgram
     fanSys.Initialize();
     camSys.Initialize();
 
+    printf("\nV - toggle mouse cursor visibility");
+
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false)
     {
       // Update our HIDs
@@ -450,11 +452,11 @@ struct glProgram
     {
       m_keyPresses.Toggle(key_pause);
     }
-    if (a_event.m_keyCode == input::hid::KeyboardEvent::q)
+    else if (a_event.m_keyCode == input::hid::KeyboardEvent::q)
     {
       m_keyPresses.Toggle(key_exit);
     }
-    if (a_event.m_keyCode == input::hid::KeyboardEvent::c)
+    else if (a_event.m_keyCode == input::hid::KeyboardEvent::c)
     {
       m_keyPresses.Toggle(key_cameraPersp);
 
@@ -469,14 +471,14 @@ struct glProgram
         fr.BuildFrustum();
 
         m_cameraEnt->GetComponent<math_cs::Transform>()->
-          SetPosition(math_t::Vec3f32(0, 0, -1.0f));
-        m_cameraEnt->GetComponent<math_cs::Projection>()->
+          SetPosition(math_t::Vec3f32(0, 0, 1.0f));
+        m_cameraEnt->GetComponent<gfx_cs::Camera>()->
           SetFrustum(fr);
       }
       else
       {
         m_cameraEnt->GetComponent<math_cs::Transform>()->
-          SetPosition(math_t::Vec3f32(0, 0, -30.0f));
+          SetPosition(math_t::Vec3f32(0, 0, 30.0f));
 
         math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
                                math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
@@ -488,8 +490,13 @@ struct glProgram
         math_proj::FrustumPersp fr(params);
         fr.BuildFrustum();
 
-        m_cameraEnt->GetComponent<math_cs::Projection>()->SetFrustum(fr);
+        m_cameraEnt->GetComponent<gfx_cs::Camera>()->SetFrustum(fr);
       }
+    }
+    else if (a_event.m_keyCode == input::hid::KeyboardEvent::v)
+    {
+      m_mouseVisible = !m_mouseVisible;
+      m_win.SetMouseVisibility(m_mouseVisible);
     }
 
     return false;
@@ -549,6 +556,7 @@ struct glProgram
   core_time::Timer32      m_renderFrameTime;
   core_time::Timer32      m_physFrameTime;
   const ent_type*         m_cameraEnt;
+  bool                    m_mouseVisible;
 
   ent_type*               m_fanEnt;
   ent_type*               m_mouseFan;

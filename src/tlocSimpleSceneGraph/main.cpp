@@ -436,7 +436,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::SceneNode* parentNode = ent->GetComponent<gfx_cs::SceneNode>();
 
   // Set ent as the parent of ent2
-  ent_2->GetComponent<gfx_cs::SceneNode>()->SetParent(parentNode);
+  parentNode->AddChild(ent_2->GetComponent<gfx_cs::SceneNode>());
 
   anim_t::keyframe_sequence_mat4f32 KFs;
   anim_t::keyframe_sequence_mat4f32 KFs_2ndCrate;
