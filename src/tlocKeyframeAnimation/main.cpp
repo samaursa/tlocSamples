@@ -201,9 +201,16 @@ public:
       printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
       }
     }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n0)
+    {
+      g_tformAnimComp->SetCurrentKFSequence(0);
+    }
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)
+    {
+      g_tformAnimComp->SetCurrentKFSequence(1);
+    }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::i)
     {
-
       anim_cs::TransformAnimation::kf_seq_type& kfSeq = g_tformAnimComp->
         GetKeyframeSequence(g_tformAnimComp->GetCurrentKFSequence());
 
@@ -463,6 +470,46 @@ int TLOC_MAIN(int argc, char *argv[])
   prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
+  anim_t::keyframe_sequence_mat4f32 KFs_2;
+
+  using namespace anim_t::p_keyframe;
+  {
+    transform.SetPosition(math_t::Vec3f32(0, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
+    KFs_2.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(3.0f, 0, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 2,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
+    KFs_2.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(3.0f, 0, 3.0f));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
+    KFs_2.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 3.0f));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 6,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
+    KFs_2.AddKeyframe(kf);
+  }
+
+  {
+    transform.SetPosition(math_t::Vec3f32(0.0f, 0.0f, 0));
+    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8,
+      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
+    KFs_2.AddKeyframe(kf);
+  }
+
+  ta.Fps(48).Add(ent, KFs_2);
+
   g_tformAnimComp = ent->GetComponent<anim_cs::TransformAnimation>();
 
   // -----------------------------------------------------------------------
@@ -511,6 +558,9 @@ int TLOC_MAIN(int argc, char *argv[])
   printf("\nI - to change interpolation type");
   printf("\n= - increase FPS");
   printf("\n- - decrease FPS");
+
+  printf("\n\n0 - First keyframe sequence");
+  printf("\n1 - Second keyframe sequence");
 
   printf("\n\nRight Arrow - goto previous frame");
   printf("\nLeft Arrow  - goto next frame");
