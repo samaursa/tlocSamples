@@ -212,7 +212,7 @@ public:
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::i)
     {
       anim_cs::TransformAnimation::kf_seq_type& kfSeq = g_tformAnimComp->
-        GetKeyframeSequence(g_tformAnimComp->GetCurrentKFSequence());
+        GetCurrentKeyframeSequence();
 
       for (tl_size i = 0; i < kfSeq.size(); ++i)
       {
@@ -386,6 +386,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
   to->Initialize(png.GetImage());
+  to->Activate();
 
   gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
   u_to->SetName("s_texture").SetValueAs(to);

@@ -250,6 +250,7 @@ struct glProgram
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
+      to->Activate();
 
       gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);
@@ -271,6 +272,7 @@ struct glProgram
 
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       to->Initialize(png.GetImage());
+      to->Activate();
 
       gl::uniform_sptr  u_to(new gl::Uniform());
       u_to->SetName("shaderTexture").SetValueAs(to);

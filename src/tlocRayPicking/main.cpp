@@ -300,6 +300,7 @@ struct glProgram
 
       m_texObjHenry.reset(new gfx_gl::TextureObject());
       m_texObjHenry->Initialize(image.GetImage());
+      m_texObjHenry->Activate();
 
       gfx_gl::uniform_sptr uniform( (new gl::Uniform()) );
       uniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
@@ -322,6 +323,7 @@ struct glProgram
 
       m_texObjCrate.reset(new gfx_gl::TextureObject());
       m_texObjCrate->Initialize(image.GetImage());
+      m_texObjCrate->Activate();
 
       gfx_gl::uniform_sptr uniform(new gl::Uniform());
       uniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);

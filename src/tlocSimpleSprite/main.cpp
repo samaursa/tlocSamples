@@ -228,6 +228,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   g_to.reset(new gfx_gl::TextureObject());
   g_to->Initialize(png.GetImage());
+  g_to->Activate();
 
   gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
   u_to->SetName("s_texture").SetValueAs(g_to);
