@@ -252,8 +252,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   shaderFile.GetContents(sspContents);
-  ssp.Init(sspContents, gfx_t::Dimension2i(png.GetImage().GetWidth(),
-                                           png.GetImage().GetHeight()));
+  ssp.Init(sspContents, png.GetImage().GetDimensions());
 
   prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
     Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
@@ -271,7 +270,12 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nP - to toggle pause");
+  printf("\nSprite sheet size: %i, %i",
+          ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
+  printf("\nImage size: %i, %i",
+          png.GetImage().GetWidth(), png.GetImage().GetHeight());
+
+  printf("\\nP - to toggle pause");
   printf("\nL - to toggle looping");
   printf("\nS - to toggle stop");
   printf("\n= - increase FPS");

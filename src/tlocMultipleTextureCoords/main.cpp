@@ -296,8 +296,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   spriteData.GetContents(sspContents);
-  ssp.Init(sspContents, gfx_t::Dimension2i(png.GetImage().GetWidth(),
-                                           png.GetImage().GetHeight()));
+  ssp.Init(sspContents, png.GetImage().GetDimensions());
 
   const char* spriteNames [] =
   {
@@ -359,7 +358,12 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\n\nRight Arrow - goto next animation sequence");
+  printf("\nSprite sheet size: %i, %i",
+          ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
+  printf("\nImage size: %i, %i",
+          png.GetImage().GetWidth(), png.GetImage().GetHeight());
+
+  printf("\n\n\nRight Arrow - goto next animation sequence");
   printf("\nLeft Arrow  - goto previous animation sequence");
   printf("\n1 to 5 - change sprite color");
 
