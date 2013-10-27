@@ -63,6 +63,18 @@ int TLOC_MAIN(int , char *[])
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
   { printf("\nGraphics platform failed to initialize"); return -1; }
 
+  // -----------------------------------------------------------------------
+  // Get the default renderer
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+
+  gfx_rend::Renderer::Params p;
+  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .Clear<clear::ColorBufferBit>();
+
+  renderer->SetParams(p);
+
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
   // its lifetime. More than one InputManager can be instantiated.
@@ -101,6 +113,7 @@ int TLOC_MAIN(int , char *[])
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
   gfx_cs::QuadRenderSystem quadSys(eventMgr, entityMgr);
+  quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -276,8 +289,6 @@ int TLOC_MAIN(int , char *[])
     if (win.IsValid() && renderFrameTime.ElapsedMilliSeconds() > 16)
     {
       renderFrameTime.Reset();
-
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       quadSys.ProcessActiveEntities();
 

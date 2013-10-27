@@ -284,6 +284,7 @@ struct glProgram
     QuadRenderSystem  quadSys(m_eventMgr, m_entityMgr);
     quadSys.SetRenderer(m_renderer);
     FanRenderSystem   fanSys(m_eventMgr, m_entityMgr);
+    fanSys.SetRenderer(m_renderer);
     CameraSystem      camSys(m_eventMgr, m_entityMgr);
     MaterialSystem    matSys(m_eventMgr, m_entityMgr);
 
@@ -404,7 +405,7 @@ struct glProgram
       Create(fr, math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.SetCamera(m_cameraEnt);
-    fanSys.AttachCamera(m_cameraEnt);
+    fanSys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
     quadSys.Initialize();

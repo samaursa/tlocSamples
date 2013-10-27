@@ -84,8 +84,10 @@ struct glProgram
     // Get the default renderer
     m_renderer = gfx_rend::GetDefaultRenderer();
     gfx_rend::Renderer::Params p;
-    p.Clear<gfx_rend::p_renderer::clear::ColorBufferBit>().
-      Clear<gfx_rend::p_renderer::clear::DepthBufferBit>();
+    p.Clear<gfx_rend::p_renderer::clear::ColorBufferBit>()
+     .Clear<gfx_rend::p_renderer::clear::DepthBufferBit>()
+     .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    m_renderer->SetParams(p);
 
     phys_mgr_type::error_type result =
       m_physicsMgr.Initialize(phys_mgr_type::gravity(math_t::Vec2f(0.0f, -10.0f)),
@@ -197,13 +199,15 @@ struct glProgram
     core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
 
     QuadRenderSystem quadSys(m_eventMgr, m_entityMgr);
-    quadSys.SetRenderer(m_renderer);
-
     FanRenderSystem fanSys(m_eventMgr, m_entityMgr);
     CameraSystem    camSys(m_eventMgr, m_entityMgr);
     MaterialSystem matSys(m_eventMgr, m_entityMgr);
     RigidBodySystem physicsSys(m_eventMgr, m_entityMgr,
                                &m_physicsMgr.GetWorld());
+
+    // attach the default renderer to both rendering systems
+    quadSys.SetRenderer(m_renderer);
+    fanSys.SetRenderer(m_renderer);
 
     ComponentPoolManager poolMgr;
 
@@ -372,7 +376,7 @@ struct glProgram
       Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
     quadSys.SetCamera(m_cameraEnt);
-    fanSys.AttachCamera(m_cameraEnt);
+    fanSys.SetCamera(m_cameraEnt);
 
     camSys.Initialize();
 
