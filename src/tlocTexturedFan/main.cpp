@@ -38,10 +38,9 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowSettings("tlocTexturedFan") );
 
   //------------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager

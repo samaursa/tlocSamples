@@ -180,10 +180,9 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowSettings("Sprite Animation") );
 
   //------------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
