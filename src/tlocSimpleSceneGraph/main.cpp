@@ -186,7 +186,7 @@ public:
     { g_tformAnimComp->SetStopped(!g_tformAnimComp->IsStopped()); }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     { g_tformAnimComp->NextFrame(); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     { g_tformAnimComp->PrevFrame(); }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
@@ -269,11 +269,24 @@ int TLOC_MAIN(int argc, char *argv[])
   win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
     gfx_win::WindowSettings("tlocTexturedFan") );
 
+  //------------------------------------------------------------------------
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
+
   // -----------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Get the default renderer
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+
+  gfx_rend::Renderer::Params p;
+  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .Enable<enable_disable::DepthTest>()
+   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .Clear<clear::ColorBufferBit>()
+   .Clear<clear::DepthBufferBit>();
+
+  renderer->SetParams(p);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -307,6 +320,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
   gfx_cs::MeshRenderSystem  meshSys(eventMgr, entityMgr);
+  meshSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -531,7 +545,7 @@ int TLOC_MAIN(int argc, char *argv[])
   prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).
     Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
 
-  meshSys.AttachCamera(m_cameraEnt);
+  meshSys.SetCamera(m_cameraEnt);
 
   MayaCam mayaCam(m_cameraEnt);
   keyboard->Register(&mayaCam);
@@ -564,8 +578,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_time::Timer64 t;
 
-  // Very important to enable depth testing
-  glEnable(GL_DEPTH_TEST);
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -578,14 +590,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (deltaT > 1.0f/60.0f)
     {
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      renderer->ApplyRenderSettings();
 
       arcBallSys.ProcessActiveEntities();
-      camSys.ProcessActiveEntities();
-      taSys.ProcessActiveEntities(deltaT);
-      sgSys.ProcessActiveEntities(deltaT);
-      // Finally, process (render) the mesh
-      meshSys.ProcessActiveEntities();
+      camSys.    ProcessActiveEntities();
+      taSys.     ProcessActiveEntities(deltaT);
+      sgSys.     ProcessActiveEntities(deltaT);
+      meshSys.   ProcessActiveEntities();
 
       win.SwapBuffers();
       t.Reset();

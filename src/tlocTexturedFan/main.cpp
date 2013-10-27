@@ -38,10 +38,14 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowSettings("tlocTexturedFan") );
 
   //------------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
+
+  // -----------------------------------------------------------------------
+  // Get the default renderer
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -57,6 +61,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
   gfx_cs::FanRenderSystem   fanSys(eventMgr, entityMgr);
+  fanSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -161,7 +166,7 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    // Finally, process the fan
+    renderer->ApplyRenderSettings();
     fanSys.ProcessActiveEntities();
 
     win.SwapBuffers();

@@ -75,11 +75,19 @@ struct glProgram
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
 
-    if (m_renderer.Initialize() != ErrorSuccess)
-    {
-      TLOC_ASSERT(false, "Renderer failed to initialize");
-      exit(0);
-    }
+    //------------------------------------------------------------------------
+    // Initialize graphics platform
+    if (gfx_gl::InitializePlatform() != ErrorSuccess)
+    { TLOC_ASSERT(false, "\nGraphics platform failed to initialize"); exit(0); }
+
+    // -----------------------------------------------------------------------
+    // Get the default renderer
+    m_renderer = gfx_rend::GetDefaultRenderer();
+    gfx_rend::Renderer::Params p;
+    p.Clear<gfx_rend::p_renderer::clear::ColorBufferBit>()
+     .Clear<gfx_rend::p_renderer::clear::DepthBufferBit>()
+     .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    m_renderer->SetParams(p);
 
     phys_mgr_type::error_type result =
       m_physicsMgr.Initialize(phys_mgr_type::gravity(math_t::Vec2f(0.0f, -10.0f)),
@@ -196,6 +204,10 @@ struct glProgram
     MaterialSystem matSys(m_eventMgr, m_entityMgr);
     RigidBodySystem physicsSys(m_eventMgr, m_entityMgr,
                                &m_physicsMgr.GetWorld());
+
+    // attach the default renderer to both rendering systems
+    quadSys.SetRenderer(m_renderer);
+    fanSys.SetRenderer(m_renderer);
 
     ComponentPoolManager poolMgr;
 
@@ -363,8 +375,8 @@ struct glProgram
     m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
       Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
-    quadSys.AttachCamera(m_cameraEnt);
-    fanSys.AttachCamera(m_cameraEnt);
+    quadSys.SetCamera(m_cameraEnt);
+    fanSys.SetCamera(m_cameraEnt);
 
     camSys.Initialize();
 
@@ -429,7 +441,9 @@ struct glProgram
       if (m_win.IsValid() && m_renderFrameTime.ElapsedMilliSeconds() > 16)
       {
         m_renderFrameTime.Reset();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Since all systems use one renderer, we need to do this only once
+        m_renderer->ApplyRenderSettings();
 
         camSys.ProcessActiveEntities();
         physicsSys.ProcessActiveEntities();
@@ -525,7 +539,7 @@ struct glProgram
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   gfx_win::Window         m_win;
-  gfx_rend::Renderer      m_renderer;
+  gfx_rend::renderer_sptr m_renderer;
   core_time::Timer32      m_timer;
   core_time::Timer32      m_frameTimer;
   core_time::Timer32      m_renderFrameTime;

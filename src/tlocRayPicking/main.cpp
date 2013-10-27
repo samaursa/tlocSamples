@@ -82,18 +82,25 @@ struct glProgram
 
     m_touchSurface = m_inputMgrImm->CreateHID<input::hid::TouchSurfaceI>();
 
-    if (m_renderer.Initialize() != ErrorSuccess)
+    // -----------------------------------------------------------------------
+    // Initialize graphics platform
+    if (gfx_gl::InitializePlatform() != ErrorSuccess)
     {
-      TLOC_ASSERT(false, "Renderer failed to initialize");
+      TLOC_ASSERT(false, "\nGraphics platform failed to initialize");
       exit(0);
     }
 
-    phys_mgr_type::error_type result =
-      m_physicsMgr.Initialize(phys_mgr_type::gravity(math_t::Vec2f(0.0f, -10.0f)),
-                              phys_mgr_type::velocity_iterations(6),
-                              phys_mgr_type::position_iterations(2));
+    // -----------------------------------------------------------------------
+    // Get the default renderer
 
-    TLOC_ASSERT(result == ErrorSuccess, "Physics failed to initialize!");
+    using namespace gfx_rend::p_renderer;
+    m_renderer = gfx_rend::GetDefaultRenderer();
+
+    gfx_rend::Renderer::Params p;
+    p.FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    p.Clear<clear::ColorBufferBit>();
+
+    m_renderer->SetParams(p);
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -275,7 +282,9 @@ struct glProgram
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
     QuadRenderSystem  quadSys(m_eventMgr, m_entityMgr);
+    quadSys.SetRenderer(m_renderer);
     FanRenderSystem   fanSys(m_eventMgr, m_entityMgr);
+    fanSys.SetRenderer(m_renderer);
     CameraSystem      camSys(m_eventMgr, m_entityMgr);
     MaterialSystem    matSys(m_eventMgr, m_entityMgr);
 
@@ -395,8 +404,8 @@ struct glProgram
     m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
       Create(fr, math_t::Vec3f(posX, posY, 1.0f));
 
-    quadSys.AttachCamera(m_cameraEnt);
-    fanSys.AttachCamera(m_cameraEnt);
+    quadSys.SetCamera(m_cameraEnt);
+    fanSys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
     quadSys.Initialize();
@@ -432,10 +441,11 @@ struct glProgram
       if (m_win.IsValid())
       {
         m_renderFrameTime.Reset();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
+
+        m_renderer->ApplyRenderSettings();
         quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
 
@@ -552,11 +562,10 @@ struct glProgram
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   gfx_win::Window         m_win;
-  gfx_rend::Renderer      m_renderer;
+  gfx_rend::renderer_sptr m_renderer;
   core_time::Timer32      m_timer;
   core_time::Timer32      m_frameTimer;
   core_time::Timer32      m_renderFrameTime;
-  core_time::Timer32      m_physFrameTime;
   const ent_type*         m_cameraEnt;
   bool                    m_mouseVisible;
 
@@ -577,10 +586,9 @@ struct glProgram
   input_hid::TouchSurfaceI::touch_container_type m_currentTouches;
   core::utils::Checkpoints   m_keyPresses;
 
-  core_cs::event_manager_sptr m_eventMgr;
+  core_cs::event_manager_sptr   m_eventMgr;
   core_cs::entity_manager_sptr m_entityMgr;
 
-  phys_mgr_type             m_physicsMgr;
   gfx_cs::QuadRenderSystem  m_quadSys;
 };
 TLOC_DEF_TYPE(glProgram);

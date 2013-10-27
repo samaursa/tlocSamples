@@ -140,7 +140,18 @@ TLOC_DEF_TYPE(KeyboardCallback);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
-  TLOC_UNUSED_2(argc, argv);
+  core_str::String imageAndXmlName("red_idle");
+
+  if (argc == 2)
+  { imageAndXmlName = argv[1]; }
+
+  // create correct paths
+  core_str::String imagePath("/images/");
+  imagePath += imageAndXmlName;
+  imagePath += ".png";
+  core_str::String xmlPath("/misc/");
+  xmlPath += imageAndXmlName;
+  xmlPath += ".xml";
 
   gfx_win::Window win;
   WindowCallback  winCallback;
@@ -150,10 +161,21 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowSettings("Simple Sprite") );
 
   //------------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
+
+  // -----------------------------------------------------------------------
+  // Get the default renderer
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+    gfx_rend::Renderer::Params p;
+    p.Enable<enable_disable::Blend>()
+     .Clear<clear::ColorBufferBit>()
+     .ClearColor(gfx_t::Color(0.5f, 0.5f, 0.5f, 1.0f))
+     .BlendFunction<blend_function::SourceAlpha,
+                    blend_function::OneMinusSourceAlpha>();
+    renderer->SetParams(p);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -185,7 +207,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
   gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
-
+  quadSys.SetRenderer(renderer);
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
@@ -197,8 +219,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                       math_t::Rectf32::height(0.5f));
+  math_t::Rectf32 rect(math_t::Rectf32::width(1.0f),
+                       math_t::Rectf32::height(1.0f));
   core_cs::Entity* spriteEnt =
     prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
 
@@ -220,7 +242,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/red_idle.png").c_str() );
+                      imagePath).c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -241,10 +263,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Prefab library also has a sprite sheet loader
 
-  core_str::String shaderPath("/misc/red_idle.xml");
-  shaderPath = GetAssetsPath() + shaderPath;
+  xmlPath = GetAssetsPath() + xmlPath;
 
-  core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
+  core_io::FileIO_ReadA shaderFile( (core_io::Path(xmlPath)) );
 
   if (shaderFile.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }
@@ -288,8 +309,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_time::Timer64 t;
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -302,8 +321,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (deltaT > 1.0f/60.0f)
     {
-      glClear(GL_COLOR_BUFFER_BIT);
       // Finally, process the fan
+      renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
 

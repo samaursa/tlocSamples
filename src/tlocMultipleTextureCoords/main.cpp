@@ -180,10 +180,24 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_win::WindowSettings("Sprite Animation") );
 
   //------------------------------------------------------------------------
-  // Initialize renderer
-  gfx_rend::Renderer  renderer;
-  if (renderer.Initialize() != ErrorSuccess)
-  { printf("\nRenderer failed to initialize"); return 1; }
+  // Initialize graphics platform
+  if (gfx_gl::InitializePlatform() != ErrorSuccess)
+  { printf("\nGraphics platform failed to initialize"); return -1; }
+
+  // -----------------------------------------------------------------------
+  // Get the default renderer
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+
+  gfx_rend::Renderer::Params p;
+  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .BlendFunction<blend_function::SourceAlpha,
+                  blend_function::OneMinusSourceAlpha>()
+   .Enable<enable_disable::Blend>()
+   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .Clear<clear::ColorBufferBit>();
+
+  renderer->SetParams(p);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -218,6 +232,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
   gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -385,8 +400,9 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       glClear(GL_COLOR_BUFFER_BIT);
-      // Finally, process the fan
       taSys.ProcessActiveEntities(deltaT);
+
+      renderer->ApplyRenderSettings();
       quadSys.ProcessActiveEntities();
 
       win.SwapBuffers();
