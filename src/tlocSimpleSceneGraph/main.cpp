@@ -186,7 +186,7 @@ public:
     { g_tformAnimComp->SetStopped(!g_tformAnimComp->IsStopped()); }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     { g_tformAnimComp->NextFrame(); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
+    else if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     { g_tformAnimComp->PrevFrame(); }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
@@ -590,12 +590,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (deltaT > 1.0f/60.0f)
     {
+      renderer->ApplyRenderSettings();
+
       arcBallSys.ProcessActiveEntities();
-      camSys.ProcessActiveEntities();
-      taSys.ProcessActiveEntities(deltaT);
-      sgSys.ProcessActiveEntities(deltaT);
-      // Finally, process (render) the mesh
-      meshSys.ProcessActiveEntities();
+      camSys.    ProcessActiveEntities();
+      taSys.     ProcessActiveEntities(deltaT);
+      sgSys.     ProcessActiveEntities(deltaT);
+      meshSys.   ProcessActiveEntities();
 
       win.SwapBuffers();
       t.Reset();

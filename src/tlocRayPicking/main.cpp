@@ -444,6 +444,8 @@ struct glProgram
 
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
+
+        m_renderer->ApplyRenderSettings();
         quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
 

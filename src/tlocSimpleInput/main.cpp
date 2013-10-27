@@ -290,6 +290,7 @@ int TLOC_MAIN(int , char *[])
     {
       renderFrameTime.Reset();
 
+      renderer->ApplyRenderSettings();
       quadSys.ProcessActiveEntities();
 
       win.SwapBuffers();

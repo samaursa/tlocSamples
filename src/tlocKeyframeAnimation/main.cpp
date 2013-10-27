@@ -599,6 +599,7 @@ int TLOC_MAIN(int argc, char *argv[])
       camSys.ProcessActiveEntities();
       taSys.ProcessActiveEntities(deltaT);
       // Finally, process (render) the mesh
+      renderer->ApplyRenderSettings();
       meshSys.ProcessActiveEntities();
 
       win.SwapBuffers();

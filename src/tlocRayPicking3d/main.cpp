@@ -474,7 +474,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     arcBallSys.ProcessActiveEntities();
     camSys.ProcessActiveEntities();
-    // Finally, process (render) the mesh
+
+    renderer->ApplyRenderSettings();
     meshSys.ProcessActiveEntities();
 
     win.SwapBuffers();

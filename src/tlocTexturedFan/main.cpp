@@ -166,7 +166,7 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    // Finally, process the fan
+    renderer->ApplyRenderSettings();
     fanSys.ProcessActiveEntities();
 
     win.SwapBuffers();

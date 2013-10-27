@@ -442,6 +442,9 @@ struct glProgram
       {
         m_renderFrameTime.Reset();
 
+        // Since all systems use one renderer, we need to do this only once
+        m_renderer->ApplyRenderSettings();
+
         camSys.ProcessActiveEntities();
         physicsSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();

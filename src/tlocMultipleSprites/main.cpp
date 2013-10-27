@@ -364,7 +364,6 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       renderer->ApplyRenderSettings();
-      // Finally, process the fan
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
 

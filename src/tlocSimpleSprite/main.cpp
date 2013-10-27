@@ -177,7 +177,6 @@ int TLOC_MAIN(int argc, char *argv[])
                     blend_function::OneMinusSourceAlpha>();
     renderer->SetParams(p);
 
-
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
   // its lifetime. More than one InputManager can be instantiated.
@@ -323,6 +322,7 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       // Finally, process the fan
+      renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
 
