@@ -204,10 +204,11 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::ComponentPoolManager cpoolMgr;
 
   //------------------------------------------------------------------------
-  // To render a fan, we need a fan render system - this is a specialized
+  // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
   gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
   quadSys.SetRenderer(renderer);
+
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
