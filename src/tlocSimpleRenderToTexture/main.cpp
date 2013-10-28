@@ -9,6 +9,9 @@
 
 using namespace tloc;
 
+const u32 g_rttResX = 128;
+const u32 g_rttResY = 128;
+
 class WindowCallback
 {
 public:
@@ -48,10 +51,11 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
   {
     gfx_rend::Renderer::Params p;
-    p.FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
-    p.Clear<clear::ColorBufferBit>()
-     .Clear<clear::DepthBufferBit>()
-     .ClearColor(gfx_t::Color(0.0f, 0.0f, 1.0f, 1.0f));
+    p.SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    p.AddClearBit<clear::ColorBufferBit>()
+     .AddClearBit<clear::DepthBufferBit>()
+     .SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+     .SetDimensions(gfx_rend::Renderer::dimension_type(500, 500));
     renderer->SetParams(p);
   }
 
@@ -76,7 +80,7 @@ int TLOC_MAIN(int argc, char *argv[])
     (new gfx_gl::TextureObject(gfx_gl::TextureObject()) );
   gfx_med::Image rttImg;
   rttImg.Create
-    (gfx_med::Image::dimension_type(win.GetWidth(), win.GetHeight()),
+    (gfx_med::Image::dimension_type(g_rttResX, g_rttResY),
      gfx_med::Image::color_type::COLOR_WHITE);
 
   rttTo->Initialize(rttImg);
@@ -89,10 +93,11 @@ int TLOC_MAIN(int argc, char *argv[])
 
   using namespace gfx_rend::p_renderer;
   gfx_rend::Renderer::Params p;
-  p.FBO(fbo);
-  p.Clear<clear::ColorBufferBit>()
-   .Clear<clear::DepthBufferBit>()
-   .ClearColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f));
+  p.SetFBO(fbo);
+  p.AddClearBit<clear::ColorBufferBit>()
+   .AddClearBit<clear::DepthBufferBit>()
+   .SetClearColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
+   .SetDimensions(gfx_rend::Renderer::dimension_type(g_rttResX, g_rttResY));
   gfx_rend::renderer_sptr rttRenderer(new gfx_rend::Renderer(p));
 
   //------------------------------------------------------------------------
@@ -164,7 +169,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/uv_grid_col.png").c_str() );
+                      "/images/henry.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
   { TLOC_ASSERT(false, "Image did not load!"); }
@@ -211,12 +216,24 @@ int TLOC_MAIN(int argc, char *argv[])
   u_rttTo->SetName("s_texture").SetValueAs(rttTo);
 
   gfx_gl::uniform_sptr  u_blur(new gfx_gl::Uniform());
-  u_blur->SetName("u_blur").SetValueAs(10.0f);
+  u_blur->SetName("u_blur").SetValueAs(10);
 
   gfx_gl::shader_operator_sptr soRtt =
     gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
   soRtt->AddUniform(u_rttTo);
   soRtt->AddUniform(u_blur);
+
+  {
+    gfx_gl::uniform_sptr  u_tempUni(new gfx_gl::Uniform());
+    u_tempUni->SetName("u_winResX").SetValueAs(core_utils::CastNumber<s32>(256));
+    soRtt->AddUniform(u_tempUni);
+  }
+  {
+    gfx_gl::uniform_sptr  u_tempUni(new gfx_gl::Uniform());
+    u_tempUni->SetName("u_winResY").SetValueAs(core_utils::CastNumber<s32>(256));
+    soRtt->AddUniform(u_tempUni);
+  }
+
 
   rttMat.AddShaderOperator(soRtt);
 
@@ -228,7 +245,7 @@ int TLOC_MAIN(int argc, char *argv[])
     Sides(64).Circle(circ).Create();
   entityMgr->InsertComponent(q, &mat);
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(2.0f), math_t::Rectf32::height(2.0f));
+  math_t::Rectf32 rect(math_t::Rectf32::width(1.5f), math_t::Rectf32::height(1.5f));
   core_cs::Entity* fullScreenQuad = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr)
     .Dimensions(rect).Create();
   entityMgr->InsertComponent(fullScreenQuad, &rttMat);

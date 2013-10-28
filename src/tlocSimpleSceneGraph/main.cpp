@@ -279,12 +279,13 @@ int TLOC_MAIN(int argc, char *argv[])
   using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
+  using gfx_rend::Renderer;
   gfx_rend::Renderer::Params p;
-  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
-   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
-   .Clear<clear::ColorBufferBit>()
-   .Clear<clear::DepthBufferBit>();
+   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .AddClearBit<clear::ColorBufferBit>()
+   .AddClearBit<clear::DepthBufferBit>();
 
   renderer->SetParams(p);
 

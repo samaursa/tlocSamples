@@ -69,9 +69,9 @@ int TLOC_MAIN(int , char *[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   gfx_rend::Renderer::Params p;
-  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
-   .Clear<clear::ColorBufferBit>();
+  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .AddClearBit<clear::ColorBufferBit>();
 
   renderer->SetParams(p);
 
