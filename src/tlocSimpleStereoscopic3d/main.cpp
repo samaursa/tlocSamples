@@ -10,6 +10,8 @@
 
 using namespace tloc;
 
+bool g_renderDepthToRightViewport = false;
+
 class WindowCallback
 {
 public:
@@ -189,7 +191,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
-    gfx_win::WindowSettings("tlocTexturedFan") );
+    gfx_win::WindowSettings("tlocTexturedFan").ClearStyles()
+    .AddStyle<gfx_win::p_window_settings::style::FullScreen>() );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -227,10 +230,20 @@ int TLOC_MAIN(int argc, char *argv[])
     toLeft->Initialize(rttImg);
     toLeft->Activate();
 
+    RenderbufferObject::Params rboParam;
+    rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
+    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+
+    gfx_gl::render_buffer_object_sptr rbo;
+    rbo.reset(new RenderbufferObject(rboParam));
+    rbo->Initialize();
+
     using namespace gfx_gl::p_framebuffer_object;
     FramebufferObject fbo;
     fbo.Attach<target::DrawFramebuffer,
                attachment::ColorAttachment<0> >(*toLeft);
+    fbo.Attach<target::DrawFramebuffer,
+               attachment::Depth>(*rbo);
 
     using namespace gfx_rend::p_renderer;
     using namespace gfx_rend;
@@ -248,17 +261,46 @@ int TLOC_MAIN(int argc, char *argv[])
     using namespace gfx_gl;
     using namespace gfx_med;
 
-    toRight.reset(new TextureObject() );
+    TextureObject::Params texParams;
+    if (g_renderDepthToRightViewport)
+    {
+      texParams.InternalFormat<p_texture_object::internal_format::DepthComponent>();
+      texParams.Format<p_texture_object::format::DepthComponent>();
+    }
+    toRight.reset(new TextureObject(texParams) );
     Image rttImg;
     rttImg.Create(Image::dimension_type(1024/2, 768/2),
-                  Image::color_type::COLOR_WHITE);
+      Image::color_type::COLOR_WHITE);
     toRight->Initialize(rttImg);
     toRight->Activate();
 
+    RenderbufferObject::Params rboParam;
+    if (g_renderDepthToRightViewport == false)
+    {
+      rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
+    }
+    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+
+    gfx_gl::render_buffer_object_sptr rbo;
+    rbo.reset(new RenderbufferObject(rboParam));
+    rbo->Initialize();
+
     using namespace gfx_gl::p_framebuffer_object;
     FramebufferObject fbo;
-    fbo.Attach<target::DrawFramebuffer,
-               attachment::ColorAttachment<0> >(*toRight);
+    if (g_renderDepthToRightViewport)
+    {
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::ColorAttachment<0> >(*rbo);
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::Depth>(*toRight);
+    }
+    else
+    {
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::ColorAttachment<0> >(*toRight);
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::Depth>(*rbo);
+    }
 
     using namespace gfx_rend::p_renderer;
     using namespace gfx_rend;
