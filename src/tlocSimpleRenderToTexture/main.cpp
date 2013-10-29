@@ -76,8 +76,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // For rendering to a texture we need a texture object and a render buffer
   // to render the depth
-  gfx_gl::texture_object_sptr rttTo
-    (new gfx_gl::TextureObject(gfx_gl::TextureObject()) );
+  gfx_gl::texture_object_sptr rttTo(new gfx_gl::TextureObject() );
   gfx_med::Image rttImg;
   rttImg.Create
     (gfx_med::Image::dimension_type(g_rttResX, g_rttResY),
