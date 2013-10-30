@@ -190,12 +190,12 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   gfx_rend::Renderer::Params p;
-  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-   .BlendFunction<blend_function::SourceAlpha,
+  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .SetBlendFunction<blend_function::SourceAlpha,
                   blend_function::OneMinusSourceAlpha>()
    .Enable<enable_disable::Blend>()
-   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
-   .Clear<clear::ColorBufferBit>();
+   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .AddClearBit<clear::ColorBufferBit>();
 
   renderer->SetParams(p);
 

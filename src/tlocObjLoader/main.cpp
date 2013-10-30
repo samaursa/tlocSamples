@@ -202,11 +202,11 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   gfx_rend::Renderer::Params p;
-  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
-   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
-   .Clear<clear::ColorBufferBit>()
-   .Clear<clear::DepthBufferBit>();
+   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .AddClearBit<clear::ColorBufferBit>()
+   .AddClearBit<clear::DepthBufferBit>();
 
   renderer->SetParams(p);
 
@@ -258,41 +258,18 @@ int TLOC_MAIN(int argc, char *argv[])
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
-  gfx_cs::Material  mat;
-  {
+
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshVS.glsl");
+    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshFS.glsl");
+    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
 #endif
-
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -315,13 +292,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
   u_to->SetName("s_texture").SetValueAs(to);
-
-  gfx_gl::shader_operator_sptr so =
-    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  so->AddUniform(u_to);
-
-  // Finally, add the shader operator to the material
-  mat.AddShaderOperator(so);
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -351,7 +321,11 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::Entity* ent =
     prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-  entityMgr->InsertComponent(ent, &mat);
+
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+    .AddUniform(u_to)
+    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+              core_io::Path(GetAssetsPath() + shaderPathFS));
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library

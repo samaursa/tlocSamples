@@ -69,9 +69,9 @@ int TLOC_MAIN(int , char *[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   gfx_rend::Renderer::Params p;
-  p.ClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-   .FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
-   .Clear<clear::ColorBufferBit>();
+  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
+   .AddClearBit<clear::ColorBufferBit>();
 
   renderer->SetParams(p);
 
@@ -124,40 +124,17 @@ int TLOC_MAIN(int , char *[])
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
 
-  gfx_cs::Material mat;
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/tlocPassthroughVertexShader.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
-    if (file.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    file.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/tlocPassthroughFragmentShader.glsl");
+    core_str::String shaderPathFS("/tlocPassthroughFragmentShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
-
-    if (file.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    file.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
@@ -165,7 +142,10 @@ int TLOC_MAIN(int , char *[])
                        math_t::Rectf32::height(0.5f));
   core_cs::Entity* ent = prefab_gfx::Quad(entityMgr.get(), &compMgr).
     TexCoords(false).Dimensions(rect).Create();
-  entityMgr->InsertComponent(ent, &mat);
+
+  prefab_gfx::Material(entityMgr.get(), &compMgr)
+    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+              core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

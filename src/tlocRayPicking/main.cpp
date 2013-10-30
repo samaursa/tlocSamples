@@ -97,8 +97,8 @@ struct glProgram
     m_renderer = gfx_rend::GetDefaultRenderer();
 
     gfx_rend::Renderer::Params p;
-    p.FBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
-    p.Clear<clear::ColorBufferBit>();
+    p.SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    p.AddClearBit<clear::ColorBufferBit>();
 
     m_renderer->SetParams(p);
   }

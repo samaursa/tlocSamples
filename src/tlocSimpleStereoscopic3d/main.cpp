@@ -3,7 +3,6 @@
 #include <tlocInput/tloc_input.h>
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
-#include <tlocAnimation/tloc_animation.h>
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
@@ -11,8 +10,12 @@
 
 using namespace tloc;
 
-anim_cs::TransformAnimation* g_tformAnimComp = nullptr;
-const tl_size g_fpsInterval = 5;
+bool          g_renderDepthToRightViewport = false;
+bool          g_fullScreen = false;
+f32           g_convergence = 10.0f;
+f32           g_interaxial = 0.5f;
+gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
+
 
 class WindowCallback
 {
@@ -84,7 +87,7 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -108,7 +111,7 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -123,8 +126,8 @@ public:
     {
       gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
-      arcBall->MoveVertical(yRel * 0.01f );
-      arcBall->MoveHorizontal(xRel * 0.01f );
+      arcBall->MoveVertical(yRel * 0.01f * -1.0f);
+      arcBall->MoveHorizontal(xRel * 0.01f);
     }
     else if (m_flags.IsMarked(k_panning))
     {
@@ -135,7 +138,7 @@ public:
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
 
       leftVec *= xRel * 0.01f;
-      upVec *= yRel * 0.01f;
+      upVec *= yRel * 0.01f * -1.0f;
 
       t->SetPosition(t->GetPosition() - leftVec + upVec);
       arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
@@ -151,7 +154,7 @@ public:
       t->SetPosition(t->GetPosition() - dirVec);
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -176,87 +179,6 @@ public:
     {
       m_flags.Unmark(k_altPressed);
     }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::r)
-    { g_tformAnimComp->SetReverse(!g_tformAnimComp->IsReversed()); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::l)
-    { g_tformAnimComp->SetLooping(!g_tformAnimComp->IsLooping()); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::p)
-    { g_tformAnimComp->SetPaused(!g_tformAnimComp->IsPaused()); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::s)
-    { g_tformAnimComp->SetStopped(!g_tformAnimComp->IsStopped()); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
-    { g_tformAnimComp->NextFrame(); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
-    { g_tformAnimComp->PrevFrame(); }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
-    {
-      g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() + g_fpsInterval);
-      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
-    {
-      if (g_tformAnimComp->GetFPS() >= g_fpsInterval)
-      {
-        g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() - g_fpsInterval);
-      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
-      }
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n0)
-    {
-      g_tformAnimComp->SetCurrentKFSequence(0);
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)
-    {
-      g_tformAnimComp->SetCurrentKFSequence(1);
-    }
-    else if (a_event.m_keyCode == input_hid::KeyboardEvent::i)
-    {
-      anim_cs::TransformAnimation::kf_seq_type& kfSeq = g_tformAnimComp->
-        GetCurrentKeyframeSequence();
-
-      for (tl_size i = 0; i < kfSeq.size(); ++i)
-      {
-        kfSeq[i].SetInterpolationType(kfSeq[i].GetInterpolationType() + 1);
-
-        if (kfSeq[i].GetInterpolationType() == anim_t::p_keyframe::k_count)
-        { kfSeq[i].SetInterpolationType(anim_t::p_keyframe::k_linear); }
-      }
-
-      switch(kfSeq[0].GetInterpolationType())
-      {
-      case anim_t::p_keyframe::k_linear:
-        printf("\nInterpolation type: linear");
-        break;
-      case anim_t::p_keyframe::k_ease_in_cubic:
-        printf("\nInterpolation type: ease in (cubic)");
-        break;
-      case anim_t::p_keyframe::k_ease_out_cubic:
-        printf("\nInterpolation type: ease out (cubic)");
-        break;
-      case anim_t::p_keyframe::k_ease_in_out_cubic:
-        printf("\nInterpolation type: ease in-out (cubic)");
-        break;
-      case anim_t::p_keyframe::k_ease_in_quadratic:
-        printf("\nInterpolation type: ease in (quadratic)");
-        break;
-      case anim_t::p_keyframe::k_ease_out_quadratic:
-        printf("\nInterpolation type: ease out (quadratic)");
-        break;
-      case anim_t::p_keyframe::k_ease_in_out_quadratic:
-        printf("\nInterpolation type: ease in-out (quadratic)");
-        break;
-      case anim_t::p_keyframe::k_ease_in_sin:
-        printf("\nInterpolation type: ease in (sin)");
-        break;
-      case anim_t::p_keyframe::k_ease_out_sin:
-        printf("\nInterpolation type: ease out (sin)");
-        break;
-      case anim_t::p_keyframe::k_ease_in_out_sin:
-        printf("\nInterpolation type: ease in-out (sin)");
-        break;
-      }
-    }
-
     return false;
   }
 
@@ -273,8 +195,13 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
-    gfx_win::WindowSettings("tlocTexturedFan") );
+  gfx_win::WindowSettings ws("Stereoscopic 3D");
+  if (g_fullScreen)
+  {
+    ws.ClearStyles().AddStyle<gfx_win::p_window_settings::style::FullScreen>();
+  }
+
+  win.Create( gfx_win::Window::graphics_mode::Properties(1280, 720), ws);
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -286,14 +213,115 @@ int TLOC_MAIN(int argc, char *argv[])
   using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
-  gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+  gfx_rend::Renderer::Params p;
+  p.SetClearColor(gfx_t::Color(1.0f, 1.0f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
    .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
 
   renderer->SetParams(p);
+
+  // -----------------------------------------------------------------------
+  // Create the two renderers
+
+  gfx_rend::renderer_sptr     rttRenderLeft, rttRenderRight;
+  gfx_gl::texture_object_sptr toLeft, toRight;
+
+  {
+    using namespace gfx_gl;
+    using namespace gfx_med;
+
+    toLeft.reset(new TextureObject() );
+    Image rttImg;
+    rttImg.Create(Image::dimension_type(1024/2, 768/2),
+                  Image::color_type::COLOR_WHITE);
+    toLeft->Initialize(rttImg);
+    toLeft->Activate();
+
+    RenderbufferObject::Params rboParam;
+    rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
+    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+
+    gfx_gl::render_buffer_object_sptr rbo;
+    rbo.reset(new RenderbufferObject(rboParam));
+    rbo->Initialize();
+
+    using namespace gfx_gl::p_framebuffer_object;
+    FramebufferObject fbo;
+    fbo.Attach<target::DrawFramebuffer,
+               attachment::ColorAttachment<0> >(*toLeft);
+    fbo.Attach<target::DrawFramebuffer,
+               attachment::Depth>(*rbo);
+
+    using namespace gfx_rend::p_renderer;
+    using namespace gfx_rend;
+    Renderer::Params p;
+    p.SetFBO(fbo);
+    p.AddClearBit<clear::ColorBufferBit>()
+     .AddClearBit<clear::DepthBufferBit>()
+     .SetClearColor(g_clearColor)
+     .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
+
+    rttRenderLeft.reset(new Renderer(p));
+  }
+
+  {
+    using namespace gfx_gl;
+    using namespace gfx_med;
+
+    TextureObject::Params texParams;
+    if (g_renderDepthToRightViewport)
+    {
+      texParams.InternalFormat<p_texture_object::internal_format::DepthComponent>();
+      texParams.Format<p_texture_object::format::DepthComponent>();
+    }
+    toRight.reset(new TextureObject(texParams) );
+    Image rttImg;
+    rttImg.Create(Image::dimension_type(1024/2, 768/2),
+      Image::color_type::COLOR_WHITE);
+    toRight->Initialize(rttImg);
+    toRight->Activate();
+
+    RenderbufferObject::Params rboParam;
+    if (g_renderDepthToRightViewport == false)
+    {
+      rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
+    }
+    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+
+    gfx_gl::render_buffer_object_sptr rbo;
+    rbo.reset(new RenderbufferObject(rboParam));
+    rbo->Initialize();
+
+    using namespace gfx_gl::p_framebuffer_object;
+    FramebufferObject fbo;
+    if (g_renderDepthToRightViewport)
+    {
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::ColorAttachment<0> >(*rbo);
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::Depth>(*toRight);
+    }
+    else
+    {
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::ColorAttachment<0> >(*toRight);
+      fbo.Attach<target::DrawFramebuffer,
+                 attachment::Depth>(*rbo);
+    }
+
+    using namespace gfx_rend::p_renderer;
+    using namespace gfx_rend;
+    Renderer::Params p;
+    p.SetFBO(fbo);
+    p.AddClearBit<clear::ColorBufferBit>()
+     .AddClearBit<clear::DepthBufferBit>()
+     .SetClearColor(g_clearColor)
+     .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
+
+    rttRenderRight.reset(new Renderer(p));
+  }
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -327,15 +355,16 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
   gfx_cs::MeshRenderSystem  meshSys(eventMgr, entityMgr);
-  meshSys.SetRenderer(renderer);
+  meshSys.SetRenderer(rttRenderLeft);
+
+  // -----------------------------------------------------------------------
+  // quad render system for two quads for two views
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  quadSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
-
-  // -----------------------------------------------------------------------
-  // One of the keyframe animation systems
-  anim_cs::TransformAnimationSystem taSys(eventMgr, entityMgr);
 
   // -----------------------------------------------------------------------
   // The camera's view transformations are calculated by the camera system
@@ -349,15 +378,15 @@ int TLOC_MAIN(int argc, char *argv[])
   //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
+    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
 #endif
 
   // -----------------------------------------------------------------------
@@ -375,12 +404,29 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
-  to->Activate();
+  gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
+  crateTo->Initialize(png.GetImage());
+  crateTo->Activate();
 
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
+  gfx_gl::uniform_sptr  u_crateTo(new gfx_gl::Uniform());
+  u_crateTo->SetName("s_texture").SetValueAs(crateTo);
+
+  // -----------------------------------------------------------------------
+  // More shaderpaths
+
+#if defined (TLOC_OS_WIN)
+  core_str::String quadShaderVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String quadShaderVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String quadShaderFS("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String quadShaderFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
+  prefab_gfx::Mesh m(entityMgr.get(), &cpoolMgr);
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -408,101 +454,46 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::Entity* ent =
+  core_cs::Entity* crateMesh =
     prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-
-  anim_t::keyframe_sequence_mat4f32 KFs;
-
-  math_cs::Transform transform;
-
-  using namespace anim_t::p_keyframe;
-  {
-    transform.SetPosition(math_t::Vec3f32(0, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(5.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 10,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 12,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs.AddKeyframe(kf);
-  }
-
-  prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
-  ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
-
-  anim_t::keyframe_sequence_mat4f32 KFs_2;
-
-  using namespace anim_t::p_keyframe;
-  {
-    transform.SetPosition(math_t::Vec3f32(0, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs_2.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(3.0f, 0, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 2,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs_2.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(3.0f, 0, 3.0f));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs_2.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(0.0f, 0, 3.0f));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 6,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs_2.AddKeyframe(kf);
-  }
-
-  {
-    transform.SetPosition(math_t::Vec3f32(0.0f, 0.0f, 0));
-    anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8,
-      anim_t::keyframe_mat4f32::interpolation_type(k_linear));
-    KFs_2.AddKeyframe(kf);
-  }
-
-  ta.Fps(48).Add(ent, KFs_2);
-
-  g_tformAnimComp = ent->GetComponent<anim_cs::TransformAnimation>();
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+    .AddUniform(u_crateTo)
+    .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
+                    core_io::Path(GetAssetsPath() + meshShaderPathFS));
 
   // -----------------------------------------------------------------------
-  // Create and add a material to ent
+  // Create the two quads
 
-  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
-    .AddUniform(u_to)
-    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-              core_io::Path(GetAssetsPath() + shaderPathFS));
+  using math_t::Rectf32;
+  Rectf32 leftQuad(Rectf32::width(1.0f), Rectf32::height(2.0f));
+
+  core_cs::Entity* leftQuadEnt =
+    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(leftQuad).Create();
+  leftQuadEnt->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(-0.5, 0, 0));
+  {
+    gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
+    u_to->SetName("s_texture").SetValueAs(toLeft);
+
+    // create the material
+    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+      .AddUniform(u_to)
+      .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
+                        core_io::Path(GetAssetsPath() + quadShaderFS));
+  }
+
+  core_cs::Entity* rightQuadEnt =
+    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(leftQuad).Create();
+  rightQuadEnt->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0.5, 0, 0));
+  {
+    gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
+    u_to->SetName("s_texture").SetValueAs(toRight);
+
+    // create the material
+    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+      .AddUniform(u_to)
+      .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
+                         core_io::Path(GetAssetsPath() + quadShaderFS));
+  }
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -512,30 +503,46 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
 
   math_proj::FrustumPersp::Params params(fov);
-  params.SetFar(100.0f).SetNear(1.0f);
+  params.SetFar(100.0f).SetNear(1.0f).SetConvergence(g_convergence).SetInteraxial(g_interaxial);
 
-  math_proj::FrustumPersp fr(params);
-  fr.BuildFrustum();
+  math_proj::FrustumPersp frLeft(params);
+  frLeft.BuildFrustum();
 
-  core_cs::Entity* m_cameraEnt =
+  core_cs::Entity* m_cameraEntLeft =
     prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
-    Create(fr, math_t::Vec3f(5.0f, 5.0f, 10.0f));
+    Create(frLeft, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).
-    Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntLeft);
 
-  meshSys.SetCamera(m_cameraEnt);
+  meshSys.SetCamera(m_cameraEntLeft);
 
-  MayaCam mayaCam(m_cameraEnt);
-  keyboard->Register(&mayaCam);
-  mouse->Register(&mayaCam);
+  MayaCam mayaCamLeft(m_cameraEntLeft);
+  keyboard->Register(&mayaCamLeft);
+  mouse->Register(&mayaCamLeft);
+
+
+  params.SetInteraxial(g_interaxial * -1.0f);
+  math_proj::FrustumPersp frRight(params);
+  frRight.BuildFrustum();
+
+  core_cs::Entity* m_cameraEntRight =
+    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+    Create(frRight, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntRight);
+
+  meshSys.SetCamera(m_cameraEntRight);
+
+  MayaCam mayaCamRight(m_cameraEntRight);
+  keyboard->Register(&mayaCamRight);
+  mouse->Register(&mayaCamRight);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
   meshSys.Initialize();
+  quadSys.Initialize();
   matSys.Initialize();
-  taSys.Initialize();
   camSys.Initialize();
   arcBallSys.Initialize();
 
@@ -544,22 +551,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
 
-  printf("\nP - to toggle pause");
-  printf("\nL - to toggle looping");
-  printf("\nS - to toggle stop");
-  printf("\nI - to change interpolation type");
-  printf("\n= - increase FPS");
-  printf("\n- - decrease FPS");
-
-  printf("\n\n0 - First keyframe sequence");
-  printf("\n1 - Second keyframe sequence");
-
-  printf("\n\nRight Arrow - goto previous frame");
-  printf("\nLeft Arrow  - goto next frame");
-
-  core_time::Timer64 t;
-
-  // Very important to enable depth testing
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -568,20 +559,23 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    f64 deltaT = t.ElapsedSeconds();
+    arcBallSys.ProcessActiveEntities();
+    camSys.ProcessActiveEntities();
 
-    if (deltaT > 1.0f/60.0f)
-    {
-      arcBallSys.ProcessActiveEntities();
-      camSys.ProcessActiveEntities();
-      taSys.ProcessActiveEntities(deltaT);
-      // Finally, process (render) the mesh
-      renderer->ApplyRenderSettings();
-      meshSys.ProcessActiveEntities();
+    rttRenderLeft->ApplyRenderSettings();
+    meshSys.SetCamera(m_cameraEntLeft);
+    meshSys.SetRenderer(rttRenderLeft);
+    meshSys.ProcessActiveEntities();
 
-      win.SwapBuffers();
-      t.Reset();
-    }
+    rttRenderRight->ApplyRenderSettings();
+    meshSys.SetCamera(m_cameraEntRight);
+    meshSys.SetRenderer(rttRenderRight);
+    meshSys.ProcessActiveEntities();
+
+    renderer->ApplyRenderSettings();
+    quadSys.ProcessActiveEntities();
+
+    win.SwapBuffers();
   }
 
   // -----------------------------------------------------------------------
