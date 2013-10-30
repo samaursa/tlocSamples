@@ -10,8 +10,12 @@
 
 using namespace tloc;
 
-bool g_renderDepthToRightViewport = false;
-bool g_fullScreen = false;
+bool          g_renderDepthToRightViewport = false;
+bool          g_fullScreen = true;
+f32           g_convergence = 10.0f;
+f32           g_interaxial = 0.5f;
+gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
+
 
 class WindowCallback
 {
@@ -197,7 +201,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ws.ClearStyles().AddStyle<gfx_win::p_window_settings::style::FullScreen>();
   }
 
-  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768), ws);
+  win.Create( gfx_win::Window::graphics_mode::Properties(1600, 900), ws);
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -210,7 +214,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
 
   gfx_rend::Renderer::Params p;
-  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+  p.SetClearColor(gfx_t::Color(1.0f, 1.0f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
    .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
    .AddClearBit<clear::ColorBufferBit>()
@@ -256,7 +260,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.SetFBO(fbo);
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
-     .SetClearColor(gfx_t::Color(1.0f, 0.0f, 0.0f, 1.0f))
+     .SetClearColor(g_clearColor)
      .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
 
     rttRenderLeft.reset(new Renderer(p));
@@ -313,7 +317,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.SetFBO(fbo);
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
-     .SetClearColor(gfx_t::Color(1.0f, 0.0f, 0.0f, 1.0f))
+     .SetClearColor(g_clearColor)
      .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
 
     rttRenderRight.reset(new Renderer(p));
@@ -439,10 +443,24 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_cs::Material matLeft, matRight;
 
-  matLeft.SetVertexSource(mat.GetVertexSource());
-  matRight.SetVertexSource(mat.GetVertexSource());
-  matLeft.SetFragmentSource(mat.GetFragmentSource());
-  matRight.SetFragmentSource(mat.GetFragmentSource());
+#if defined (TLOC_OS_WIN)
+  core_str::String quadShaderVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String quadShaderVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String quadShaderFS("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String quadShaderFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
+  prefab_gfx::Mesh m(entityMgr.get(), &cpoolMgr);
+
+  //matLeft.SetVertexSource(mat.GetVertexSource());
+  //matRight.SetVertexSource(mat.GetVertexSource());
+  //matLeft.SetFragmentSource(mat.GetFragmentSource());
+  //matRight.SetFragmentSource(mat.GetFragmentSource());
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -487,13 +505,16 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
     u_to->SetName("s_texture").SetValueAs(toLeft);
 
-    gfx_gl::shader_operator_sptr so =
-      gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-    so->AddUniform(u_to);
+    //gfx_gl::shader_operator_sptr so =
+    //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
+    //so->AddUniform(u_to);
 
     // Finally, add the shader operator to the material
-    matLeft.AddShaderOperator(so);
-    entityMgr->InsertComponent(leftQuadEnt, &matLeft);
+    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+      .AddUniform(u_to)
+      .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS), core_io::Path(GetAssetsPath() + quadShaderFS));
+    //matLeft.AddShaderOperator(so);
+    //entityMgr->InsertComponent(leftQuadEnt, &matLeft);
   }
 
   core_cs::Entity* rightQuadEnt =
@@ -503,13 +524,16 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
     u_to->SetName("s_texture").SetValueAs(toRight);
 
-    gfx_gl::shader_operator_sptr so =
-      gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-    so->AddUniform(u_to);
+    //gfx_gl::shader_operator_sptr so =
+    //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
+    //so->AddUniform(u_to);
 
     // Finally, add the shader operator to the material
-    matRight.AddShaderOperator(so);
-    entityMgr->InsertComponent(rightQuadEnt, &matRight);
+    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+      .AddUniform(u_to)
+      .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS), core_io::Path(GetAssetsPath() + quadShaderFS));
+    //matRight.AddShaderOperator(so);
+    //entityMgr->InsertComponent(rightQuadEnt, &matRight);
   }
 
   // -----------------------------------------------------------------------
@@ -520,7 +544,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
 
   math_proj::FrustumPersp::Params params(fov);
-  params.SetFar(100.0f).SetNear(1.0f).SetConvergence(5.0f).SetInteraxial(2.0f);
+  params.SetFar(100.0f).SetNear(1.0f).SetConvergence(g_convergence).SetInteraxial(g_interaxial);
 
   math_proj::FrustumPersp frLeft(params);
   frLeft.BuildFrustum();
@@ -538,7 +562,7 @@ int TLOC_MAIN(int argc, char *argv[])
   mouse->Register(&mayaCamLeft);
 
 
-  params.SetInteraxial(-2.0f);
+  params.SetInteraxial(g_interaxial * -1.0f);
   math_proj::FrustumPersp frRight(params);
   frRight.BuildFrustum();
 
