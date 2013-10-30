@@ -11,7 +11,7 @@
 using namespace tloc;
 
 bool          g_renderDepthToRightViewport = false;
-bool          g_fullScreen = true;
+bool          g_fullScreen = false;
 f32           g_convergence = 10.0f;
 f32           g_interaxial = 0.5f;
 gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
@@ -126,8 +126,8 @@ public:
     {
       gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
-      arcBall->MoveVertical(yRel * 0.01f );
-      arcBall->MoveHorizontal(xRel * 0.01f );
+      arcBall->MoveVertical(yRel * 0.01f * -1.0f);
+      arcBall->MoveHorizontal(xRel * 0.01f);
     }
     else if (m_flags.IsMarked(k_panning))
     {
@@ -138,7 +138,7 @@ public:
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
 
       leftVec *= xRel * 0.01f;
-      upVec *= yRel * 0.01f;
+      upVec *= yRel * 0.01f * -1.0f;
 
       t->SetPosition(t->GetPosition() - leftVec + upVec);
       arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
@@ -201,7 +201,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ws.ClearStyles().AddStyle<gfx_win::p_window_settings::style::FullScreen>();
   }
 
-  win.Create( gfx_win::Window::graphics_mode::Properties(1600, 900), ws);
+  win.Create( gfx_win::Window::graphics_mode::Properties(1280, 720), ws);
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -376,41 +376,18 @@ int TLOC_MAIN(int argc, char *argv[])
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
-  gfx_cs::Material  mat;
-  {
+
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshVS.glsl");
+    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshFS.glsl");
+    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
 #endif
-
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -427,21 +404,15 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
-  to->Activate();
+  gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
+  crateTo->Initialize(png.GetImage());
+  crateTo->Activate();
 
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
+  gfx_gl::uniform_sptr  u_crateTo(new gfx_gl::Uniform());
+  u_crateTo->SetName("s_texture").SetValueAs(crateTo);
 
-  gfx_gl::shader_operator_sptr so =
-    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  so->AddUniform(u_to);
-
-  // Finally, add the shader operator to the material
-  mat.AddShaderOperator(so);
-
-  gfx_cs::Material matLeft, matRight;
+  // -----------------------------------------------------------------------
+  // More shaderpaths
 
 #if defined (TLOC_OS_WIN)
   core_str::String quadShaderVS("/shaders/tlocOneTextureVS.glsl");
@@ -456,11 +427,6 @@ int TLOC_MAIN(int argc, char *argv[])
 #endif
 
   prefab_gfx::Mesh m(entityMgr.get(), &cpoolMgr);
-
-  //matLeft.SetVertexSource(mat.GetVertexSource());
-  //matRight.SetVertexSource(mat.GetVertexSource());
-  //matLeft.SetFragmentSource(mat.GetFragmentSource());
-  //matRight.SetFragmentSource(mat.GetFragmentSource());
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -488,9 +454,12 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::Entity* ent =
+  core_cs::Entity* crateMesh =
     prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-  entityMgr->InsertComponent(ent, &mat);
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+    .AddUniform(u_crateTo)
+    .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
+                    core_io::Path(GetAssetsPath() + meshShaderPathFS));
 
   // -----------------------------------------------------------------------
   // Create the two quads
@@ -505,16 +474,11 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
     u_to->SetName("s_texture").SetValueAs(toLeft);
 
-    //gfx_gl::shader_operator_sptr so =
-    //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-    //so->AddUniform(u_to);
-
-    // Finally, add the shader operator to the material
+    // create the material
     prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
       .AddUniform(u_to)
-      .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS), core_io::Path(GetAssetsPath() + quadShaderFS));
-    //matLeft.AddShaderOperator(so);
-    //entityMgr->InsertComponent(leftQuadEnt, &matLeft);
+      .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
+                        core_io::Path(GetAssetsPath() + quadShaderFS));
   }
 
   core_cs::Entity* rightQuadEnt =
@@ -524,16 +488,11 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
     u_to->SetName("s_texture").SetValueAs(toRight);
 
-    //gfx_gl::shader_operator_sptr so =
-    //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-    //so->AddUniform(u_to);
-
-    // Finally, add the shader operator to the material
+    // create the material
     prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
       .AddUniform(u_to)
-      .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS), core_io::Path(GetAssetsPath() + quadShaderFS));
-    //matRight.AddShaderOperator(so);
-    //entityMgr->InsertComponent(rightQuadEnt, &matRight);
+      .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
+                         core_io::Path(GetAssetsPath() + quadShaderFS));
   }
 
   // -----------------------------------------------------------------------

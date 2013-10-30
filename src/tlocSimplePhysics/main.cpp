@@ -79,39 +79,18 @@ int TLOC_MAIN(int argc, char *argv[])
   // NOTE: The quad render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
-  gfx_cs::Material  mat;
-  {
+
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/tlocPassthroughVertexShader.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
 
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/tlocPassthroughFragmentShader.glsl");
+    core_str::String shaderPathFS("/tlocPassthroughFragmentShader.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
@@ -120,7 +99,10 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32::height(0.5f));
   core_cs::Entity* q = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).
     TexCoords(false).Dimensions(rect).Create();
-  entityMgr->InsertComponent(q, &mat);
+
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+    .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+            core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------
   // For physics, we need a physics manager and the relevant systems

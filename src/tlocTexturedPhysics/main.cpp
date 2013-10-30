@@ -99,46 +99,6 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void LoadShaders(gfx_gl::ShaderProgram& a_sp)
-  {
-    using namespace core;
-    using namespace gfx_gl;
-    using core_str::String;
-
-    VertexShader vShader;
-    {
-      io::FileIO_ReadA file( (core_io::Path("../../../../../assets/SimpleVertexShader.glsl")) );
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      vShader.Load(code.c_str());
-    }
-
-    FragmentShader fShader;
-    {
-      io::FileIO_ReadA file( (core_io::Path("../../../../../assets/SimpleFragmentShader.glsl")) );
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      fShader.Load(code.c_str());
-    }
-
-    if (vShader.Compile().Failed() )
-    { printf("\n%s", vShader.GetError().c_str()); }
-    if (!fShader.Compile().Failed() )
-    { printf("\n%s", fShader.GetError().c_str()); }
-
-    VertexShader vs(vShader);
-
-    a_sp.AttachShaders(ShaderProgram::two_shader_components(&vShader, &fShader));
-    if (!a_sp.Link().Failed() )
-    { printf("\n%s", a_sp.GetError().c_str()); }
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
   core_conts::Array<math_t::Vec4f32> GetQuadColor()
   {
     using namespace core;
@@ -211,89 +171,69 @@ struct glProgram
 
     ComponentPoolManager poolMgr;
 
-    mat_type  mat, mat2;
-    {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureVS.glsl");
+    core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
-      if(file.Open() != ErrorSuccess)
-      {
-        printf("\n%s", shaderPath.c_str());
-        printf("\nUnable to open vertex shader");
-        TLOC_ASSERT(false, "");
-      }
-
-      String code;
-      file.GetContents(code);
-      mat.SetVertexSource(code);
-      mat2.SetVertexSource(code);
-    }
-
-    {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureFS.glsl");
+    core_str::String shaderPathFS("/shaders/mvpTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
-      shaderPath = GetAssetsPath() + shaderPath;
-      io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
-      file.Open();
-
-      String code;
-      file.GetContents(code);
-      mat.SetFragmentSource(code);
-      mat2.SetFragmentSource(code);
-    }
 
     //------------------------------------------------------------------------
-    // Add the shader operators
+    // Create the uniforms holding the texture objects
+
+    gl::uniform_sptr  u_crateTo(new gl::Uniform());
     {
-      gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetsPath());
-      filePath += "/images/crate.png";
-      core_io::Path path(filePath.c_str());
-      if (png.Load(path) != ErrorSuccess)
-      { TLOC_ASSERT(false, "Image did not load"); }
-
-      gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-      to->Initialize(png.GetImage());
-      to->Activate();
-
-      gl::uniform_sptr  u_to(new gl::Uniform());
-      u_to->SetName("shaderTexture").SetValueAs(to);
-
-      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
-      so->AddUniform(u_to);
-
-      mat.AddShaderOperator(so);
+      gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
+      {
+        gfx_med::ImageLoaderPng png;
+        {
+          core_str::String filePath(GetAssetsPath());
+          filePath += "/images/crate.png";
+          core_io::Path path(filePath.c_str());
+          if (png.Load(path) != ErrorSuccess)
+          { TLOC_ASSERT(false, "Image did not load"); }
+        }
+        crateTo->Initialize(png.GetImage());
+        crateTo->Activate();
+      }
+      u_crateTo->SetName("shaderTexture").SetValueAs(crateTo);
     }
 
+    gl::uniform_sptr  u_henryTo(new gl::Uniform());
     {
-      gfx_med::ImageLoaderPng png;
-      core_str::String filePath(GetAssetsPath());
-      filePath += "/images/henry.png";
-      core_io::Path path(filePath.c_str());
-
-      if (png.Load(path) != ErrorSuccess)
-      { TLOC_ASSERT(false, "Image did not load"); }
-
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-      to->Initialize(png.GetImage());
-      to->Activate();
+      {
+        gfx_med::ImageLoaderPng png;
+        {
+          core_str::String filePath(GetAssetsPath());
+          filePath += "/images/henry.png";
+          core_io::Path path(filePath.c_str());
 
-      gl::uniform_sptr  u_to(new gl::Uniform());
-      u_to->SetName("shaderTexture").SetValueAs(to);
-
-      gl::shader_operator_sptr so = gl::shader_operator_sptr(new gl::ShaderOperator());
-      so->AddUniform(u_to);
-
-      mat2.AddShaderOperator(so);
+          if (png.Load(path) != ErrorSuccess)
+          { TLOC_ASSERT(false, "Image did not load"); }
+        }
+        to->Initialize(png.GetImage());
+        to->Activate();
+      }
+      u_henryTo->SetName("shaderTexture").SetValueAs(to);
     }
+
+    gfx_cs::Material* crateMat = prefab_gfx::Material(m_entityMgr.get(), &poolMgr)
+      .AddUniform(u_crateTo)
+      .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
+              core_io::Path(GetAssetsPath() + shaderPathFS))
+              ->GetComponent<gfx_cs::Material>();
+
+    gfx_cs::Material* henryMat = prefab_gfx::Material(m_entityMgr.get(), &poolMgr)
+      .AddUniform(u_henryTo)
+      .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
+              core_io::Path(GetAssetsPath() + shaderPathFS))
+              ->GetComponent<gfx_cs::Material>();
 
     PROFILE_START();
     const tl_int repeat = 150;
@@ -316,7 +256,7 @@ struct glProgram
         prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).
           Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
-        m_entityMgr->InsertComponent(quadEnt, &mat);
+        m_entityMgr->InsertComponent(quadEnt, crateMat);
       }
       else
       {
@@ -334,7 +274,7 @@ struct glProgram
         rbShape.SetRestitution(1.0f);
         prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbShape);
 
-        m_entityMgr->InsertComponent(fanEnt, &mat2);
+        m_entityMgr->InsertComponent(fanEnt, henryMat);
       }
     }
     PROFILE_END("Generating Quads and Fans");
@@ -353,7 +293,7 @@ struct glProgram
       box2d::RigidBodyShapeDef rbCircleShape(circle);
       prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbCircleShape);
 
-      m_entityMgr->InsertComponent(fanEnt, &mat2);
+        m_entityMgr->InsertComponent(fanEnt, henryMat);
     }
 
     tl_float winWidth = (tl_float)m_win.GetWidth();

@@ -25,6 +25,11 @@ void main()
          o_color = o_color + texture2D(s_texture, vec2(float(x) / float(u_winResX), float(y) / float(u_winResY) ));
          counter = counter + 1;
        }
+       else
+       {
+         o_color = o_color + texture2D(s_texture, vec2(float(u_winResX - x - 1) / float(u_winResX), float(u_winResY - y - 1) / float(u_winResY) ));
+         counter = counter + 1;
+       }
      }
   }
 

@@ -118,41 +118,23 @@ int TLOC_MAIN(int argc, char *argv[])
   // NOTE: The fan render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
-  gfx_cs::Material  mat;
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the vertex shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetVertexSource(code);
-  }
-  {
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    mat.SetFragmentSource(code);
-  }
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS_gl_es_2_0.glsl");
+#endif
 
   //------------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -185,56 +167,25 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
   so->AddUniform(u_to);
 
-  mat.AddShaderOperator(so);
-
   // -----------------------------------------------------------------------
   // RTT material
-
-  gfx_cs::Material rttMat;
-  rttMat.SetVertexSource(mat.GetVertexSource());
-
-  {
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPath("/shaders/tlocOneTextureBlurFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPath("/shaders/tlocOneTextureBlurFS_gl_es_2_0.glsl");
-#endif
-
-    shaderPath = GetAssetsPath() + shaderPath;
-    core_io::FileIO_ReadA shaderFile( (core_io::Path(shaderPath)) );
-
-    if (shaderFile.Open() != ErrorSuccess)
-    { printf("\nUnable to open the fragment shader"); return 1;}
-
-    core_str::String code;
-    shaderFile.GetContents(code);
-    rttMat.SetFragmentSource(code);
-  }
 
   gfx_gl::uniform_sptr u_rttTo(new gfx_gl::Uniform());
   u_rttTo->SetName("s_texture").SetValueAs(rttTo);
 
   gfx_gl::uniform_sptr  u_blur(new gfx_gl::Uniform());
-  u_blur->SetName("u_blur").SetValueAs(10);
+  u_blur->SetName("u_blur").SetValueAs(5);
 
-  gfx_gl::shader_operator_sptr soRtt =
-    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  soRtt->AddUniform(u_rttTo);
-  soRtt->AddUniform(u_blur);
+  //gfx_gl::shader_operator_sptr soRtt =
+  //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
+  //soRtt->AddUniform(u_rttTo);
+  //soRtt->AddUniform(u_blur);
 
-  {
-    gfx_gl::uniform_sptr  u_tempUni(new gfx_gl::Uniform());
-    u_tempUni->SetName("u_winResX").SetValueAs(core_utils::CastNumber<s32>(256));
-    soRtt->AddUniform(u_tempUni);
-  }
-  {
-    gfx_gl::uniform_sptr  u_tempUni(new gfx_gl::Uniform());
-    u_tempUni->SetName("u_winResY").SetValueAs(core_utils::CastNumber<s32>(256));
-    soRtt->AddUniform(u_tempUni);
-  }
+  gfx_gl::uniform_sptr u_winResX(new gfx_gl::Uniform());
+  u_winResX->SetName("u_winResX").SetValueAs(core_utils::CastNumber<s32>(g_rttResX));
 
-
-  rttMat.AddShaderOperator(soRtt);
+  gfx_gl::uniform_sptr u_winResY(new gfx_gl::Uniform());
+  u_winResY->SetName("u_winResY").SetValueAs(core_utils::CastNumber<s32>(g_rttResY));
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
@@ -242,12 +193,22 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::Entity* q = prefab_gfx::Fan(entityMgr.get(), &cpoolMgr).
     Sides(64).Circle(circ).Create();
-  entityMgr->InsertComponent(q, &mat);
+
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr).AddUniform(u_to)
+    .AssetsPath(GetAssetsPath())
+    .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
 
   math_t::Rectf32 rect(math_t::Rectf32::width(1.5f), math_t::Rectf32::height(1.5f));
   core_cs::Entity* fullScreenQuad = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr)
     .Dimensions(rect).Create();
-  entityMgr->InsertComponent(fullScreenQuad, &rttMat);
+
+  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+    .AssetsPath(GetAssetsPath())
+    .AddUniform(u_rttTo).AddUniform(u_blur)
+    .AddUniform(u_winResX).AddUniform(u_winResY)
+    .Add(fullScreenQuad,
+         core_io::Path(shaderPathVS),
+         core_io::Path(shaderPathBlurFS));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
