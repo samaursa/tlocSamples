@@ -11,6 +11,7 @@
 using namespace tloc;
 
 bool g_renderDepthToRightViewport = false;
+bool g_fullScreen = false;
 
 class WindowCallback
 {
@@ -82,7 +83,7 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -106,7 +107,7 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -149,7 +150,7 @@ public:
       t->SetPosition(t->GetPosition() - dirVec);
     }
 
-    return false;
+    return true;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -190,9 +191,13 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
-    gfx_win::WindowSettings("tlocTexturedFan").ClearStyles()
-    .AddStyle<gfx_win::p_window_settings::style::FullScreen>() );
+  gfx_win::WindowSettings ws("Stereoscopic 3D");
+  if (g_fullScreen)
+  {
+    ws.ClearStyles().AddStyle<gfx_win::p_window_settings::style::FullScreen>();
+  }
+
+  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768), ws);
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -515,22 +520,39 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
 
   math_proj::FrustumPersp::Params params(fov);
-  params.SetFar(100.0f).SetNear(1.0f);
+  params.SetFar(100.0f).SetNear(1.0f).SetConvergence(5.0f).SetInteraxial(2.0f);
 
-  math_proj::FrustumPersp fr(params);
-  fr.BuildFrustum();
+  math_proj::FrustumPersp frLeft(params);
+  frLeft.BuildFrustum();
 
-  core_cs::Entity* m_cameraEnt =
+  core_cs::Entity* m_cameraEntLeft =
     prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
-    Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+    Create(frLeft, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEnt);
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntLeft);
 
-  meshSys.SetCamera(m_cameraEnt);
+  meshSys.SetCamera(m_cameraEntLeft);
 
-  MayaCam mayaCam(m_cameraEnt);
-  keyboard->Register(&mayaCam);
-  mouse->Register(&mayaCam);
+  MayaCam mayaCamLeft(m_cameraEntLeft);
+  keyboard->Register(&mayaCamLeft);
+  mouse->Register(&mayaCamLeft);
+
+
+  params.SetInteraxial(-2.0f);
+  math_proj::FrustumPersp frRight(params);
+  frRight.BuildFrustum();
+
+  core_cs::Entity* m_cameraEntRight =
+    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+    Create(frRight, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+
+  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntRight);
+
+  meshSys.SetCamera(m_cameraEntRight);
+
+  MayaCam mayaCamRight(m_cameraEntRight);
+  keyboard->Register(&mayaCamRight);
+  mouse->Register(&mayaCamRight);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
@@ -558,10 +580,12 @@ int TLOC_MAIN(int argc, char *argv[])
     camSys.ProcessActiveEntities();
 
     rttRenderLeft->ApplyRenderSettings();
+    meshSys.SetCamera(m_cameraEntLeft);
     meshSys.SetRenderer(rttRenderLeft);
     meshSys.ProcessActiveEntities();
 
     rttRenderRight->ApplyRenderSettings();
+    meshSys.SetCamera(m_cameraEntRight);
     meshSys.SetRenderer(rttRenderRight);
     meshSys.ProcessActiveEntities();
 
