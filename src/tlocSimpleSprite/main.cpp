@@ -168,14 +168,15 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
-  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
-    gfx_rend::Renderer::Params p;
-    p.Enable<enable_disable::Blend>()
-     .AddClearBit<clear::ColorBufferBit>()
-     .SetClearColor(gfx_t::Color(0.5f, 0.5f, 0.5f, 1.0f))
-     .SetBlendFunction<blend_function::SourceAlpha,
-                       blend_function::OneMinusSourceAlpha>();
-    renderer->SetParams(p);
+  gfx_rend::renderer_sptr renderer = win.GetRenderer();
+
+  gfx_rend::Renderer::Params p(renderer->GetParams());
+  p.Enable<enable_disable::Blend>()
+    .AddClearBit<clear::ColorBufferBit>()
+    .SetClearColor(gfx_t::Color(0.5f, 0.5f, 0.5f, 1.0f))
+    .SetBlendFunction<blend_function::SourceAlpha,
+                      blend_function::OneMinusSourceAlpha>();
+  renderer->SetParams(p);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during

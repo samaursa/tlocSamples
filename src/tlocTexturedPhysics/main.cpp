@@ -82,11 +82,10 @@ struct glProgram
 
     // -----------------------------------------------------------------------
     // Get the default renderer
-    m_renderer = gfx_rend::GetDefaultRenderer();
-    gfx_rend::Renderer::Params p;
+    m_renderer = m_win.GetRenderer();
+    gfx_rend::Renderer::Params p(m_renderer->GetParams());
     p.AddClearBit<gfx_rend::p_renderer::clear::ColorBufferBit>()
-     .AddClearBit<gfx_rend::p_renderer::clear::DepthBufferBit>()
-     .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+     .AddClearBit<gfx_rend::p_renderer::clear::DepthBufferBit>();
     m_renderer->SetParams(p);
 
     phys_mgr_type::error_type result =

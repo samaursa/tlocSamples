@@ -48,10 +48,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
-  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+  gfx_rend::renderer_sptr renderer = win.GetRenderer();
   {
-    gfx_rend::Renderer::Params p;
-    p.SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
+    gfx_rend::Renderer::Params p(renderer->GetParams());
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
@@ -86,9 +85,9 @@ int TLOC_MAIN(int argc, char *argv[])
   rttTo->Activate();
 
   using namespace gfx_gl::p_framebuffer_object;
-  gfx_gl::FramebufferObject fbo;
-  fbo.Attach<target::DrawFramebuffer,
-             attachment::ColorAttachment<0> >(*rttTo);
+  gfx_gl::framebuffer_object_sptr fbo(new gfx_gl::FramebufferObject());
+  fbo->Attach<target::DrawFramebuffer,
+              attachment::ColorAttachment<0> >(*rttTo);
 
   using namespace gfx_rend::p_renderer;
   gfx_rend::Renderer::Params p;

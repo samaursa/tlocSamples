@@ -277,13 +277,12 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
-  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+  gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
   using gfx_rend::Renderer;
-  gfx_rend::Renderer::Params p;
+  gfx_rend::Renderer::Params p(renderer->GetParams());
   p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
-   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
 

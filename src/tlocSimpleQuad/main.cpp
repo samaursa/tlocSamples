@@ -44,7 +44,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // Get the default renderer
-  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+  gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager

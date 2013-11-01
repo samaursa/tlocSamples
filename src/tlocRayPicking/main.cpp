@@ -94,13 +94,12 @@ struct glProgram
     // Get the default renderer
 
     using namespace gfx_rend::p_renderer;
-    m_renderer = gfx_rend::GetDefaultRenderer();
-
-    gfx_rend::Renderer::Params p;
-    p.SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer());
-    p.AddClearBit<clear::ColorBufferBit>();
-
-    m_renderer->SetParams(p);
+    m_renderer = m_win.GetRenderer();
+    {
+      gfx_rend::Renderer::Params p(m_renderer->GetParams());
+      p.AddClearBit<clear::ColorBufferBit>();
+      m_renderer->SetParams(p);
+    }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

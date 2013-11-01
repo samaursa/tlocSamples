@@ -211,12 +211,11 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
-  gfx_rend::renderer_sptr renderer = gfx_rend::GetDefaultRenderer();
+  gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
-  gfx_rend::Renderer::Params p;
+  gfx_rend::Renderer::Params p(renderer->GetParams());
   p.SetClearColor(gfx_t::Color(1.0f, 1.0f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
-   .SetFBO(gfx_gl::FramebufferObject::GetDefaultFramebuffer())
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
 
@@ -248,11 +247,11 @@ int TLOC_MAIN(int argc, char *argv[])
     rbo->Initialize();
 
     using namespace gfx_gl::p_framebuffer_object;
-    FramebufferObject fbo;
-    fbo.Attach<target::DrawFramebuffer,
-               attachment::ColorAttachment<0> >(*toLeft);
-    fbo.Attach<target::DrawFramebuffer,
-               attachment::Depth>(*rbo);
+    framebuffer_object_sptr fbo(new FramebufferObject());
+    fbo->Attach<target::DrawFramebuffer,
+                attachment::ColorAttachment<0> >(*toLeft);
+    fbo->Attach<target::DrawFramebuffer,
+                attachment::Depth>(*rbo);
 
     using namespace gfx_rend::p_renderer;
     using namespace gfx_rend;
@@ -295,20 +294,20 @@ int TLOC_MAIN(int argc, char *argv[])
     rbo->Initialize();
 
     using namespace gfx_gl::p_framebuffer_object;
-    FramebufferObject fbo;
+    framebuffer_object_sptr fbo(new FramebufferObject());
     if (g_renderDepthToRightViewport)
     {
-      fbo.Attach<target::DrawFramebuffer,
-                 attachment::ColorAttachment<0> >(*rbo);
-      fbo.Attach<target::DrawFramebuffer,
-                 attachment::Depth>(*toRight);
+      fbo->Attach<target::DrawFramebuffer,
+                  attachment::ColorAttachment<0> >(*rbo);
+      fbo->Attach<target::DrawFramebuffer,
+                  attachment::Depth>(*toRight);
     }
     else
     {
-      fbo.Attach<target::DrawFramebuffer,
-                 attachment::ColorAttachment<0> >(*toRight);
-      fbo.Attach<target::DrawFramebuffer,
-                 attachment::Depth>(*rbo);
+      fbo->Attach<target::DrawFramebuffer,
+                  attachment::ColorAttachment<0> >(*toRight);
+      fbo->Attach<target::DrawFramebuffer,
+                  attachment::Depth>(*rbo);
     }
 
     using namespace gfx_rend::p_renderer;
