@@ -204,7 +204,7 @@ public:
 
     //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
 
-    range_small smallR(-1.0f, 1.0f);
+    range_small smallR(-1.0f, 1.1f);
     range_large largeRX(0.0f, 1024.0f);
     range_large largeRY(0.0f, 768.0f);
     scale_f32_f32 scx(smallR, largeRX);
