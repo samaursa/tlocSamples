@@ -296,7 +296,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // ObjLoader can load (basic) .obj files
 
   path = core_io::Path( (core_str::String(GetAssetsPath()) +
-                         "/models/crate.obj").c_str() );
+                         "/models/Crate.obj").c_str() );
 
   core_io::FileIO_ReadA objFile(path);
   if (objFile.Open() != ErrorSuccess)

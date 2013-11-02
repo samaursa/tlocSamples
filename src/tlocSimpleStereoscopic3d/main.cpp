@@ -239,7 +239,7 @@ int TLOC_MAIN(int argc, char *argv[])
     toLeft->Activate();
 
     RenderbufferObject::Params rboParam;
-    rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
+    rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent24>();
     rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
 
     gfx_gl::render_buffer_object_sptr rbo;
@@ -248,9 +248,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
     using namespace gfx_gl::p_framebuffer_object;
     framebuffer_object_sptr fbo(new FramebufferObject());
-    fbo->Attach<target::DrawFramebuffer,
+    fbo->Attach<target::Framebuffer,
                 attachment::ColorAttachment<0> >(*toLeft);
-    fbo->Attach<target::DrawFramebuffer,
+    fbo->Attach<target::Framebuffer,
                 attachment::Depth>(*rbo);
 
     using namespace gfx_rend::p_renderer;
