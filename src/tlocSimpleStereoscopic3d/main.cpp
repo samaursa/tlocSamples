@@ -12,8 +12,8 @@ using namespace tloc;
 
 bool          g_renderDepthToRightViewport = false;
 bool          g_fullScreen = false;
-f32           g_convergence = 10.0f;
-f32           g_interaxial = 0.5f;
+f32           g_convergence = 1.0f;
+f32           g_interaxial = 0.05f;
 gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
 
 
@@ -227,20 +227,21 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr     rttRenderLeft, rttRenderRight;
   gfx_gl::texture_object_sptr toLeft, toRight;
 
+  gfx_med::Image::dimension_type halfWinDim(win.GetWidth() / 2, win.GetHeight() / 2);
+
   {
     using namespace gfx_gl;
     using namespace gfx_med;
 
     toLeft.reset(new TextureObject() );
     Image rttImg;
-    rttImg.Create(Image::dimension_type(1024/2, 768/2),
-                  Image::color_type::COLOR_WHITE);
+    rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toLeft->Initialize(rttImg);
     toLeft->Activate();
 
     RenderbufferObject::Params rboParam;
     rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent24>();
-    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+    rboParam.Dimensions(halfWinDim);
 
     gfx_gl::render_buffer_object_sptr rbo;
     rbo.reset(new RenderbufferObject(rboParam));
@@ -260,7 +261,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(g_clearColor)
-     .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
+     .SetDimensions(halfWinDim);
 
     rttRenderLeft.reset(new Renderer(p));
   }
@@ -277,8 +278,7 @@ int TLOC_MAIN(int argc, char *argv[])
     }
     toRight.reset(new TextureObject(texParams) );
     Image rttImg;
-    rttImg.Create(Image::dimension_type(1024/2, 768/2),
-      Image::color_type::COLOR_WHITE);
+    rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toRight->Initialize(rttImg);
     toRight->Activate();
 
@@ -287,7 +287,7 @@ int TLOC_MAIN(int argc, char *argv[])
     {
       rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
     }
-    rboParam.Dimensions(RenderbufferObject::Params::dimension_type(1024/2, 768/2));
+    rboParam.Dimensions(halfWinDim);
 
     gfx_gl::render_buffer_object_sptr rbo;
     rbo.reset(new RenderbufferObject(rboParam));
@@ -317,7 +317,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(g_clearColor)
-     .SetDimensions(Renderer::dimension_type(1024/2, 768/2));
+     .SetDimensions(halfWinDim);
 
     rttRenderRight.reset(new Renderer(p));
   }
