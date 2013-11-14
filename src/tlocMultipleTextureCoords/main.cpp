@@ -53,8 +53,8 @@ public:
 
     TLOC_ASSERT_NOT_NULL(ta);
 
-    const tl_size numSprites = ta->GetNumSpriteSets();
-    tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+    const tl_size numSprites = ta->GetNumSpriteSequences();
+    tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
     ++currSpriteSet;
 
@@ -63,7 +63,7 @@ public:
       currSpriteSet = 0;
     }
 
-    ta->SetCurrentSpriteSet(currSpriteSet);
+    ta->SetCurrentSpriteSequence(currSpriteSet);
     return false;
   }
 
@@ -94,8 +94,8 @@ public:
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
-      const tl_size numSprites = ta->GetNumSpriteSets();
-      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+      const tl_size numSprites = ta->GetNumSpriteSequences();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
       ++currSpriteSet;
 
@@ -104,14 +104,14 @@ public:
         currSpriteSet = 0;
       }
 
-      ta->SetCurrentSpriteSet(currSpriteSet);
-      ta2->SetCurrentSpriteSet(currSpriteSet);
+      ta->SetCurrentSpriteSequence(currSpriteSet);
+      ta2->SetCurrentSpriteSequence(currSpriteSet);
     }
 
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
-      const tl_size numSprites = ta->GetNumSpriteSets();
-      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+      const tl_size numSprites = ta->GetNumSpriteSequences();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
       if (currSpriteSet == 0)
       {
@@ -121,8 +121,8 @@ public:
       --currSpriteSet;
 
 
-      ta->SetCurrentSpriteSet(currSpriteSet);
-      ta2->SetCurrentSpriteSet(currSpriteSet);
+      ta->SetCurrentSpriteSequence(currSpriteSet);
+      ta2->SetCurrentSpriteSequence(currSpriteSet);
     }
 
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)

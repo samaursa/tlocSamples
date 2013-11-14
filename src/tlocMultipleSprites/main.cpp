@@ -45,8 +45,8 @@ public:
 
     TLOC_ASSERT_NOT_NULL(ta);
 
-    const tl_size numSprites = ta->GetNumSpriteSets();
-    tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+    const tl_size numSprites = ta->GetNumSpriteSequences();
+    tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
     ++currSpriteSet;
 
@@ -55,7 +55,7 @@ public:
       currSpriteSet = 0;
     }
 
-    ta->SetCurrentSpriteSet(currSpriteSet);
+    ta->SetCurrentSpriteSequence(currSpriteSet);
     return false;
   }
 
@@ -107,8 +107,8 @@ public:
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::right)
     {
-      const tl_size numSprites = ta->GetNumSpriteSets();
-      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+      const tl_size numSprites = ta->GetNumSpriteSequences();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
       ++currSpriteSet;
 
@@ -117,13 +117,13 @@ public:
         currSpriteSet = 0;
       }
 
-      ta->SetCurrentSpriteSet(currSpriteSet);
+      ta->SetCurrentSpriteSequence(currSpriteSet);
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left)
     {
-      const tl_size numSprites = ta->GetNumSpriteSets();
-      tl_size currSpriteSet = ta->GetCurrentSpriteSetIndex();
+      const tl_size numSprites = ta->GetNumSpriteSequences();
+      tl_size currSpriteSet = ta->GetCurrentSpriteSeqIndex();
 
       if (currSpriteSet == 0)
       {
@@ -133,7 +133,7 @@ public:
       --currSpriteSet;
 
 
-      ta->SetCurrentSpriteSet(currSpriteSet);
+      ta->SetCurrentSpriteSequence(currSpriteSet);
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
@@ -145,7 +145,7 @@ public:
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
       printf("\nNew FPS for SpriteSet #%u: %u",
-        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
+        ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
@@ -156,7 +156,7 @@ public:
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
       printf("\nNew FPS for SpriteSet #%u: %u",
-        ta->GetCurrentSpriteSetIndex(), ta->GetFPS());
+        ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
     return false;
