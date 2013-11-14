@@ -55,8 +55,8 @@ int TLOC_MAIN(int , char *[])
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
     gfx_win::WindowSettings("tlocInput") );
 
-  const tl_int winWidth = win.GetWidth();
-  const tl_int winHeight = win.GetHeight();
+  const tl_size winWidth = win.GetWidth();
+  const tl_size winHeight = win.GetHeight();
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

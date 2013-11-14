@@ -227,7 +227,9 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr     rttRenderLeft, rttRenderRight;
   gfx_gl::texture_object_sptr toLeft, toRight;
 
-  gfx_med::Image::dimension_type halfWinDim(win.GetWidth() / 2, win.GetHeight() / 2);
+  gfx_med::Image::dimension_type halfWinDim
+    (core_ds::Variadic<gfx_med::Image::dimension_type::value_type, 2>
+    (win.GetWidth() / 2, win.GetHeight() / 2));
 
   {
     using namespace gfx_gl;
@@ -241,7 +243,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     RenderbufferObject::Params rboParam;
     rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent24>();
-    rboParam.Dimensions(halfWinDim);
+    rboParam.Dimensions(halfWinDim.ConvertTo<RenderbufferObject::Params::dimension_type>());
 
     gfx_gl::render_buffer_object_sptr rbo;
     rbo.reset(new RenderbufferObject(rboParam));
@@ -261,7 +263,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(g_clearColor)
-     .SetDimensions(halfWinDim);
+     .SetDimensions(halfWinDim.ConvertTo<Renderer::dimension_type>());
 
     rttRenderLeft.reset(new Renderer(p));
   }
@@ -287,7 +289,7 @@ int TLOC_MAIN(int argc, char *argv[])
     {
       rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent16>();
     }
-    rboParam.Dimensions(halfWinDim);
+    rboParam.Dimensions(halfWinDim.ConvertTo<RenderbufferObject::Params::dimension_type>());
 
     gfx_gl::render_buffer_object_sptr rbo;
     rbo.reset(new RenderbufferObject(rboParam));
@@ -317,7 +319,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(g_clearColor)
-     .SetDimensions(halfWinDim);
+     .SetDimensions(halfWinDim.ConvertTo<Renderer::dimension_type>());
 
     rttRenderRight.reset(new Renderer(p));
   }

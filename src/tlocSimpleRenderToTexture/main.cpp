@@ -54,7 +54,7 @@ int TLOC_MAIN(int argc, char *argv[])
     p.AddClearBit<clear::ColorBufferBit>()
      .AddClearBit<clear::DepthBufferBit>()
      .SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-     .SetDimensions(gfx_rend::Renderer::dimension_type(500, 500));
+     .SetDimensions(core_ds::MakeTuple(500, 500));
     renderer->SetParams(p);
   }
 
@@ -78,7 +78,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::texture_object_sptr rttTo(new gfx_gl::TextureObject() );
   gfx_med::Image rttImg;
   rttImg.Create
-    (gfx_med::Image::dimension_type(g_rttResX, g_rttResY),
+    (core_ds::MakeTuple(g_rttResX, g_rttResY),
      gfx_med::Image::color_type::COLOR_WHITE);
 
   rttTo->Initialize(rttImg);
@@ -95,7 +95,7 @@ int TLOC_MAIN(int argc, char *argv[])
   p.AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>()
    .SetClearColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
-   .SetDimensions(gfx_rend::Renderer::dimension_type(g_rttResX, g_rttResY));
+   .SetDimensions(core_ds::MakeTuple(g_rttResX, g_rttResY));
   gfx_rend::renderer_sptr rttRenderer(new gfx_rend::Renderer(p));
 
   //------------------------------------------------------------------------
