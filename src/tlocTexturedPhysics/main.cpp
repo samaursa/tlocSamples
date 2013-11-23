@@ -28,7 +28,7 @@ using namespace tloc;
 #define PROFILE_END(_text_)\
   do{\
     s32 timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
-    printf("\n"_text_": %u us", timeInMs);\
+    printf("\n"#_text_": %u us", timeInMs);\
   }while(0)
 
 enum
