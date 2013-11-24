@@ -12,12 +12,7 @@ varying lowp vec3 v_lightDir;
 
 void main()
 { 
-  // Rotate on iOS a little bit so that we can see the model without any 
-  // key (or touch) input
-  mat3 modelMat = mat3(0.707106781186548, 0, -0.707106781186548,
-                       0.5, 0.707106781186548, 0.5,
-                       0.5, -0.707106781186548, 0.5);
-  gl_Position.xyz = modelMat * a_vPos;
+  gl_Position.xyz = a_vPos;
   gl_Position.w = 1.0;
   gl_Position = u_mvp * gl_Position;
 
@@ -35,11 +30,11 @@ void main()
   // will transform both just to be 'correct'
   v_norm = a_vNorm;
  
-  v_norm.xyz = mvpRot * modelMat * v_norm;
+  v_norm.xyz = mvpRot * v_norm;
   v_norm = normalize(v_norm);
 
   v_lightDir = vec3(0.2, 0.5, 1.0);
   v_lightDir = normalize(v_lightDir);
 
-  v_lightDir = mvpRot * modelMat * v_lightDir;
+  v_lightDir = mvpRot * v_lightDir;
 }
