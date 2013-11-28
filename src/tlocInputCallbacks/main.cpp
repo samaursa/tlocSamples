@@ -149,42 +149,48 @@ class JoystickCallback
 {
 public:
   bool OnButtonPress(const tl_size a_caller,
-                     const input_hid::JoystickEvent& a_event) const
+                     const input_hid::JoystickEvent& ,
+                     tl_int a_buttonIndex) const
   {
-    TLOC_UNUSED_2(a_caller, a_event);
-    printf("\nCaller %i joystick button press");
+    printf("\nCaller %i joystick button(%i) press", a_caller, a_buttonIndex);
     return false;
   }
 
   bool OnButtonRelease(const tl_size a_caller,
-                       const input_hid::JoystickEvent& a_event) const
+                       const input_hid::JoystickEvent& ,
+                       tl_int a_buttonIndex) const
   {
-    TLOC_UNUSED_2(a_caller, a_event);
-    printf("\nCaller %i joystick button release");
+    printf("\nCaller %i joystick button(%i) release", a_caller, a_buttonIndex);
     return false;
   }
 
   bool OnAxisChange(const tl_size a_caller,
-                    const input_hid::JoystickEvent& a_event) const
+                    const input_hid::JoystickEvent& ,
+                    tl_int a_axisIndex,
+                    input_hid::JoystickEvent::axis_type a_axis) const
   {
-    TLOC_UNUSED_2(a_caller, a_event);
-    printf("\nCaller %i joystick axis change");
+    printf("\nCaller %i joystick axis(%i) change: %i", a_caller,
+      a_axisIndex, a_axis.m_abs());
     return false;
   }
 
   bool OnSliderChange(const tl_size a_caller,
-                      const input_hid::JoystickEvent& a_event) const
+                      const input_hid::JoystickEvent& ,
+                      tl_int a_sliderIndex,
+                      input_hid::JoystickEvent::slider_type a_slider) const
   {
-    TLOC_UNUSED_2(a_caller, a_event);
-    printf("\nCaller %i joystick slider change");
+    printf("\nCaller %i joystick slider(%i) change: %i, %i",
+            a_caller, a_sliderIndex, a_slider.m_x.m_abs(), a_slider.m_y.m_abs());
     return false;
   }
 
   bool OnPOVChange(const tl_size a_caller,
-                   const input_hid::JoystickEvent& a_event) const
+                   const input_hid::JoystickEvent& ,
+                   tl_int a_povIndex,
+                   input_hid::JoystickEvent::pov_type a_pov) const
   {
-    TLOC_UNUSED_2(a_caller, a_event);
-    printf("\nCaller %i joystick pov change");
+    printf("\nCaller %i joystick pov(%i) change: %s",
+      a_caller, a_povIndex, a_pov.GetDirectionAsString(a_pov.GetDirection()));
     return false;
   }
 };
