@@ -8,6 +8,8 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
+#include <tlocInput/tlocInputImplWin.cpp>
+
 #include <samplesAssetsPath.h>
 
 using namespace tloc;
@@ -143,6 +145,57 @@ public:
 };
 TLOC_DEF_TYPE(TouchCallback);
 
+class JoystickCallback
+{
+public:
+  bool OnButtonPress(const tl_size a_caller,
+                     const input_hid::JoystickEvent& ,
+                     tl_int a_buttonIndex) const
+  {
+    printf("\nCaller %i joystick button(%i) press", a_caller, a_buttonIndex);
+    return false;
+  }
+
+  bool OnButtonRelease(const tl_size a_caller,
+                       const input_hid::JoystickEvent& ,
+                       tl_int a_buttonIndex) const
+  {
+    printf("\nCaller %i joystick button(%i) release", a_caller, a_buttonIndex);
+    return false;
+  }
+
+  bool OnAxisChange(const tl_size a_caller,
+                    const input_hid::JoystickEvent& ,
+                    tl_int a_axisIndex,
+                    input_hid::JoystickEvent::axis_type a_axis) const
+  {
+    printf("\nCaller %i joystick axis(%i) change: %i, %i, %i", a_caller,
+      a_axisIndex, a_axis[0], a_axis[1], a_axis[2]);
+    return false;
+  }
+
+  bool OnSliderChange(const tl_size a_caller,
+                      const input_hid::JoystickEvent& ,
+                      tl_int a_sliderIndex,
+                      input_hid::JoystickEvent::slider_type a_slider) const
+  {
+    printf("\nCaller %i joystick slider(%i) change: %i, %i",
+            a_caller, a_sliderIndex, a_slider[0], a_slider[1]);
+    return false;
+  }
+
+  bool OnPOVChange(const tl_size a_caller,
+                   const input_hid::JoystickEvent& ,
+                   tl_int a_povIndex,
+                   input_hid::JoystickEvent::pov_type a_pov) const
+  {
+    printf("\nCaller %i joystick pov(%i) change: %s",
+      a_caller, a_povIndex, a_pov.GetDirectionAsString(a_pov.GetDirection()));
+    return false;
+  }
+};
+TLOC_DEF_TYPE(JoystickCallback);
+
 int TLOC_MAIN(int, char**)
 {
   gfx_win::Window win;
@@ -170,11 +223,13 @@ int TLOC_MAIN(int, char**)
   input_hid::MouseB* mouse = inputMgr->CreateHID<input_hid::MouseB>();
   input_hid::TouchSurfaceB* touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceB>();
+  input_hid::JoystickB* joystick = inputMgr->CreateHID<input_hid::JoystickB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
   TLOC_ASSERT_NOT_NULL(touchSurface);
+  TLOC_ASSERT_NOT_NULL(joystick);
 
   //------------------------------------------------------------------------
   // Creating Keyboard and mouse callbacks and registering them with their
@@ -187,6 +242,9 @@ int TLOC_MAIN(int, char**)
 
   TouchCallback touchCallback;
   touchSurface->Register(&touchCallback);
+
+  JoystickCallback  joystickCallback;
+  joystick->Register(&joystickCallback);
 
   //------------------------------------------------------------------------
   // In order to update at a pre-defined time interval, a timer must be created
