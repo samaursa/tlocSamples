@@ -169,8 +169,8 @@ public:
                     tl_int a_axisIndex,
                     input_hid::JoystickEvent::axis_type a_axis) const
   {
-    printf("\nCaller %i joystick axis(%i) change: %i", a_caller,
-      a_axisIndex, a_axis.m_abs());
+    printf("\nCaller %i joystick axis(%i) change: %i, %i, %i", a_caller,
+      a_axisIndex, a_axis[0], a_axis[1], a_axis[2]);
     return false;
   }
 
@@ -180,7 +180,7 @@ public:
                       input_hid::JoystickEvent::slider_type a_slider) const
   {
     printf("\nCaller %i joystick slider(%i) change: %i, %i",
-            a_caller, a_sliderIndex, a_slider.m_x.m_abs(), a_slider.m_y.m_abs());
+            a_caller, a_sliderIndex, a_slider[0], a_slider[1]);
     return false;
   }
 
