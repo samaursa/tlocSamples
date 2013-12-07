@@ -8,8 +8,6 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
-#include <tlocInput/tlocInputImplWin.cpp>
-
 #include <samplesAssetsPath.h>
 
 using namespace tloc;
