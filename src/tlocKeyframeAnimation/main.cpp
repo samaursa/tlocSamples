@@ -274,7 +274,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
-    gfx_win::WindowSettings("tlocTexturedFan") );
+    gfx_win::WindowSettings("Keyframe Animation") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

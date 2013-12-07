@@ -87,7 +87,7 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return true;
+    return false;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -111,7 +111,7 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return true;
+    return false;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -154,7 +154,7 @@ public:
       t->SetPosition(t->GetPosition() - dirVec);
     }
 
-    return true;
+    return false;
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
