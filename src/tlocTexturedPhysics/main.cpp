@@ -41,9 +41,10 @@ enum
 
 struct glProgram
 {
-  typedef gfx_cs::Quad      quad_type;
-  typedef gfx_cs::Material  mat_type;
-  typedef core_cs::Entity   ent_type;
+  typedef gfx_cs::Quad          quad_type;
+  typedef gfx_cs::Material      mat_type;
+  typedef core_cs::Entity       ent_type;
+  typedef core_cs::entity_vptr  ent_ptr;
 
   typedef phys_box2d::PhysicsManager        phys_mgr_type;
 
@@ -54,9 +55,8 @@ struct glProgram
 
   glProgram()
     : m_keyPresses(key_count)
-    , m_eventMgr(new core_cs::EventManager())
-    , m_entityMgr(new core_cs::EntityManager(m_eventMgr))
-    , m_quadSys(m_eventMgr, m_entityMgr)
+    , m_entityMgr(m_eventMgr.get())
+    , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
 
   { m_win.Register(this); }
 
@@ -150,25 +150,22 @@ struct glProgram
     using gfx_cs::MaterialSystem;
     using phys_cs::RigidBodySystem;
 
-    using core::component_system::ComponentPoolManager;
     using core_str::String;
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
     core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
 
-    QuadRenderSystem quadSys(m_eventMgr, m_entityMgr);
-    FanRenderSystem fanSys(m_eventMgr, m_entityMgr);
-    CameraSystem    camSys(m_eventMgr, m_entityMgr);
-    MaterialSystem matSys(m_eventMgr, m_entityMgr);
-    RigidBodySystem physicsSys(m_eventMgr, m_entityMgr,
+    QuadRenderSystem quadSys(m_eventMgr.get(), m_entityMgr.get());
+    FanRenderSystem fanSys(m_eventMgr.get(), m_entityMgr.get());
+    CameraSystem    camSys(m_eventMgr.get(), m_entityMgr.get());
+    MaterialSystem matSys(m_eventMgr.get(), m_entityMgr.get());
+    RigidBodySystem physicsSys(m_eventMgr.get(), m_entityMgr.get(),
                                &m_physicsMgr.GetWorld());
 
     // attach the default renderer to both rendering systems
     quadSys.SetRenderer(m_renderer);
     fanSys.SetRenderer(m_renderer);
-
-    ComponentPoolManager poolMgr;
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
@@ -185,7 +182,7 @@ struct glProgram
     //------------------------------------------------------------------------
     // Create the uniforms holding the texture objects
 
-    gl::uniform_sptr  u_crateTo(new gl::Uniform());
+    gl::uniform_vso  u_crateTo;
     {
       gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
       {
@@ -200,10 +197,10 @@ struct glProgram
         crateTo->Initialize(png.GetImage());
         crateTo->Activate();
       }
-      u_crateTo->SetName("shaderTexture").SetValueAs(crateTo);
+      u_crateTo->SetName("shaderTexture").SetValueAs(*crateTo);
     }
 
-    gl::uniform_sptr  u_henryTo(new gl::Uniform());
+    gl::uniform_vso  u_henryTo;
     {
       gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
       {
@@ -219,17 +216,19 @@ struct glProgram
         to->Initialize(png.GetImage());
         to->Activate();
       }
-      u_henryTo->SetName("shaderTexture").SetValueAs(to);
+      u_henryTo->SetName("shaderTexture").SetValueAs(*to);
     }
 
-    gfx_cs::Material* crateMat = prefab_gfx::Material(m_entityMgr.get(), &poolMgr)
-      .AddUniform(u_crateTo)
+    gfx_cs::material_vptr crateMat =
+      prefab_gfx::Material(m_entityMgr.get(), poolMgr.get())
+      .AddUniform(u_crateTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
 
-    gfx_cs::Material* henryMat = prefab_gfx::Material(m_entityMgr.get(), &poolMgr)
-      .AddUniform(u_henryTo)
+    gfx_cs::material_vptr henryMat =
+      prefab_gfx::Material(m_entityMgr.get(), poolMgr.get())
+      .AddUniform(u_henryTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
@@ -245,15 +244,18 @@ struct glProgram
       {
         // Create a quad ent
         Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
-        ent_type* quadEnt =
-          prefab_gfx::Quad(m_entityMgr.get(), &poolMgr).Dimensions(rect).Create();
+        ent_ptr quadEnt =
+          prefab_gfx::Quad(m_entityMgr.get(), poolMgr.get())
+          .Dimensions(rect).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(quadEnt, rbDef);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).
-          Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
+
+        prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+          .Add(quadEnt, rbDef);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+          .Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(quadEnt, crateMat);
       }
@@ -261,17 +263,21 @@ struct glProgram
       {
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
-        ent_type* fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
-          Sides(8).Circle(circle).Create();
+        ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), poolMgr.get())
+          .Sides(8)
+          .Circle(circle)
+          .Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
+        prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+          .Add(fanEnt, rbDef);
 
         box2d::RigidBodyShapeDef rbShape(circle);
         rbShape.SetRestitution(1.0f);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbShape);
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+          .Add(fanEnt, rbShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
       }
@@ -281,16 +287,18 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      ent_type* fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
-        Sides(12).Circle(circle).Create();
+      ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), poolMgr.get())
+        .Sides(12).Circle(circle).Create();
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      prefab_phys::RigidBody(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbDef);
+      prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+        .Add(fanEnt, rbDef);
 
       box2d::RigidBodyShapeDef rbCircleShape(circle);
-      prefab_phys::RigidBodyShape(m_entityMgr.get(), &poolMgr).Add(fanEnt, rbCircleShape);
+      prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+        .Add(fanEnt, rbCircleShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
     }
@@ -311,11 +319,11 @@ struct glProgram
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
-    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
-      Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
+    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), poolMgr.get())
+      .Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
-    quadSys.SetCamera(m_cameraEnt);
-    fanSys.SetCamera(m_cameraEnt);
+    quadSys.SetCamera(m_cameraEnt.get());
+    fanSys.SetCamera(m_cameraEnt.get());
 
     camSys.Initialize();
 
@@ -409,6 +417,13 @@ struct glProgram
       m_frameTimeBuff.pop_back();
       m_frameTimeBuff.insert(m_frameTimeBuff.begin(), 1.0f / m_frameTimer.ElapsedSeconds());
     }
+
+    // -----------------------------------------------------------------------
+    // Cleanup
+
+    crateMat.reset();
+    henryMat.reset();
+    printf("\nExitting normally\n");
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -483,7 +498,6 @@ struct glProgram
   core_time::Timer32      m_frameTimer;
   core_time::Timer32      m_renderFrameTime;
   core_time::Timer32      m_physFrameTime;
-  const ent_type*         m_cameraEnt;
 
   math_proj::FrustumOrtho m_ortho;
 
@@ -493,8 +507,11 @@ struct glProgram
   input::hid::KeyboardB*     m_keyboard;
   core::utils::Checkpoints   m_keyPresses;
 
-  core_cs::event_manager_sptr m_eventMgr;
-  core_cs::entity_manager_sptr m_entityMgr;
+  core_cs::component_pool_mgr_vso   poolMgr;
+  core_cs::event_manager_vso        m_eventMgr;
+  core_cs::entity_manager_vso       m_entityMgr;
+
+  ent_ptr                   m_cameraEnt;
 
   phys_mgr_type             m_physicsMgr;
   gfx_cs::QuadRenderSystem  m_quadSys;

@@ -295,6 +295,6 @@ int TLOC_MAIN(int, char**)
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally");
+  printf("\nExiting normally\n");
 
 }

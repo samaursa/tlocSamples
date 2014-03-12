@@ -374,7 +374,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally");
+  printf("\nExiting normally\n");
 
   return 0;
 

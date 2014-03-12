@@ -1,11 +1,16 @@
 #include <tlocCore/tloc_core.h>
+#include <tlocCore/tloc_core.inl.h>
 #include <tlocGraphics/tloc_graphics.h>
 #include <tlocMath/tloc_math.h>
+#include <tlocMath/tloc_math.inl.h>
 #include <tlocPrefab/tloc_prefab.h>
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
 #include <samplesAssetsPath.h>
+
+#include <tlocCore/smart_ptr/tloc_smart_ptr.inl.h>
+#include <tlocCore/containers/tlocArray.inl.h>
 
 using namespace tloc;
 
@@ -47,24 +52,25 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
   //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  core_cs::ComponentPoolManager compMgr;
+  //core_cs::ComponentPoolManager* compMgr = new core_cs::ComponentPoolManager();
+  core_cs::component_pool_mgr_vso compMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso  eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -89,12 +95,13 @@ int TLOC_MAIN(int argc, char *argv[])
   {
     math_t::Rectf32 rect(math_t::Rectf32::width(1.5f),
                          math_t::Rectf32::height(1.5f));
-    core_cs::Entity* q = prefab_gfx::Quad(entityMgr.get(), &compMgr).
+    core_cs::entity_vptr q =
+      prefab_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(false).Dimensions(rect).Create();
 
-    prefab_gfx::Material(entityMgr.get(), &compMgr)
-      .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-              core_io::Path(GetAssetsPath() + shaderPathFS));
+    prefab_gfx::Material(entityMgr.get(), compMgr.get()).
+      Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+             core_io::Path(GetAssetsPath() + shaderPathFS));
   }
 
   //------------------------------------------------------------------------
@@ -119,7 +126,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally");
+  printf("\nExiting normally\n");
 
   return 0;
 }

@@ -48,14 +48,14 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
   //------------------------------------------------------------------------
+  // A component pool manager manages all the components in a particular
+  // session/level/section.
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
   core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
 
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
@@ -119,7 +119,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::Entity* q = prefab_gfx::Fan(entityMgr.get(), &cpoolMgr).
+  core_cs::entity_vptr q =
+    prefab_gfx::Fan(core_cs::entity_manager_vptr(entityMgr), &cpoolMgr).
     Sides(64).Circle(circ).Create();
 
   // -----------------------------------------------------------------------
@@ -153,7 +154,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally");
+  printf("\nExiting normally\n");
 
   return 0;
 
