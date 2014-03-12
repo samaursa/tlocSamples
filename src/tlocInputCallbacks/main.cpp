@@ -8,8 +8,6 @@
 
 #include <tlocCore/memory/tlocLinkMe.cpp>
 
-#include <tlocInput/tlocInputImplWin.cpp>
-
 #include <samplesAssetsPath.h>
 
 using namespace tloc;
@@ -226,25 +224,30 @@ int TLOC_MAIN(int, char**)
   input_hid::JoystickB* joystick = inputMgr->CreateHID<input_hid::JoystickB>();
 
   // Check pointers
-  TLOC_ASSERT_NOT_NULL(keyboard);
-  TLOC_ASSERT_NOT_NULL(mouse);
-  TLOC_ASSERT_NOT_NULL(touchSurface);
-  TLOC_ASSERT_NOT_NULL(joystick);
+  TLOC_LOG_CORE_WARN_IF(keyboard == nullptr) << "No keyboard detected";
+  TLOC_LOG_CORE_WARN_IF(mouse == nullptr) << "No mouse detected";
+  TLOC_LOG_CORE_WARN_IF(touchSurface == nullptr) << "No touchSurface detected";
+  TLOC_LOG_CORE_WARN_IF(joystick == nullptr) << "No joystick detected";
 
   //------------------------------------------------------------------------
   // Creating Keyboard and mouse callbacks and registering them with their
   // respective HIDs
+
   KeyboardCallback keyboardCallback;
-  keyboard->Register(&keyboardCallback);
+  if (keyboard)
+  { keyboard->Register(&keyboardCallback); }
 
   MouseCallback mouseCallback;
-  mouse->Register(&mouseCallback);
+  if (mouse)
+  { mouse->Register(&mouseCallback); }
 
   TouchCallback touchCallback;
-  touchSurface->Register(&touchCallback);
+  if (touchSurface)
+  { touchSurface->Register(&touchCallback); }
 
   JoystickCallback  joystickCallback;
-  joystick->Register(&joystickCallback);
+  if (joystick)
+  { joystick->Register(&joystickCallback); }
 
   //------------------------------------------------------------------------
   // In order to update at a pre-defined time interval, a timer must be created
@@ -270,17 +273,18 @@ int TLOC_MAIN(int, char**)
       inputMgr->Update();
 
       // Polling if esc key is down, to exit program
-      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::escape))
+      if (keyboard && keyboard->IsKeyDown(input_hid::KeyboardEvent::escape))
       {
         exit(0);
       }
-      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::h))
+      if (keyboard && keyboard->IsKeyDown(input_hid::KeyboardEvent::h))
       {
         printf("\nCAN I HAZ CHEEZEBURGERZZ");
       }
-      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
+      if (keyboard && keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
       {
-        mouse->SetClamped(!mouse->IsClamped());
+        if (mouse)
+        { mouse->SetClamped(!mouse->IsClamped()); }
       }
 
       // The InputManager does not need to be reset while in buffered mode as
