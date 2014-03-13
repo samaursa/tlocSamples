@@ -31,7 +31,7 @@ class KeyboardCallback
 {
 public:
 
-  KeyboardCallback(core_cs::Entity* a_spriteEnt)
+  KeyboardCallback(core_cs::entity_vptr a_spriteEnt)
     : m_spriteEnt(a_spriteEnt)
   { }
 
@@ -40,7 +40,7 @@ public:
   bool OnTouchPress(const tl_size,
                     const input::TouchSurfaceEvent&)
   {
-    gfx_cs::TextureAnimator* ta =
+    gfx_cs::texture_animator_vptr ta =
     m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT_NOT_NULL(ta);
@@ -76,7 +76,7 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    gfx_cs::TextureAnimator* ta =
+    gfx_cs::texture_animator_vptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT_NOT_NULL(ta);
@@ -170,7 +170,7 @@ public:
 
 private:
 
-  core_cs::Entity* m_spriteEnt;
+  core_cs::entity_vptr m_spriteEnt;
 
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -225,42 +225,10 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
-  //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
-
-  //------------------------------------------------------------------------
-  // To render a fan, we need a fan render system - this is a specialized
-  // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
-  quadSys.SetRenderer(renderer);
-
-  //------------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
-
-  //------------------------------------------------------------------------
-  // TextureAnimation system to animate sprites
-  gfx_cs::TextureAnimatorSystem taSys(eventMgr, entityMgr);
-
-  //------------------------------------------------------------------------
-  // The prefab library has some prefabricated entities for us
-
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* spriteEnt =
-    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
-
-  // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
+  // -----------------------------------------------------------------------
+  // Load the required resources. Note that these VSOs will check vptr count
+  // before destruction which is why we are placing them here. We want the
+  // component pool manager to be destroyed before these are destroyed.
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
@@ -270,12 +238,51 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
+  gfx_gl::texture_object_vso to;
   to->Initialize(png.GetImage());
   to->Activate();
 
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(to.get());
+
+  //------------------------------------------------------------------------
+  // A component pool manager manages all the components in a particular
+  // session/level/section.
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
+
+  //------------------------------------------------------------------------
+  // To render a fan, we need a fan render system - this is a specialized
+  // system to render this primitive
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  quadSys.SetRenderer(renderer);
+
+  //------------------------------------------------------------------------
+  // We cannot render anything without materials and its system
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
+
+  //------------------------------------------------------------------------
+  // TextureAnimation system to animate sprites
+  gfx_cs::TextureAnimatorSystem taSys(eventMgr.get(), entityMgr.get());
+
+  //------------------------------------------------------------------------
+  // The prefab library has some prefabricated entities for us
+
+  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
+                        math_t::Rectf32::height(0.5f));
+  core_cs::entity_vptr spriteEnt =
+    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(rect)
+    .Create();
+
+  // We need a material to attach to our entity (which we have not yet created).
+  // NOTE: The fan render system expects a few shader variables to be declared
+  //       and used by the shader (i.e. not compiled out). See the listed
+  //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
     core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
@@ -289,8 +296,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String fsPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-  prefab_gfx::Material matPrefab(entityMgr.get(), &cpoolMgr);
-  matPrefab.AddUniform(u_to).AssetsPath(GetAssetsPath());
+  prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
+  matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());
   matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
                 core_io::Path(fsPath.c_str()) );
 
@@ -310,19 +317,21 @@ int TLOC_MAIN(int argc, char *argv[])
   spriteData.GetContents(sspContents);
   ssp.Init(sspContents, png.GetImage().GetDimensions());
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
+  prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get()).
     Loop(true).Fps(24).
     Add(spriteEnt, ssp.begin("animation_idle"),
                    ssp.end("animation_idle"));
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
-    Loop(true).Fps(24).
-    Add(spriteEnt, ssp.begin("animation_spawn_diffuse"),
-                   ssp.end("animation_spawn_diffuse"));
+  prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
+    .Loop(true).Fps(24)
+    .Add(spriteEnt, ssp.begin("animation_spawn_diffuse"),
+                    ssp.end("animation_spawn_diffuse"));
 
   KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);
   touchSurface->Register(&kb);
+
+  spriteEnt.reset();
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
