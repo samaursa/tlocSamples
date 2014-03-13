@@ -364,7 +364,27 @@ int TLOC_MAIN(int argc, char *argv[])
       .Add(spriteEnt, ssp.begin(spriteNamesAlpha[i]), ssp.end(spriteNamesAlpha[i]));
   }
 
-  KeyboardCallback kb(spriteEnt, u_blockColor.get());
+  // -----------------------------------------------------------------------
+  // our uniforms/attributes are always copied - in order to change the
+  // material's uniform/attributes we must first get pointers to the
+  // uniform/attribute we are looking for
+  //
+  // TODO: Make this into a meta function in the engine
+
+  gfx_cs::material_vptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
+  TLOC_ASSERT(spriteEntMat->GetShaderOperators().size() == 1,
+    "Unexpected number of shader operators");
+
+  gfx_cs::Material::shader_op_ptr spriteEntMatSo =
+    spriteEntMat->GetShaderOperators()[0].get();
+
+  gfx_gl::ShaderOperator::uniform_iterator itr =
+    core::find_if(spriteEntMatSo->begin_uniforms(),
+    spriteEntMatSo->end_uniforms(), gfx_gl::algos::shader_operator::compare::UniformName(u_blockColor->GetName()) );
+
+  TLOC_ASSERT(itr != spriteEntMatSo->end_uniforms(), "Could not find the uniform");
+
+  KeyboardCallback kb(spriteEnt, itr->first.get());
   keyboard->Register(&kb);
   touchSurface->Register(&kb);
 
@@ -373,7 +393,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   quadSys.Initialize();
   matSys.Initialize();
-  taSys.Initialize();
+  //taSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -405,10 +425,10 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       glClear(GL_COLOR_BUFFER_BIT);
-      taSys.ProcessActiveEntities(deltaT);
+      //taSys.ProcessActiveEntities(deltaT);
 
       renderer->ApplyRenderSettings();
-      quadSys.ProcessActiveEntities();
+      //quadSys.ProcessActiveEntities();
 
       win.SwapBuffers();
       t.Reset();
