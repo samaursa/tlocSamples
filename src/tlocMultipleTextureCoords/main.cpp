@@ -217,33 +217,15 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
-  // -----------------------------------------------------------------------
-  // Load the required resources. Note that these VSOs will check vptr count
-  // before destruction which is why we are placing them here. We want the
-  // component pool manager to be destroyed before these are destroyed.
-
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/blocksprites.png").c_str() );
-
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
-  to->Activate();
-
-  gfx_gl::uniform_vso  u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
-
-  // used later
-  gfx_cs::texture_coords_vso tcoord2;
-
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
+  // See explanation in SimpleQuad sample on why it must be created first.
   core_cs::component_pool_mgr_vso cpoolMgr;
+
+  // used later, but since it is a component, it must appear before entity
+  // manager to avoid destruction issues
+  gfx_cs::texture_coords_vso tcoord2;
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -291,10 +273,31 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String fsPath("/shaders/tlocOneTextureMultipleTCoordsFS_gl_es_2_0.glsl");
 #endif
 
+  // -----------------------------------------------------------------------
+  // Load the required resources
+
+  gfx_med::ImageLoaderPng png;
+  core_io::Path path( (core_str::String(GetAssetsPath()) +
+                      "/images/blocksprites.png").c_str() );
+
+  if (png.Load(path) != ErrorSuccess)
+  { TLOC_ASSERT(false, "Image did not load!"); }
+
+  // gl::Uniform supports quite a few types, including a TextureObject
+  gfx_gl::texture_object_vso to;
+  to->Initialize(png.GetImage());
+  to->Activate();
+
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
+
   gfx_gl::uniform_vso u_blockColor;
 
   u_blockColor->SetName("u_blockColor").
     SetValueAs(red.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+
+  // -----------------------------------------------------------------------
+  // create the material from prefab
 
   prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
   matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());

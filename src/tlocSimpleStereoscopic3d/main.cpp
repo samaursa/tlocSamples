@@ -333,9 +333,10 @@ int TLOC_MAIN(int argc, char *argv[])
   input::input_mgr_b_ptr inputMgr =
     input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
 
-  // -----------------------------------------------------------------------
+  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
+  // See explanation in SimpleQuad sample on why it must be created first.
   core_cs::component_pool_mgr_vso cpoolMgr;
 
   //------------------------------------------------------------------------

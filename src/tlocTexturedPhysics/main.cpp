@@ -57,6 +57,7 @@ struct glProgram
     : m_keyPresses(key_count)
     , m_entityMgr(m_eventMgr.get())
     , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
+    , m_endGame(false)
 
   { m_win.Register(this); }
 
@@ -156,12 +157,12 @@ struct glProgram
     // Systems and Entity Preparation
     core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
 
-    QuadRenderSystem quadSys(m_eventMgr.get(), m_entityMgr.get());
-    FanRenderSystem fanSys(m_eventMgr.get(), m_entityMgr.get());
-    CameraSystem    camSys(m_eventMgr.get(), m_entityMgr.get());
-    MaterialSystem matSys(m_eventMgr.get(), m_entityMgr.get());
-    RigidBodySystem physicsSys(m_eventMgr.get(), m_entityMgr.get(),
-                               &m_physicsMgr.GetWorld());
+    QuadRenderSystem  quadSys   (m_eventMgr.get(), m_entityMgr.get());
+    FanRenderSystem   fanSys    (m_eventMgr.get(), m_entityMgr.get());
+    CameraSystem      camSys    (m_eventMgr.get(), m_entityMgr.get());
+    MaterialSystem    matSys    (m_eventMgr.get(), m_entityMgr.get());
+    RigidBodySystem   physicsSys(m_eventMgr.get(), m_entityMgr.get(),
+                                 &m_physicsMgr.GetWorld());
 
     // attach the default renderer to both rendering systems
     quadSys.SetRenderer(m_renderer);
@@ -353,7 +354,8 @@ struct glProgram
     m_physFrameTime.Reset();
     m_frameTimer.Reset();
     m_accumulator = 0;
-    while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false)
+    while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
+           m_endGame == false)
     {
       // Update our HIDs
       if (m_win.IsValid())
@@ -486,35 +488,37 @@ struct glProgram
 
     if (a_event.m_type == WindowEvent::close)
     {
-      m_win.Close();
+      m_endGame = true;
     }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  gfx_win::Window         m_win;
-  gfx_rend::renderer_sptr m_renderer;
-  core_time::Timer32      m_timer;
-  core_time::Timer32      m_frameTimer;
-  core_time::Timer32      m_renderFrameTime;
-  core_time::Timer32      m_physFrameTime;
+  gfx_win::Window                   m_win;
 
-  math_proj::FrustumOrtho m_ortho;
+  bool                              m_endGame;
+  gfx_rend::renderer_sptr           m_renderer;
+  core_time::Timer32                m_timer;
+  core_time::Timer32                m_frameTimer;
+  core_time::Timer32                m_renderFrameTime;
+  core_time::Timer32                m_physFrameTime;
 
-  tl_int              m_accumulator;
+  math_proj::FrustumOrtho           m_ortho;
 
-  input::input_mgr_b_ptr     m_inputMgr;
-  input::hid::KeyboardB*     m_keyboard;
-  core::utils::Checkpoints   m_keyPresses;
+  tl_int                            m_accumulator;
+
+  input::input_mgr_b_ptr            m_inputMgr;
+  input::hid::KeyboardB*            m_keyboard;
+  core::utils::Checkpoints          m_keyPresses;
 
   core_cs::component_pool_mgr_vso   m_compPoolMgr;
   core_cs::event_manager_vso        m_eventMgr;
   core_cs::entity_manager_vso       m_entityMgr;
 
-  ent_ptr                   m_cameraEnt;
+  ent_ptr                           m_cameraEnt;
 
-  phys_mgr_type             m_physicsMgr;
-  gfx_cs::QuadRenderSystem  m_quadSys;
+  phys_mgr_type                     m_physicsMgr;
+  gfx_cs::QuadRenderSystem          m_quadSys;
 };
 TLOC_DEF_TYPE(glProgram);
 

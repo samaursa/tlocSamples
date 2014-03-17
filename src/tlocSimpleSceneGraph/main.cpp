@@ -323,9 +323,10 @@ int TLOC_MAIN(int argc, char *argv[])
   to->Initialize(png.GetImage());
   to->Activate();
 
-  // -----------------------------------------------------------------------
+  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
+  // See explanation in SimpleQuad sample on why it must be created first.
   core_cs::component_pool_mgr_vso cpoolMgr;
 
   // -----------------------------------------------------------------------

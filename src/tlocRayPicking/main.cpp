@@ -57,8 +57,8 @@ struct glProgram
   glProgram()
     : m_keyPresses(key_count)
     , m_entityMgr(m_eventMgr.get())
-    , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
     , m_mouseVisible(true)
+    , m_endGame(false)
 
   { m_win.Register(this); }
 
@@ -410,7 +410,8 @@ struct glProgram
 
     printf("\nV - toggle mouse cursor visibility");
 
-    while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false)
+    while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
+           m_endGame == false)
     {
       // Update our HIDs
       if (m_win.IsValid())
@@ -553,42 +554,45 @@ struct glProgram
 
     if (a_event.m_type == WindowEvent::close)
     {
-      m_win.Close();
+      m_endGame = true;
     }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+  // window should be destroyed last ALWAYS, because when it is closed, its
+  // OpenGL context is destroyed so we make sure that it is the first one
+  // constructed
   gfx_win::Window         m_win;
-  gfx_rend::renderer_sptr m_renderer;
-  core_time::Timer32      m_timer;
-  core_time::Timer32      m_frameTimer;
-  core_time::Timer32      m_renderFrameTime;
-  ent_ptr                 m_cameraEnt;
-  bool                    m_mouseVisible;
 
-  ent_ptr                 m_fanEnt;
-  ent_ptr                 m_mouseFan;
+  gfx_rend::renderer_sptr     m_renderer;
+  core_time::Timer32          m_timer;
+  core_time::Timer32          m_frameTimer;
+  core_time::Timer32          m_renderFrameTime;
+  ent_ptr                     m_cameraEnt;
+  bool                        m_mouseVisible;
+  bool                        m_endGame;
+
+  ent_ptr                     m_fanEnt;
+  ent_ptr                     m_mouseFan;
 
   gfx_gl::texture_object_sptr m_texObjHenry;
   gfx_gl::texture_object_sptr m_texObjCrate;
   gfx_cs::material_sptr       m_henryMat;
   gfx_cs::material_sptr       m_crateMat;
 
-  input::input_mgr_b_ptr     m_inputMgr;
-  input::input_mgr_i_ptr     m_inputMgrImm;
-  input::hid::KeyboardB*     m_keyboard;
-  input::hid::MouseB*        m_mouse;
-  input::hid::TouchSurfaceI* m_touchSurface;
+  input::input_mgr_b_ptr      m_inputMgr;
+  input::input_mgr_i_ptr      m_inputMgrImm;
+  input::hid::KeyboardB*      m_keyboard;
+  input::hid::MouseB*         m_mouse;
+  input::hid::TouchSurfaceI*  m_touchSurface;
 
-  input_hid::TouchSurfaceI::touch_container_type m_currentTouches;
-  core::utils::Checkpoints   m_keyPresses;
+  input_hid::TouchSurfaceI::touch_container_type  m_currentTouches;
+  core::utils::Checkpoints                        m_keyPresses;
 
   core_cs::component_pool_mgr_vso m_compPoolMgr;
   core_cs::event_manager_vso      m_eventMgr;
   core_cs::entity_manager_vso     m_entityMgr;
-
-  gfx_cs::QuadRenderSystem  m_quadSys;
 };
 TLOC_DEF_TYPE(glProgram);
 
@@ -598,5 +602,6 @@ int TLOC_MAIN(int, char* [])
   p.Initialize();
   p.RunGame();
 
+  printf("\n");
   return 0;
 }

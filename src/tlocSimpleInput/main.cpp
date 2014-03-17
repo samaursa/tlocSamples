@@ -101,6 +101,7 @@ int TLOC_MAIN(int , char *[])
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
+  // See explanation in SimpleQuad sample on why it must be created first.
   core_cs::component_pool_mgr_vso compMgr;
 
   //------------------------------------------------------------------------
