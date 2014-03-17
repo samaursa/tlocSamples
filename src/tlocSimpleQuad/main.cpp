@@ -54,7 +54,13 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  //core_cs::ComponentPoolManager* compMgr = new core_cs::ComponentPoolManager();
+  //
+  // NOTES:
+  // It MUST be destroyed AFTER the EntityManager(s) that use its components.
+  // This is because upon destruction of EntityManagers, all entities are
+  // destroyed which trigger events for removal of all their components. If
+  // the components are destroyed, the smart pointers will not let us dereference
+  // them and will trigger an assertion.
   core_cs::component_pool_mgr_vso compMgr;
 
   //------------------------------------------------------------------------

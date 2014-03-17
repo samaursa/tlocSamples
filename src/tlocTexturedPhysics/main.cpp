@@ -220,14 +220,14 @@ struct glProgram
     }
 
     gfx_cs::material_vptr crateMat =
-      prefab_gfx::Material(m_entityMgr.get(), poolMgr.get())
+      prefab_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_crateTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
 
     gfx_cs::material_vptr henryMat =
-      prefab_gfx::Material(m_entityMgr.get(), poolMgr.get())
+      prefab_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_henryTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
@@ -245,16 +245,16 @@ struct glProgram
         // Create a quad ent
         Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
         ent_ptr quadEnt =
-          prefab_gfx::Quad(m_entityMgr.get(), poolMgr.get())
+          prefab_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
           .Dimensions(rect).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
 
-        prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+        prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(quadEnt, rbDef);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(quadEnt, crateMat);
@@ -263,7 +263,7 @@ struct glProgram
       {
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
-        ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), poolMgr.get())
+        ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
           .Sides(8)
           .Circle(circle)
           .Create();
@@ -271,12 +271,12 @@ struct glProgram
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+        prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(fanEnt, rbDef);
 
         box2d::RigidBodyShapeDef rbShape(circle);
         rbShape.SetRestitution(1.0f);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+        prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(fanEnt, rbShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
@@ -287,17 +287,17 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), poolMgr.get())
+      ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      prefab_phys::RigidBody(m_entityMgr.get(), poolMgr.get())
+      prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
         .Add(fanEnt, rbDef);
 
       box2d::RigidBodyShapeDef rbCircleShape(circle);
-      prefab_phys::RigidBodyShape(m_entityMgr.get(), poolMgr.get())
+      prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
         .Add(fanEnt, rbCircleShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
@@ -319,11 +319,11 @@ struct glProgram
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
-    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), poolMgr.get())
+    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
       .Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
-    quadSys.SetCamera(m_cameraEnt.get());
-    fanSys.SetCamera(m_cameraEnt.get());
+    quadSys.SetCamera(m_cameraEnt);
+    fanSys.SetCamera(m_cameraEnt);
 
     camSys.Initialize();
 
@@ -507,7 +507,7 @@ struct glProgram
   input::hid::KeyboardB*     m_keyboard;
   core::utils::Checkpoints   m_keyPresses;
 
-  core_cs::component_pool_mgr_vso   poolMgr;
+  core_cs::component_pool_mgr_vso   m_compPoolMgr;
   core_cs::event_manager_vso        m_eventMgr;
   core_cs::entity_manager_vso       m_entityMgr;
 

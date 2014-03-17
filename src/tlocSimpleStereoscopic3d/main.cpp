@@ -49,7 +49,7 @@ class MayaCam
   };
 
 public:
-  MayaCam(core_cs::Entity* a_camera)
+  MayaCam(core_cs::entity_vptr a_camera)
     : m_camera(a_camera)
     , m_flags(k_count)
   {
@@ -124,15 +124,15 @@ public:
 
     if (m_flags.IsMarked(k_rotating))
     {
-      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       arcBall->MoveVertical(yRel * 0.01f * -1.0f);
       arcBall->MoveHorizontal(xRel * 0.01f);
     }
     else if (m_flags.IsMarked(k_panning))
     {
-      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
-      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
+      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
@@ -145,7 +145,7 @@ public:
     }
     else if (m_flags.IsMarked(k_dolly))
     {
-      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
+      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
 
       math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
 
@@ -182,7 +182,7 @@ public:
     return false;
   }
 
-  core_cs::Entity*        m_camera;
+  core_cs::entity_vptr        m_camera;
   core_utils::Checkpoints m_flags;
 };
 TLOC_DEF_TYPE(MayaCam);
@@ -333,6 +333,11 @@ int TLOC_MAIN(int argc, char *argv[])
   input::input_mgr_b_ptr inputMgr =
     input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
 
+  // -----------------------------------------------------------------------
+  // A component pool manager manages all the components in a particular
+  // session/level/section.
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
   input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
@@ -344,33 +349,28 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  // -----------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
+  core_cs::event_manager_vso  eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
-  gfx_cs::MeshRenderSystem  meshSys(eventMgr, entityMgr);
+  gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
   meshSys.SetRenderer(rttRenderLeft);
 
   // -----------------------------------------------------------------------
   // quad render system for two quads for two views
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // The camera's view transformations are calculated by the camera system
-  gfx_cs::CameraSystem      camSys(eventMgr, entityMgr);
-  gfx_cs::ArcBallSystem     arcBallSys(eventMgr, entityMgr);
+  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
@@ -405,12 +405,12 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
+  gfx_gl::texture_object_vso crateTo;
   crateTo->Initialize(png.GetImage());
   crateTo->Activate();
 
-  gfx_gl::uniform_sptr  u_crateTo(new gfx_gl::Uniform());
-  u_crateTo->SetName("s_texture").SetValueAs(crateTo);
+  gfx_gl::uniform_vso  u_crateTo;
+  u_crateTo->SetName("s_texture").SetValueAs(*crateTo);
 
   // -----------------------------------------------------------------------
   // More shaderpaths
@@ -427,7 +427,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String quadShaderFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-  prefab_gfx::Mesh m(entityMgr.get(), &cpoolMgr);
+  prefab_gfx::Mesh m(entityMgr.get(), cpoolMgr.get());
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -455,10 +455,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::Entity* crateMesh =
-    prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
-    .AddUniform(u_crateTo)
+  core_cs::entity_vptr crateMesh =
+    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    .AddUniform(u_crateTo.get())
     .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
                     core_io::Path(GetAssetsPath() + meshShaderPathFS));
 
@@ -468,30 +468,38 @@ int TLOC_MAIN(int argc, char *argv[])
   using math_t::Rectf32;
   Rectf32 leftQuad(Rectf32::width(1.0f), Rectf32::height(2.0f));
 
-  core_cs::Entity* leftQuadEnt =
-    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(leftQuad).Create();
-  leftQuadEnt->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(-0.5, 0, 0));
+  core_cs::entity_vptr leftQuadEnt =
+    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(leftQuad).Create();
+
+  leftQuadEnt->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(-0.5, 0, 0));
+
   {
-    gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-    u_to->SetName("s_texture").SetValueAs(toLeft);
+    gfx_gl::uniform_vso  u_to;
+    u_to->SetName("s_texture").SetValueAs(*toLeft);
 
     // create the material
-    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
-      .AddUniform(u_to)
+    prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+      .AddUniform(u_to.get())
       .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
                         core_io::Path(GetAssetsPath() + quadShaderFS));
   }
 
-  core_cs::Entity* rightQuadEnt =
-    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(leftQuad).Create();
-  rightQuadEnt->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0.5, 0, 0));
+  core_cs::entity_vptr rightQuadEnt =
+    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(leftQuad).Create();
+
+  rightQuadEnt->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(0.5, 0, 0));
+
   {
-    gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-    u_to->SetName("s_texture").SetValueAs(toRight);
+    gfx_gl::uniform_vso  u_to;
+    u_to->SetName("s_texture").SetValueAs(*toRight);
 
     // create the material
-    prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
-      .AddUniform(u_to)
+    prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+      .AddUniform(u_to.get())
       .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
                          core_io::Path(GetAssetsPath() + quadShaderFS));
   }
@@ -509,11 +517,11 @@ int TLOC_MAIN(int argc, char *argv[])
   math_proj::FrustumPersp frLeft(params);
   frLeft.BuildFrustum();
 
-  core_cs::Entity* m_cameraEntLeft =
-    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+  core_cs::entity_vptr m_cameraEntLeft =
+    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(frLeft, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntLeft);
+  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntLeft);
 
   meshSys.SetCamera(m_cameraEntLeft);
 
@@ -526,11 +534,11 @@ int TLOC_MAIN(int argc, char *argv[])
   math_proj::FrustumPersp frRight(params);
   frRight.BuildFrustum();
 
-  core_cs::Entity* m_cameraEntRight =
-    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+  core_cs::entity_vptr m_cameraEntRight =
+    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(frRight, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).Add(m_cameraEntRight);
+  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntRight);
 
   meshSys.SetCamera(m_cameraEntRight);
 

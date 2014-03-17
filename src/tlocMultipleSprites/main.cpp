@@ -242,9 +242,6 @@ int TLOC_MAIN(int argc, char *argv[])
   to->Initialize(png.GetImage());
   to->Activate();
 
-  gfx_gl::uniform_vso  u_to;
-  u_to->SetName("s_texture").SetValueAs(to.get());
-
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
@@ -295,6 +292,9 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String fsPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
+
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(to.get());
 
   prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
   matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());

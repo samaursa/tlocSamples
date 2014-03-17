@@ -10,7 +10,12 @@
 
 using namespace tloc;
 
-gfx_gl::texture_object_sptr g_to;
+gfx_gl::texture_object_vptr
+  GetTextureObjectPtr()
+{
+  static gfx_gl::texture_object_vso g_to;
+  return g_to.get();
+}
 
 class WindowCallback
 {
@@ -32,7 +37,7 @@ TLOC_DEF_TYPE(WindowCallback);
 class KeyboardCallback
 {
 public:
-  KeyboardCallback(core_cs::Entity* a_spriteEnt)
+  KeyboardCallback(core_cs::entity_vptr a_spriteEnt)
     : m_spriteEnt(a_spriteEnt)
     , m_filterNearest(false)
   { }
@@ -42,7 +47,7 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    gfx_cs::TextureAnimator* ta =
+    gfx_cs::texture_animator_vptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT_NOT_NULL(ta);
@@ -117,8 +122,8 @@ public:
         texParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
       }
 
-      g_to->SetParams(texParams);
-      g_to->Update();
+      GetTextureObjectPtr()->SetParams(texParams);
+      GetTextureObjectPtr()->Update();
     }
 
     return false;
@@ -132,8 +137,8 @@ public:
 
 private:
 
-  core_cs::Entity* m_spriteEnt;
-  bool             m_filterNearest;
+  core_cs::entity_vptr  m_spriteEnt;
+  bool                  m_filterNearest;
 
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -195,36 +200,37 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(keyboard);
 
   //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
+  // See explanation in SimpleQuad sample on why it must be created first.
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   //------------------------------------------------------------------------
   // TextureAnimation system to animate sprites
-  gfx_cs::TextureAnimatorSystem taSys(eventMgr, entityMgr);
+  gfx_cs::TextureAnimatorSystem taSys(eventMgr.get(), entityMgr.get());
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
   math_t::Rectf32 rect(math_t::Rectf32::width(1.0f),
                        math_t::Rectf32::height(1.0f));
-  core_cs::Entity* spriteEnt =
-    prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).Dimensions(rect).Create();
+  core_cs::entity_vptr spriteEnt =
+    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
@@ -250,17 +256,16 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT(false, "Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  g_to.reset(new gfx_gl::TextureObject());
-  g_to->Initialize(png.GetImage());
-  g_to->Activate();
+  GetTextureObjectPtr()->Initialize(png.GetImage());
+  GetTextureObjectPtr()->Activate();
 
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(g_to);
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*GetTextureObjectPtr());
 
-  prefab_gfx::Material matPrefab(entityMgr.get(), &cpoolMgr);
-  matPrefab.AddUniform(u_to).AssetsPath(GetAssetsPath());
+  prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
+  matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());
   matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
-                core_io::Path(fsPath.c_str()) );
+                           core_io::Path(fsPath.c_str()) );
 
   //------------------------------------------------------------------------
   // Prefab library also has a sprite sheet loader
@@ -273,12 +278,13 @@ int TLOC_MAIN(int argc, char *argv[])
   { printf("\nUnable to open the sprite sheet"); }
 
   gfx_med::SpriteLoader_TexturePacker ssp;
-  core_str::String sspContents;
+  core_str::String                    sspContents;
+
   shaderFile.GetContents(sspContents);
   ssp.Init(sspContents, png.GetImage().GetDimensions());
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), &cpoolMgr).
-    Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
+  prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
+    .Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
 
   KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);

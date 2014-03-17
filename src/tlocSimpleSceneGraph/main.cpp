@@ -11,7 +11,7 @@
 
 using namespace tloc;
 
-anim_cs::TransformAnimation* g_tformAnimComp = nullptr;
+anim_cs::transform_animation_vptr g_tformAnimComp = nullptr;
 const tl_size g_fpsInterval = 5;
 
 class WindowCallback
@@ -46,7 +46,7 @@ class MayaCam
   };
 
 public:
-  MayaCam(core_cs::Entity* a_camera)
+  MayaCam(core_cs::entity_vptr a_camera)
     : m_camera(a_camera)
     , m_flags(k_count)
   {
@@ -121,15 +121,15 @@ public:
 
     if (m_flags.IsMarked(k_rotating))
     {
-      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       arcBall->MoveVertical(yRel * 0.01f );
       arcBall->MoveHorizontal(xRel * 0.01f );
     }
     else if (m_flags.IsMarked(k_panning))
     {
-      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
-      gfx_cs::ArcBall* arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
+      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
@@ -142,7 +142,7 @@ public:
     }
     else if (m_flags.IsMarked(k_dolly))
     {
-      math_cs::Transform* t = m_camera->GetComponent<math_cs::Transform>();
+      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
 
       math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
 
@@ -253,8 +253,8 @@ public:
     return false;
   }
 
-  core_cs::Entity*        m_camera;
-  core_utils::Checkpoints m_flags;
+  core_cs::entity_vptr      m_camera;
+  core_utils::Checkpoints   m_flags;
 };
 TLOC_DEF_TYPE(MayaCam);
 
@@ -307,37 +307,54 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(mouse);
 
   // -----------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
+  // Load the required resources. Note that these VSOs will check vptr count
+  // before destruction which is why we are placing them here. We want the
+  // component pool manager to be destroyed before these are destroyed.
+
+  gfx_med::ImageLoaderPng png;
+  core_io::Path path( (core_str::String(GetAssetsPath()) +
+                       "/images/crateTexture.png").c_str() );
+
+  if (png.Load(path) != ErrorSuccess)
+  { TLOC_ASSERT(false, "Image did not load!"); }
+
+  // gl::Uniform supports quite a few types, including a TextureObject
+  gfx_gl::texture_object_vso to;
+  to->Initialize(png.GetImage());
+  to->Activate();
 
   // -----------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  // -----------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
-  gfx_cs::MeshRenderSystem  meshSys(eventMgr, entityMgr);
+  gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
   meshSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // One of the keyframe animation systems
-  anim_cs::TransformAnimationSystem taSys(eventMgr, entityMgr);
+  anim_cs::TransformAnimationSystem taSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // The camera's view transformations are calculated by the camera system
-  gfx_cs::CameraSystem      camSys(eventMgr, entityMgr);
-  gfx_cs::ArcBallSystem     arcBallSys(eventMgr, entityMgr);
+  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // SceneNodes require the SceneGraphSystem
-  gfx_cs::SceneGraphSystem  sgSys(eventMgr, entityMgr);
+  gfx_cs::SceneGraphSystem  sgSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
@@ -363,21 +380,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //  * a TextureObject (preparing the image for OpenGL)
   //  * a Uniform (all textures are uniforms in shaders)
   //  * a ShaderOperator (this is what the material will take)
-
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) +
-                       "/images/crateTexture.png").c_str() );
-
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
-  to->Activate();
-
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -405,25 +407,32 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  prefab_gfx::Material prefMat(entityMgr.get(), &cpoolMgr);
-  prefMat.AddUniform(u_to);
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(to.get());
+
+  prefab_gfx::Material prefMat(entityMgr.get(), cpoolMgr.get());
+  prefMat.AddUniform(u_to.get());
 
   // Ent2 made first just to highlight the sorting feature of the scene graph.
   // That is, the SceneGraph will correctly sort the nodes regardless of when
   // the parent child hierarchies are made
-  core_cs::Entity* ent_2 =
-    prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-  prefab_gfx::SceneNode(entityMgr.get(), &cpoolMgr).Add(ent_2);
+  core_cs::entity_vptr ent_2 =
+    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+
+  prefab_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent_2);
+
   prefMat.Add(ent_2, core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
 
-  core_cs::Entity* ent =
-    prefab_gfx::Mesh(entityMgr.get(), &cpoolMgr).Create(vertices);
-  prefab_gfx::SceneNode(entityMgr.get(), &cpoolMgr).Add(ent);
+  core_cs::entity_vptr ent =
+    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+
+  prefab_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent);
+
   prefMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
                    core_io::Path(GetAssetsPath() + shaderPathFS));
 
-  gfx_cs::SceneNode* parentNode = ent->GetComponent<gfx_cs::SceneNode>();
+  gfx_cs::scene_node_vptr parentNode = ent->GetComponent<gfx_cs::SceneNode>();
 
   // Set ent as the parent of ent2
   parentNode->AddChild(ent_2->GetComponent<gfx_cs::SceneNode>());
@@ -492,10 +501,10 @@ int TLOC_MAIN(int argc, char *argv[])
     KFs_2ndCrate.AddKeyframe(kf);
   }
 
-  prefab_anim::TransformAnimation ta(entityMgr.get(), &cpoolMgr);
+  prefab_anim::TransformAnimation ta(entityMgr.get(), cpoolMgr.get());
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
-  prefab_anim::TransformAnimation ta2(entityMgr.get(), &cpoolMgr);
+  prefab_anim::TransformAnimation ta2(entityMgr.get(), cpoolMgr.get());
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent_2, KFs_2ndCrate);
 
   g_tformAnimComp = ent->GetComponent<anim_cs::TransformAnimation>();
@@ -513,11 +522,11 @@ int TLOC_MAIN(int argc, char *argv[])
   math_proj::FrustumPersp fr(params);
   fr.BuildFrustum();
 
-  core_cs::Entity* m_cameraEnt =
-    prefab_gfx::Camera(entityMgr.get(), &cpoolMgr).
+  core_cs::entity_vptr m_cameraEnt =
+    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(fr, math_t::Vec3f(5.0f, 5.0f, 10.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), &cpoolMgr).
+  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).
     Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
 
   meshSys.SetCamera(m_cameraEnt);
@@ -577,6 +586,11 @@ int TLOC_MAIN(int argc, char *argv[])
       t.Reset();
     }
   }
+
+  // -----------------------------------------------------------------------
+  // Cleanup
+
+  g_tformAnimComp.reset();
 
   // -----------------------------------------------------------------------
   // Exiting

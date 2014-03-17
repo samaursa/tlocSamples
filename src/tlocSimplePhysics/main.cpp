@@ -56,24 +56,24 @@ int TLOC_MAIN(int argc, char *argv[])
   }
 
   //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso  eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -97,10 +97,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
     math_t::Rectf32::height(0.5f));
-  core_cs::Entity* q = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr).
-    TexCoords(false).Dimensions(rect).Create();
+  core_cs::entity_vptr q = prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .TexCoords(false).Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));
 
@@ -111,16 +111,17 @@ int TLOC_MAIN(int argc, char *argv[])
   phys_box2d::PhysicsManager  physMgr;
   physMgr.Initialize(phys_box2d::PhysicsManager::gravity(g));
 
-  phys_cs::RigidBodySystem rbSys(eventMgr, entityMgr, &physMgr.GetWorld());
+  phys_cs::RigidBodySystem rbSys(eventMgr.get(), entityMgr.get(),
+                                 &physMgr.GetWorld());
 
   // Make the above quad a rigidbody
   phys_box2d::rigid_body_def_sptr rbDef(new phys_box2d::RigidBodyDef());
   rbDef->SetPosition(phys_box2d::RigidBodyDef::vec_type(0, 1.0f));
   rbDef->SetType<phys_box2d::p_rigid_body::DynamicBody>();
 
-  prefab_phys::RigidBody(entityMgr.get(), &cpoolMgr).Add(q, rbDef);
-  prefab_phys::RigidBodyShape(entityMgr.get(), &cpoolMgr).
-    Add(q, rect, prefab_phys::RigidBodyShape::density(1.0f));
+  prefab_phys::RigidBody(entityMgr.get(), cpoolMgr.get()).Add(q, rbDef);
+  prefab_phys::RigidBodyShape(entityMgr.get(), cpoolMgr.get())
+    .Add(q, rect, prefab_phys::RigidBodyShape::density(1.0f));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
@@ -153,7 +154,7 @@ int TLOC_MAIN(int argc, char *argv[])
       q->GetComponents(phys_cs::components::k_rigidBody);
     if (rbList.size())
     {
-      phys_cs::RigidBody* myRb = rbList[0];
+      phys_cs::rigid_body_vptr myRb = rbList[0];
       phys_box2d::RigidBody::vec_type pos;
       myRb->GetRigidBody().GetPosition(pos);
       if (pos[1] < -1.0f)

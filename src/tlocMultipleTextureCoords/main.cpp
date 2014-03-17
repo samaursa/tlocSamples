@@ -393,7 +393,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   quadSys.Initialize();
   matSys.Initialize();
-  //taSys.Initialize();
+  taSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -425,10 +425,10 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       glClear(GL_COLOR_BUFFER_BIT);
-      //taSys.ProcessActiveEntities(deltaT);
+      taSys.ProcessActiveEntities(deltaT);
 
       renderer->ApplyRenderSettings();
-      //quadSys.ProcessActiveEntities();
+      quadSys.ProcessActiveEntities();
 
       win.SwapBuffers();
       t.Reset();

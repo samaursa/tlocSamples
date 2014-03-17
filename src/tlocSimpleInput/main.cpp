@@ -29,9 +29,9 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
-void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
+void MoveEntity(const core_cs::entity_vptr a_ent, const math_t::Vec2f& a_deltaPos)
 {
-  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
+  math_cs::transform_vptr transform = a_ent->GetComponent<math_cs::Transform>();
 
   math_cs::Transform::position_type position(transform->GetPosition());
   position[0] += a_deltaPos[0];
@@ -40,9 +40,9 @@ void MoveEntity(const core_cs::Entity* a_ent, const math_t::Vec2f& a_deltaPos)
   transform->SetPosition(position);
 }
 
-void MoveEntityToPosition(const core_cs::Entity* a_ent, const math_t::Vec2f& a_position)
+void MoveEntityToPosition(const core_cs::entity_vptr a_ent, const math_t::Vec2f& a_position)
 {
-  math_cs::Transform* transform = a_ent->GetComponent<math_cs::Transform>();
+  math_cs::transform_vptr transform = a_ent->GetComponent<math_cs::Transform>();
   transform->SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 
@@ -99,24 +99,24 @@ int TLOC_MAIN(int , char *[])
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
-
-  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  core_cs::ComponentPoolManager compMgr;
+  core_cs::component_pool_mgr_vso compMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso  eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem matSys(eventMgr.get(), entityMgr.get());
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -139,10 +139,10 @@ int TLOC_MAIN(int , char *[])
   // The prefab library has some prefabricated entities for us
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::Entity* ent = prefab_gfx::Quad(entityMgr.get(), &compMgr).
-    TexCoords(false).Dimensions(rect).Create();
+  core_cs::entity_vptr ent = prefab_gfx::Quad(entityMgr.get(), compMgr.get())
+    .TexCoords(false).Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), &compMgr)
+  prefab_gfx::Material(entityMgr.get(), compMgr.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 

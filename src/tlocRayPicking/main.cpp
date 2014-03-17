@@ -41,9 +41,11 @@ enum
 
 struct glProgram
 {
-  typedef gfx_cs::Quad      quad_type;
-  typedef gfx_cs::Material  mat_type;
-  typedef core_cs::Entity   ent_type;
+  typedef gfx_cs::Quad                      quad_type;
+  typedef gfx_cs::Material                  mat_type;
+  typedef core_cs::Entity                   ent_type;
+  typedef core_cs::entity_vptr              ent_ptr;
+  typedef core_cs::const_entity_vptr        const_ent_ptr;
 
   typedef phys_box2d::PhysicsManager        phys_mgr_type;
 
@@ -54,9 +56,8 @@ struct glProgram
 
   glProgram()
     : m_keyPresses(key_count)
-    , m_eventMgr(new core_cs::EventManager())
-    , m_entityMgr(new core_cs::EntityManager(m_eventMgr))
-    , m_quadSys(m_eventMgr, m_entityMgr)
+    , m_entityMgr(m_eventMgr.get())
+    , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
     , m_mouseVisible(true)
 
   { m_win.Register(this); }
@@ -193,9 +194,9 @@ struct glProgram
       ++intersectionCounter;
       if (intersectionCounter == 1)
       {
-        gfx_cs::Material* mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::material_vptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
-        if (mat != m_crateMat.get())
+        if (mat != core_sptr::ToVirtualPtr(m_crateMat))
         { *mat = *m_crateMat;}
 
         printf("\nIntersecting with circle!");
@@ -208,9 +209,9 @@ struct glProgram
 
       if (nonIntersectionCounter == 1)
       {
-        gfx_cs::Material* mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::material_vptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
-        if (mat != m_henryMat.get())
+        if (mat != core_sptr::ToVirtualPtr(m_henryMat))
         { *mat = *m_henryMat; }
 
         printf("\nNOT intersecting with circle!");
@@ -220,7 +221,7 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void AddShaders(gfx_cs::material_sptr a_mat)
+  void AddShaders(gfx_cs::material_vptr a_mat)
   {
     {
 #if defined (TLOC_OS_WIN)
@@ -280,20 +281,21 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    QuadRenderSystem  quadSys(m_eventMgr, m_entityMgr);
+    QuadRenderSystem  quadSys(m_eventMgr.get(), m_entityMgr.get());
     quadSys.SetRenderer(m_renderer);
-    FanRenderSystem   fanSys(m_eventMgr, m_entityMgr);
+    FanRenderSystem   fanSys(m_eventMgr.get(), m_entityMgr.get());
     fanSys.SetRenderer(m_renderer);
-    CameraSystem      camSys(m_eventMgr, m_entityMgr);
-    MaterialSystem    matSys(m_eventMgr, m_entityMgr);
-
-    ComponentPoolManager poolMgr;
+    CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
+    MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
 
     m_henryMat.reset(new gfx_cs::Material());
     m_crateMat.reset(new gfx_cs::Material());
 
-    AddShaders(m_henryMat);
-    AddShaders(m_crateMat);
+    m_texObjHenry.reset(new gfx_gl::TextureObject());
+    m_texObjCrate.reset(new gfx_gl::TextureObject());
+
+    AddShaders(core_sptr::ToVirtualPtr(m_henryMat));
+    AddShaders(core_sptr::ToVirtualPtr(m_crateMat));
 
     //------------------------------------------------------------------------
     // Add the shader operators
@@ -306,18 +308,16 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
-      m_texObjHenry.reset(new gfx_gl::TextureObject());
       m_texObjHenry->Initialize(image.GetImage());
       m_texObjHenry->Activate();
 
-      gfx_gl::uniform_sptr uniform( (new gl::Uniform()) );
-      uniform->SetName("shaderTexture").SetValueAs(m_texObjHenry);
+      gfx_gl::uniform_vso uniform;
+      uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
 
-      gl::shader_operator_sptr so =
-        gl::shader_operator_sptr(new gl::ShaderOperator());
-      so->AddUniform(uniform);
+      gl::shader_operator_vso so;
+      so->AddUniform(*uniform);
 
-      m_henryMat->AddShaderOperator(so);
+      m_henryMat->AddShaderOperator(so.get());
     }
 
     {
@@ -329,27 +329,26 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT(false, "Image did not load"); }
 
-      m_texObjCrate.reset(new gfx_gl::TextureObject());
       m_texObjCrate->Initialize(image.GetImage());
       m_texObjCrate->Activate();
 
-      gfx_gl::uniform_sptr uniform(new gl::Uniform());
-      uniform->SetName("shaderTexture").SetValueAs(m_texObjCrate);
+      gfx_gl::uniform_vso uniform;
+      uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);
 
-      gl::shader_operator_sptr so(new gl::ShaderOperator());
-      so->AddUniform(uniform);
+      gl::shader_operator_vso so;
+      so->AddUniform(*uniform);
 
-      m_crateMat->AddShaderOperator(so);
+      m_crateMat->AddShaderOperator(so.get());
     }
 
     // Create internal materials
-    gfx_cs::material_sptr_pool_sptr matPool =
-      poolMgr.CreateNewPool<gfx_cs::material_sptr>();
+    gfx_cs::material_pool_vptr matPool =
+      m_compPoolMgr->CreateNewPool<gfx_cs::Material>();
 
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      m_fanEnt = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
+      m_fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
         Sides(12).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -358,26 +357,24 @@ struct glProgram
       m_fanEnt->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      gfx_cs::material_sptr_pool::iterator matPoolItr = matPool->GetNext();
-      gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_henryMat) );
-      matPoolItr->SetValue(newMat);
+      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      (*matPoolItr)->SetValue(*m_henryMat);
 
-      m_entityMgr->InsertComponent(m_fanEnt, matPoolItr->GetValue().get());
-      m_entityMgr->InsertComponent(m_fanEnt, m_henryMat.get());
+      m_entityMgr->InsertComponent(m_fanEnt, (*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_fanEnt, core_sptr::ToVirtualPtr(m_henryMat));
     }
 
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(0.5f) );
-      m_mouseFan = prefab_gfx::Fan(m_entityMgr.get(), &poolMgr).
-        Sides(12).Circle(circle).Create();
+      m_mouseFan = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+        .Sides(12).Circle(circle).Create();
 
-      gfx_cs::material_sptr_pool::iterator matPoolItr = matPool->GetNext();
-      gfx_cs::material_sptr newMat(new gfx_cs::Material(*m_crateMat) );
-      matPoolItr->SetValue(newMat);
+      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      (*matPoolItr)->SetValue(*m_crateMat);
 
-      m_entityMgr->InsertComponent(m_mouseFan, matPoolItr->GetValue().get());
-      m_entityMgr->InsertComponent(m_mouseFan, m_crateMat.get());
+      m_entityMgr->InsertComponent(m_mouseFan, (*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_mouseFan, core_sptr::ToVirtualPtr(m_crateMat));
     }
 
     tl_float winWidth = (tl_float)m_win.GetWidth();
@@ -400,8 +397,8 @@ struct glProgram
     tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
-    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), &poolMgr).
-      Create(fr, math_t::Vec3f(posX, posY, 1.0f));
+    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
+      .Create(fr, math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.SetCamera(m_cameraEnt);
     fanSys.SetCamera(m_cameraEnt);
@@ -451,6 +448,8 @@ struct glProgram
         m_win.SwapBuffers();
       }
     }
+
+    TLOC_LOG_CORE_INFO() << "Exiting normally";
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -565,11 +564,11 @@ struct glProgram
   core_time::Timer32      m_timer;
   core_time::Timer32      m_frameTimer;
   core_time::Timer32      m_renderFrameTime;
-  const ent_type*         m_cameraEnt;
+  ent_ptr                 m_cameraEnt;
   bool                    m_mouseVisible;
 
-  ent_type*               m_fanEnt;
-  ent_type*               m_mouseFan;
+  ent_ptr                 m_fanEnt;
+  ent_ptr                 m_mouseFan;
 
   gfx_gl::texture_object_sptr m_texObjHenry;
   gfx_gl::texture_object_sptr m_texObjCrate;
@@ -585,8 +584,9 @@ struct glProgram
   input_hid::TouchSurfaceI::touch_container_type m_currentTouches;
   core::utils::Checkpoints   m_keyPresses;
 
-  core_cs::event_manager_sptr   m_eventMgr;
-  core_cs::entity_manager_sptr m_entityMgr;
+  core_cs::component_pool_mgr_vso m_compPoolMgr;
+  core_cs::event_manager_vso      m_eventMgr;
+  core_cs::entity_manager_vso     m_entityMgr;
 
   gfx_cs::QuadRenderSystem  m_quadSys;
 };

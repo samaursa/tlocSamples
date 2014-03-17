@@ -58,24 +58,31 @@ int TLOC_MAIN(int argc, char *argv[])
     renderer->SetParams(p);
   }
 
-  //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_sptr  eventMgr(new core_cs::EventManager());
-  core_cs::entity_manager_sptr entityMgr(new core_cs::EntityManager(eventMgr));
+  // -----------------------------------------------------------------------
+  // Load the required resources. Note that these VSOs will check vptr count
+  // before destruction which is why we are placing them here. We want the
+  // component pool manager to be destroyed before these are destroyed.
 
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  core_cs::ComponentPoolManager cpoolMgr;
+  gfx_med::ImageLoaderPng png;
+  core_io::Path path( (core_str::String(GetAssetsPath()) +
+                      "/images/henry.png").c_str() );
+
+  if (png.Load(path) != ErrorSuccess)
+  { TLOC_ASSERT(false, "Image did not load!"); }
+
+  // gl::Uniform supports quite a few types, including a TextureObject
+  gfx_gl::texture_object_vso to;
+  to->Initialize(png.GetImage());
+  to->Activate();
+
 
   // -----------------------------------------------------------------------
-  // to render to texture to the above quad we need a renderer with the
-  // correct Framebuffer. This particular Framebuffer will be rendering to
-  // a texture
+  // to render to texture to a quad we need a renderer with the correct
+  // Framebuffer. This particular Framebuffer will be rendering to a texture
 
   // For rendering to a texture we need a texture object and a render buffer
   // to render the depth
-  gfx_gl::texture_object_sptr rttTo(new gfx_gl::TextureObject() );
+  gfx_gl::texture_object_vso rttTo;
   gfx_med::Image rttImg;
   rttImg.Create
     (core_ds::MakeTuple(g_rttResX, g_rttResY),
@@ -99,19 +106,29 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr rttRenderer(new gfx_rend::Renderer(p));
 
   //------------------------------------------------------------------------
+  // A component pool manager manages all the components in a particular
+  // session/level/section.
+  core_cs::component_pool_mgr_vso cpoolMgr;
+
+  //------------------------------------------------------------------------
+  // All systems in the engine require an event manager and an entity manager
+  core_cs::event_manager_vso  eventMgr;
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
+
+  //------------------------------------------------------------------------
   // To render the texture we need a quad
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr, entityMgr);
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(eventMgr, entityMgr);
+  gfx_cs::FanRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
   fanSys.SetRenderer(rttRenderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr, entityMgr);
+  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
@@ -147,64 +164,48 @@ int TLOC_MAIN(int argc, char *argv[])
   // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
   // that have the same name as the one in the system will be given preference.
 
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) +
-                      "/images/henry.png").c_str() );
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
 
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
-  to->Initialize(png.GetImage());
-  to->Activate();
-
-  gfx_gl::uniform_sptr  u_to(new gfx_gl::Uniform());
-  u_to->SetName("s_texture").SetValueAs(to);
-
-  gfx_gl::shader_operator_sptr so =
-    gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  so->AddUniform(u_to);
+  gfx_gl::shader_operator_vso so;
+  so->AddUniform(*u_to);
 
   // -----------------------------------------------------------------------
   // RTT material
 
-  gfx_gl::uniform_sptr u_rttTo(new gfx_gl::Uniform());
-  u_rttTo->SetName("s_texture").SetValueAs(rttTo);
+  gfx_gl::uniform_vso u_rttTo;
+  u_rttTo->SetName("s_texture").SetValueAs(rttTo.get());
 
-  gfx_gl::uniform_sptr  u_blur(new gfx_gl::Uniform());
+  gfx_gl::uniform_vso  u_blur;
   u_blur->SetName("u_blur").SetValueAs(5);
 
-  //gfx_gl::shader_operator_sptr soRtt =
-  //  gfx_gl::shader_operator_sptr(new gfx_gl::ShaderOperator());
-  //soRtt->AddUniform(u_rttTo);
-  //soRtt->AddUniform(u_blur);
-
-  gfx_gl::uniform_sptr u_winResX(new gfx_gl::Uniform());
+  gfx_gl::uniform_vso u_winResX;
   u_winResX->SetName("u_winResX").SetValueAs(core_utils::CastNumber<s32>(g_rttResX));
 
-  gfx_gl::uniform_sptr u_winResY(new gfx_gl::Uniform());
+  gfx_gl::uniform_vso u_winResY;
   u_winResY->SetName("u_winResY").SetValueAs(core_utils::CastNumber<s32>(g_rttResY));
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::Entity* q = prefab_gfx::Fan(entityMgr.get(), &cpoolMgr).
-    Sides(64).Circle(circ).Create();
+  core_cs::entity_vptr q = prefab_gfx::Fan(entityMgr.get(), cpoolMgr.get())
+    .Sides(64).Circle(circ).Create();
 
-  prefab_gfx::Material(entityMgr.get(), &cpoolMgr).AddUniform(u_to)
+  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    .AddUniform(u_to.get())
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
 
   math_t::Rectf32 rect(math_t::Rectf32::width(1.5f), math_t::Rectf32::height(1.5f));
-  core_cs::Entity* fullScreenQuad = prefab_gfx::Quad(entityMgr.get(), &cpoolMgr)
+  core_cs::entity_vptr fullScreenQuad =
+    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), &cpoolMgr)
+  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AssetsPath(GetAssetsPath())
-    .AddUniform(u_rttTo).AddUniform(u_blur)
-    .AddUniform(u_winResX).AddUniform(u_winResY)
+    .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
+    .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
     .Add(fullScreenQuad,
          core_io::Path(shaderPathVS),
          core_io::Path(shaderPathBlurFS));
