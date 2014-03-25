@@ -40,7 +40,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-             gfx_win::WindowSettings("tlocSimpleQuad") );
+             gfx_win::WindowSettings("tlocFontSprite") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -99,13 +99,13 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required resources
 
   //gfx_med::ImageLoaderPng png;
-  //core_io::Path path( (core_str::String(GetAssetsPath()) + 
+  //core_io::Path path( (core_str::String(GetAssetsPath()) +
   //                    "/images/uv_grid_col.png").c_str() );
 
   //if (png.Load(path) != ErrorSuccess)
   //{ TLOC_ASSERT(false, "Image did not load!"); }
 
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) + 
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
     "Qlassik_TB.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
@@ -117,6 +117,9 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::Font f;
   f.Initialize(fontContents);
   gfx_med::Image charImg = f.GetCharImage(L'a');
+
+  TLOC_LOG_CORE_INFO() <<
+    "Char image size: " << charImg.GetWidth() << ", " << charImg.GetHeight();
 
   gfx_gl::texture_object_vso to;
   to->Initialize(charImg);
