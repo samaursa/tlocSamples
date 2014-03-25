@@ -98,15 +98,28 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Load the required resources
 
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) + 
-                      "/images/uv_grid_col.png").c_str() );
+  //gfx_med::ImageLoaderPng png;
+  //core_io::Path path( (core_str::String(GetAssetsPath()) + 
+  //                    "/images/uv_grid_col.png").c_str() );
 
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  //if (png.Load(path) != ErrorSuccess)
+  //{ TLOC_ASSERT(false, "Image did not load!"); }
+
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) + 
+    "Qlassik_TB.ttf" ).c_str() );
+
+  core_io::FileIO_ReadB rb(fontPath);
+  rb.Open();
+
+  core_str::String fontContents;
+  rb.GetContents(fontContents);
+
+  gfx_med::Font f;
+  f.Initialize(fontContents);
+  gfx_med::Image charImg = f.GetCharImage(L'a');
 
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(charImg);
   to->Activate();
 
   gfx_gl::uniform_vso u_to;

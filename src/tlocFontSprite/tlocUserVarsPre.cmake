@@ -19,4 +19,13 @@ set(USER_PROJECT_DEPENDENCIES
 
 # Libraries that the executable needs to link against
 set(USER_EXECUTABLE_LINK_LIBRARIES
+  freetype.lib
+  )
+
+link_directories(
+  ${TLOC_DEP_BUILD_PATH}/src/FreeType/
+  )
+
+include_directories(
+  ${TLOC_DEP_PATH}/include/FreeType/
   )
