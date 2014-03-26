@@ -98,13 +98,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Load the required resources
 
-  //gfx_med::ImageLoaderPng png;
-  //core_io::Path path( (core_str::String(GetAssetsPath()) +
-  //                    "/images/uv_grid_col.png").c_str() );
-
-  //if (png.Load(path) != ErrorSuccess)
-  //{ TLOC_ASSERT(false, "Image did not load!"); }
-
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
     "Qlassik_TB.ttf" ).c_str() );
 
