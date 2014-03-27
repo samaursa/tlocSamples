@@ -116,10 +116,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::Font f;
   f.Initialize(fontContents);
-  gfx_med::Image charImg = f.GetCharImage(L'a');
+  gfx_med::image_sptr charImg = f.GetCharImage(L'a');
 
   gfx_gl::texture_object_vso to;
-  to->Initialize(charImg);
+  to->Initialize(*charImg);
   to->Activate();
 
   gfx_gl::uniform_vso u_to;
