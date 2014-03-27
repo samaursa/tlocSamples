@@ -112,7 +112,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::image_sptr charImg = f.GetCharImage(L'a');
 
   TLOC_LOG_CORE_INFO() <<
-    "Char image size: " << charImg.GetWidth() << ", " << charImg.GetHeight();
+    "Char image size: " << charImg->GetWidth() << ", " << charImg->GetHeight();
 
   gfx_gl::texture_object_vso to;
   to->Initialize(*charImg);
