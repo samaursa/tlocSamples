@@ -317,7 +317,7 @@ struct glProgram
       gl::shader_operator_vso so;
       so->AddUniform(*uniform);
 
-      m_henryMat->AddShaderOperator(so.get());
+      m_henryMat->AddShaderOperator(*so);
     }
 
     {
@@ -338,7 +338,7 @@ struct glProgram
       gl::shader_operator_vso so;
       so->AddUniform(*uniform);
 
-      m_crateMat->AddShaderOperator(so.get());
+      m_crateMat->AddShaderOperator(*so);
     }
 
     // Create internal materials
