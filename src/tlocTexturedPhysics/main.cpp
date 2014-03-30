@@ -79,7 +79,7 @@ struct glProgram
     //------------------------------------------------------------------------
     // Initialize graphics platform
     if (gfx_gl::InitializePlatform() != ErrorSuccess)
-    { TLOC_ASSERT(false, "\nGraphics platform failed to initialize"); exit(0); }
+    { TLOC_ASSERT_FALSE("\nGraphics platform failed to initialize"); exit(0); }
 
     // -----------------------------------------------------------------------
     // Get the default renderer
@@ -193,7 +193,7 @@ struct glProgram
           filePath += "/images/crate.png";
           core_io::Path path(filePath.c_str());
           if (png.Load(path) != ErrorSuccess)
-          { TLOC_ASSERT(false, "Image did not load"); }
+          { TLOC_ASSERT_FALSE("Image did not load"); }
         }
         crateTo->Initialize(png.GetImage());
         crateTo->Activate();
@@ -212,7 +212,7 @@ struct glProgram
           core_io::Path path(filePath.c_str());
 
           if (png.Load(path) != ErrorSuccess)
-          { TLOC_ASSERT(false, "Image did not load"); }
+          { TLOC_ASSERT_FALSE("Image did not load"); }
         }
         to->Initialize(png.GetImage());
         to->Activate();
@@ -221,14 +221,14 @@ struct glProgram
     }
 
     gfx_cs::material_vptr crateMat =
-      prefab_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
+      pref_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_crateTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
 
     gfx_cs::material_vptr henryMat =
-      prefab_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
+      pref_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_henryTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
@@ -246,17 +246,17 @@ struct glProgram
         // Create a quad ent
         Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
         ent_ptr quadEnt =
-          prefab_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
+          pref_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
           .Dimensions(rect).Create();
 
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
 
-        prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
+        pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(quadEnt, rbDef);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
-          .Add(quadEnt, rect, prefab_phys::RigidBodyShape::density(1.0f));
+        pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
+          .Add(quadEnt, rect, pref_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(quadEnt, crateMat);
       }
@@ -264,7 +264,7 @@ struct glProgram
       {
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
-        ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+        ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
           .Sides(8)
           .Circle(circle)
           .Create();
@@ -272,12 +272,12 @@ struct glProgram
         box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
+        pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(fanEnt, rbDef);
 
         box2d::RigidBodyShapeDef rbShape(circle);
         rbShape.SetRestitution(1.0f);
-        prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
+        pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(fanEnt, rbShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
@@ -288,17 +288,17 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      ent_ptr fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+      ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
       box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      prefab_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
+      pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
         .Add(fanEnt, rbDef);
 
       box2d::RigidBodyShapeDef rbCircleShape(circle);
-      prefab_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
+      pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
         .Add(fanEnt, rbCircleShape);
 
         m_entityMgr->InsertComponent(fanEnt, henryMat);
@@ -320,7 +320,7 @@ struct glProgram
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();
 
-    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
+    m_cameraEnt = pref_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
       .Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
 
     quadSys.SetCamera(m_cameraEnt);

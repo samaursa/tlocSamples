@@ -93,7 +93,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       "/images/uv_grid_col.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -123,14 +123,14 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::entity_vptr q =
-    prefab_gfx::Fan(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
     .Sides(64).Circle(circ).Create();
 
   // -----------------------------------------------------------------------
   // The prefab library can also create the material for us and attach it
   // to the entity
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));

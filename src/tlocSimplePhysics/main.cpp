@@ -98,10 +98,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
     math_t::Rectf32::height(0.5f));
-  core_cs::entity_vptr q = prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+  core_cs::entity_vptr q = pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .TexCoords(false).Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));
 
@@ -120,9 +120,9 @@ int TLOC_MAIN(int argc, char *argv[])
   rbDef->SetPosition(phys_box2d::RigidBodyDef::vec_type(0, 1.0f));
   rbDef->SetType<phys_box2d::p_rigid_body::DynamicBody>();
 
-  prefab_phys::RigidBody(entityMgr.get(), cpoolMgr.get()).Add(q, rbDef);
-  prefab_phys::RigidBodyShape(entityMgr.get(), cpoolMgr.get())
-    .Add(q, rect, prefab_phys::RigidBodyShape::density(1.0f));
+  pref_phys::RigidBody(entityMgr.get(), cpoolMgr.get()).Add(q, rbDef);
+  pref_phys::RigidBodyShape(entityMgr.get(), cpoolMgr.get())
+    .Add(q, rect, pref_phys::RigidBodyShape::density(1.0f));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

@@ -140,10 +140,10 @@ int TLOC_MAIN(int , char *[])
   // The prefab library has some prefabricated entities for us
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                        math_t::Rectf32::height(0.5f));
-  core_cs::entity_vptr ent = prefab_gfx::Quad(entityMgr.get(), compMgr.get())
+  core_cs::entity_vptr ent = pref_gfx::Quad(entityMgr.get(), compMgr.get())
     .TexCoords(false).Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), compMgr.get())
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 

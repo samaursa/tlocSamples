@@ -68,7 +68,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       "/images/henry.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -190,20 +190,20 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::entity_vptr q = prefab_gfx::Fan(entityMgr.get(), cpoolMgr.get())
+  core_cs::entity_vptr q = pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
     .Sides(64).Circle(circ).Create();
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
 
   math_t::Rectf32 rect(math_t::Rectf32::width(1.5f), math_t::Rectf32::height(1.5f));
   core_cs::entity_vptr fullScreenQuad =
-    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(rect).Create();
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())

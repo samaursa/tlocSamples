@@ -279,7 +279,7 @@ int TLOC_MAIN(int argc, char *argv[])
                        "/images/crateTexture.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -321,12 +321,12 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create the mesh and add the material
 
   core_cs::entity_vptr ent =
-    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -345,10 +345,10 @@ int TLOC_MAIN(int argc, char *argv[])
   fr.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEnt =
-    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
     .Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
+  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
 
   meshSys.SetCamera(m_cameraEnt);
 

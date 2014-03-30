@@ -87,7 +87,7 @@ struct glProgram
     // Initialize graphics platform
     if (gfx_gl::InitializePlatform() != ErrorSuccess)
     {
-      TLOC_ASSERT(false, "\nGraphics platform failed to initialize");
+      TLOC_ASSERT_FALSE("\nGraphics platform failed to initialize");
       exit(0);
     }
 
@@ -236,7 +236,7 @@ struct glProgram
       {
         printf("\n%s", shaderPath.c_str());
         printf("\nUnable to open vertex shader");
-        TLOC_ASSERT(false, "");
+        TLOC_ASSERT_FALSE("");
       }
 
       core_str::String code;
@@ -306,7 +306,7 @@ struct glProgram
       core_io::Path path(filePath.c_str());
 
       if (image.Load(path) != ErrorSuccess)
-      { TLOC_ASSERT(false, "Image did not load"); }
+      { TLOC_ASSERT_FALSE("Image did not load"); }
 
       m_texObjHenry->Initialize(image.GetImage());
       m_texObjHenry->Activate();
@@ -327,7 +327,7 @@ struct glProgram
       core_io::Path path(filePath.c_str());
 
       if (image.Load(path) != ErrorSuccess)
-      { TLOC_ASSERT(false, "Image did not load"); }
+      { TLOC_ASSERT_FALSE("Image did not load"); }
 
       m_texObjCrate->Initialize(image.GetImage());
       m_texObjCrate->Activate();
@@ -348,7 +348,7 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
-      m_fanEnt = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
+      m_fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
         Sides(12).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -367,7 +367,7 @@ struct glProgram
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(0.5f) );
-      m_mouseFan = prefab_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+      m_mouseFan = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
@@ -397,7 +397,7 @@ struct glProgram
     tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
-    m_cameraEnt = prefab_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
+    m_cameraEnt = pref_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
       .Create(fr, math_t::Vec3f(posX, posY, 1.0f));
 
     quadSys.SetCamera(m_cameraEnt);

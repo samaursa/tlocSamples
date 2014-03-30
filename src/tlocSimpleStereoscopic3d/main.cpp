@@ -403,7 +403,7 @@ int TLOC_MAIN(int argc, char *argv[])
                        "/images/crateTexture.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso crateTo;
@@ -428,7 +428,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String quadShaderFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
-  prefab_gfx::Mesh m(entityMgr.get(), cpoolMgr.get());
+  pref_gfx::Mesh m(entityMgr.get(), cpoolMgr.get());
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -457,8 +457,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create the mesh and add the material
 
   core_cs::entity_vptr crateMesh =
-    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_crateTo.get())
     .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
                     core_io::Path(GetAssetsPath() + meshShaderPathFS));
@@ -470,7 +470,7 @@ int TLOC_MAIN(int argc, char *argv[])
   Rectf32 leftQuad(Rectf32::width(1.0f), Rectf32::height(2.0f));
 
   core_cs::entity_vptr leftQuadEnt =
-    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(leftQuad).Create();
 
   leftQuadEnt->GetComponent<math_cs::Transform>()->
@@ -481,14 +481,14 @@ int TLOC_MAIN(int argc, char *argv[])
     u_to->SetName("s_texture").SetValueAs(*toLeft);
 
     // create the material
-    prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
       .AddUniform(u_to.get())
       .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
                         core_io::Path(GetAssetsPath() + quadShaderFS));
   }
 
   core_cs::entity_vptr rightQuadEnt =
-    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(leftQuad).Create();
 
   rightQuadEnt->GetComponent<math_cs::Transform>()->
@@ -499,7 +499,7 @@ int TLOC_MAIN(int argc, char *argv[])
     u_to->SetName("s_texture").SetValueAs(*toRight);
 
     // create the material
-    prefab_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
       .AddUniform(u_to.get())
       .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
                          core_io::Path(GetAssetsPath() + quadShaderFS));
@@ -519,10 +519,10 @@ int TLOC_MAIN(int argc, char *argv[])
   frLeft.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEntLeft =
-    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(frLeft, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntLeft);
+  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntLeft);
 
   meshSys.SetCamera(m_cameraEntLeft);
 
@@ -536,10 +536,10 @@ int TLOC_MAIN(int argc, char *argv[])
   frRight.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEntRight =
-    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(frRight, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntRight);
+  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntRight);
 
   meshSys.SetCamera(m_cameraEntRight);
 

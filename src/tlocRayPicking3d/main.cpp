@@ -357,7 +357,7 @@ int TLOC_MAIN(int argc, char *argv[])
                        "/images/uv_grid_col.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -389,7 +389,7 @@ int TLOC_MAIN(int argc, char *argv[])
   g_cuboid.SetPosition(Cuboidf32::point_type(posX, posY, posZ));
 
   core_cs::entity_vptr ent =
-    prefab_gfx::Cuboid(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::Cuboid(entityMgr.get(), cpoolMgr.get())
     .Dimensions(g_cuboid)
     .Create();
   ent->GetComponent<math_cs::Transform>()->
@@ -398,7 +398,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
 
-  prefab_gfx::Material(entityMgr.get(), cpoolMgr.get()).AddUniform(u_to.get())
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get()).AddUniform(u_to.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
@@ -416,10 +416,10 @@ int TLOC_MAIN(int argc, char *argv[])
   fr.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEnt =
-    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
+  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
 
   meshSys.SetCamera(m_cameraEnt);
 

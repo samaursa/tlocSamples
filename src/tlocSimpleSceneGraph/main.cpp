@@ -316,7 +316,7 @@ int TLOC_MAIN(int argc, char *argv[])
                        "/images/crateTexture.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -411,24 +411,24 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(to.get());
 
-  prefab_gfx::Material prefMat(entityMgr.get(), cpoolMgr.get());
+  pref_gfx::Material prefMat(entityMgr.get(), cpoolMgr.get());
   prefMat.AddUniform(u_to.get());
 
   // Ent2 made first just to highlight the sorting feature of the scene graph.
   // That is, the SceneGraph will correctly sort the nodes regardless of when
   // the parent child hierarchies are made
   core_cs::entity_vptr ent_2 =
-    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
 
-  prefab_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent_2);
+  pref_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent_2);
 
   prefMat.Add(ent_2, core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
 
   core_cs::entity_vptr ent =
-    prefab_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
 
-  prefab_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent);
+  pref_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent);
 
   prefMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
                    core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -502,10 +502,10 @@ int TLOC_MAIN(int argc, char *argv[])
     KFs_2ndCrate.AddKeyframe(kf);
   }
 
-  prefab_anim::TransformAnimation ta(entityMgr.get(), cpoolMgr.get());
+  pref_anim::TransformAnimation ta(entityMgr.get(), cpoolMgr.get());
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
-  prefab_anim::TransformAnimation ta2(entityMgr.get(), cpoolMgr.get());
+  pref_anim::TransformAnimation ta2(entityMgr.get(), cpoolMgr.get());
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent_2, KFs_2ndCrate);
 
   g_tformAnimComp = ent->GetComponent<anim_cs::TransformAnimation>();
@@ -524,10 +524,10 @@ int TLOC_MAIN(int argc, char *argv[])
   fr.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEnt =
-    prefab_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
     Create(fr, math_t::Vec3f(5.0f, 5.0f, 10.0f));
 
-  prefab_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).
+  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).
     Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
 
   meshSys.SetCamera(m_cameraEnt);

@@ -252,7 +252,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
                         math_t::Rectf32::height(0.5f));
   core_cs::entity_vptr spriteEnt =
-    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
   entityMgr->InsertComponent(spriteEnt, tcoord2.get());
 
@@ -281,7 +281,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       "/images/blocksprites.png").c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
@@ -299,7 +299,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // create the material from prefab
 
-  prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
+  pref_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
   matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());
   matPrefab.AddUniform(u_blockColor.get());
   matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
@@ -358,11 +358,11 @@ int TLOC_MAIN(int argc, char *argv[])
 
   for (tl_size i = 0; i < core_utils::ArraySize(spriteNames); ++i)
   {
-    prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
       .Fps(24).Paused(true).SetIndex(0) /* 0 is the default index */
       .Add(spriteEnt, ssp.begin(spriteNames[i]), ssp.end(spriteNames[i]));
 
-    prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
       .Fps(24).Paused(true).SetIndex(1)
       .Add(spriteEnt, ssp.begin(spriteNamesAlpha[i]), ssp.end(spriteNamesAlpha[i]));
   }

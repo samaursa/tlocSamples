@@ -230,7 +230,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32 rect(math_t::Rectf32::width(1.0f),
                        math_t::Rectf32::height(1.0f));
   core_cs::entity_vptr spriteEnt =
-    prefab_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
@@ -253,7 +253,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       imagePath).c_str() );
 
   if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT(false, "Image did not load!"); }
+  { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   GetTextureObjectPtr()->Initialize(png.GetImage());
@@ -262,7 +262,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*GetTextureObjectPtr());
 
-  prefab_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
+  pref_gfx::Material matPrefab(entityMgr.get(), cpoolMgr.get());
   matPrefab.AddUniform(u_to.get()).AssetsPath(GetAssetsPath());
   matPrefab.Add(spriteEnt, core_io::Path(vsPath.c_str()),
                            core_io::Path(fsPath.c_str()) );
@@ -283,7 +283,7 @@ int TLOC_MAIN(int argc, char *argv[])
   shaderFile.GetContents(sspContents);
   ssp.Init(sspContents, png.GetImage().GetDimensions());
 
-  prefab_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
+  pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
     .Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
 
   KeyboardCallback kb(spriteEnt);
