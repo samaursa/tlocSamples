@@ -144,7 +144,7 @@ public:
       // produces rounding errors with the result that adding 1 to the current
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
-      printf("\nNew FPS for SpriteSet #%lu: %zu",
+      printf("\nNew FPS for SpriteSet #%lu: %lu",
         ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
@@ -155,7 +155,7 @@ public:
       // See note above for why we -2
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS for SpriteSet #%lu: %zu",
+      printf("\nNew FPS for SpriteSet #%lu: %lu",
         ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
