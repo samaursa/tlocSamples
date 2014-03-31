@@ -23,7 +23,7 @@ xcuserdata/**
 *.sln
 *.vcproj
 CMakeFiles/**
-build/**
+build*/**
 buildx64/**
 *.res
 *.swp
