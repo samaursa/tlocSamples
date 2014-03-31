@@ -144,7 +144,7 @@ public:
       // produces rounding errors with the result that adding 1 to the current
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
-      printf("\nNew FPS for SpriteSet #%u: %u",
+      printf("\nNew FPS for SpriteSet #%lu: %zu",
         ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
@@ -155,7 +155,7 @@ public:
       // See note above for why we -2
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS for SpriteSet #%u: %u",
+      printf("\nNew FPS for SpriteSet #%lu: %zu",
         ta->GetCurrentSpriteSeqIndex(), ta->GetFPS());
     }
 
@@ -346,9 +346,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // Main loop
 
 
-  printf("\nSprite sheet size: %i, %i",
+  printf("\nSprite sheet size: %li, %li",
           ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
-  printf("\nImage size: %i, %i",
+  printf("\nImage size: %zi, %zi",
           png.GetImage().GetWidth(), png.GetImage().GetHeight());
 
   printf("\n\nP - to toggle pause");

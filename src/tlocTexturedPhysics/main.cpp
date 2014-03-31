@@ -24,7 +24,9 @@ using namespace tloc;
 #define PROFILE_START()\
     m_timer.Reset()
 
-#pragma warning(disable:4127)
+#ifdef _MSC_VER
+  #pragma warning(disable:4127)
+#endif
 #define PROFILE_END(_text_)\
   do{\
     s32 timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
@@ -54,10 +56,10 @@ struct glProgram
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   glProgram()
-    : m_keyPresses(key_count)
+    : m_endGame(false)
+    , m_keyPresses(key_count)
     , m_entityMgr(m_eventMgr.get())
     , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
-    , m_endGame(false)
 
   { m_win.Register(this); }
 

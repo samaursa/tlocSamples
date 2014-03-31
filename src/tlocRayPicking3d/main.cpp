@@ -52,8 +52,8 @@ class MayaCam
 public:
   MayaCam(core_cs::entity_vptr a_camera, core_cs::entity_vptr a_cube)
     : m_camera(a_camera)
-    , m_flags(k_count)
     , m_cube(a_cube)
+    , m_flags(k_count)
   {
     TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
       "Camera does not have ArcBall component");

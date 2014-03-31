@@ -191,14 +191,14 @@ public:
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
       g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() + g_fpsInterval);
-      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
+      printf("\nCurrent FPS: %lu", g_tformAnimComp->GetFPS());
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
     {
       if (g_tformAnimComp->GetFPS() >= g_fpsInterval)
       {
         g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() - g_fpsInterval);
-      printf("\nCurrent FPS: %u", g_tformAnimComp->GetFPS());
+      printf("\nCurrent FPS: %lu", g_tformAnimComp->GetFPS());
       }
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n0)

@@ -401,9 +401,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nSprite sheet size: %i, %i",
+  printf("\nSprite sheet size: %lu, %lu",
           ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
-  printf("\nImage size: %i, %i",
+  printf("\nImage size: %lu, %lu",
           png.GetImage().GetWidth(), png.GetImage().GetHeight());
 
   printf("\n\n\nRight Arrow - goto next animation sequence");

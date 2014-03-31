@@ -94,7 +94,7 @@ public:
       // produces rounding errors with the result that adding 1 to the current
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
-      printf("\nNew FPS: %u", ta->GetFPS());
+      printf("\nNew FPS: %lu", ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
@@ -104,7 +104,7 @@ public:
       // See note above for why we -2
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS: %u", ta->GetFPS());
+      printf("\nNew FPS: %lu", ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::f)
@@ -299,9 +299,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nSprite sheet size: %i, %i",
+  printf("\nSprite sheet size: %lu, %lu",
           ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
-  printf("\nImage size: %i, %i",
+  printf("\nImage size: %lu, %lu",
           png.GetImage().GetWidth(), png.GetImage().GetHeight());
 
   printf("\\nP - to toggle pause");
