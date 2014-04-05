@@ -269,7 +269,7 @@ struct glProgram
     using namespace graphics;
     using namespace physics;
 
-    using math::types::Rectf32;
+    using math::types::Rectf32_c;
     using math::types::Circlef32;
 
     using gfx_cs::CameraSystem;
@@ -389,8 +389,8 @@ struct glProgram
     //
     // TODO: Look into this problem and find a way to remove the extra
     // brackets.
-    math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
-                         (math_t::Rectf::height(winHeight / 10.0f)) );
+    math_t::Rectf_c fRect( (math_t::Rectf_c::width(winWidth / 10.0f)),
+                           (math_t::Rectf_c::height(winHeight / 10.0f)) );
 
     math_proj::frustum_ortho_f32 fr =
       math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
@@ -475,9 +475,9 @@ struct glProgram
 
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
-        math_t::Rectf fRect(
-          (math_t::Rectf::width((tl_float)m_win.GetWidth() / 10.0f)),
-          (math_t::Rectf::height((tl_float)m_win.GetHeight() / 10.0f)) );
+        math_t::Rectf_c fRect(
+          (math_t::Rectf_c::width((tl_float)m_win.GetWidth() / 10.0f)),
+          (math_t::Rectf_c::height((tl_float)m_win.GetHeight() / 10.0f)) );
 
         math_proj::frustum_ortho_f32 fr =
           math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);

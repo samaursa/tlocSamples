@@ -99,8 +99,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   {
-    math_t::Rectf32 rect(math_t::Rectf32::width(1.5f),
-                         math_t::Rectf32::height(1.5f));
+    math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f),
+                           math_t::Rectf32_c::height(1.5f));
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(false).Dimensions(rect).Create();
