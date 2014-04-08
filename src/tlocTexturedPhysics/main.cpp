@@ -144,7 +144,7 @@ struct glProgram
     using namespace graphics;
     using namespace physics;
 
-    using math::types::Rectf32;
+    using math::types::Rectf32_c;
     using math::types::Circlef32;
 
     using gfx_cs::CameraSystem;
@@ -246,7 +246,7 @@ struct glProgram
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
       {
         // Create a quad ent
-        Rectf32 rect(Rectf32::width(3.0f), Rectf32::height(3.0f));
+        Rectf32_c rect(Rectf32_c::width(3.0f), Rectf32_c::height(3.0f));
         ent_ptr quadEnt =
           pref_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
           .Dimensions(rect).Create();
@@ -316,8 +316,8 @@ struct glProgram
     //
     // TODO: Look into this problem and find a way to remove the extra
     // brackets.
-    math_t::Rectf fRect( (math_t::Rectf::width(winWidth / 10.0f)),
-                         (math_t::Rectf::height(winHeight / 10.0f)) );
+    math_t::Rectf_c fRect( math_t::Rectf_c::width(winWidth / 10.0f),
+                           math_t::Rectf_c::height(winHeight / 10.0f) );
 
     m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
     m_ortho.BuildFrustum();

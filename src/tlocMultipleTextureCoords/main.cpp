@@ -249,8 +249,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32 rect(math_t::Rectf32::width(0.5f),
-                        math_t::Rectf32::height(0.5f));
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
+                         math_t::Rectf32_c::height(0.5f));
   core_cs::entity_vptr spriteEnt =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
