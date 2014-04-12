@@ -109,10 +109,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_med::Font f;
   f.Initialize(fontContents);
-  //gfx_med::image_sptr charImg = f.GetCharImage(L'a', 20);
 
   gfx_med::image_sptr charImg =
-    f.GenerateSpriteSheet(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ", 50)->GetSpriteSheet();
+    f.GenerateSpriteSheet
+    (L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+     L"abcdefghijklmnopqrstuvwxyz"
+     L"1234567890!@#$%^&*()_+-=[]"
+     L"{}\\|;:'\",<.>/?`~", 50)->GetSpriteSheet();
 
   TLOC_LOG_CORE_INFO() <<
     "Char image size: " << charImg->GetWidth() << ", " << charImg->GetHeight();
