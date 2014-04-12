@@ -1,4 +1,5 @@
 set(USER_EXECUTABLE_PROJECTS "tlocSimpleInput;")
+list(APPEND USER_EXECUTABLE_PROJECTS "tlocFontSprite;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocFontSpriteSheet;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocInputCallbacks;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocKeyframeAnimation;")
