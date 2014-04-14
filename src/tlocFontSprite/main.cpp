@@ -67,9 +67,14 @@ public:
           itr = m_font->GetGlyphMetric(keyChar);
 
         gfx_cs::quad_vptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
+        math_cs::transform_f32_vptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
 
-        math_t::Rectf32_c rect(math_t::Rectf32_c::width((f32)itr->m_dim[0] * 0.0001f),
-                               math_t::Rectf32_c::height((f32)itr->m_dim[1] * 0.0001f));
+        math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.0001f),
+                                math_t::Rectf32_bl::height((f32)itr->m_dim[1] * 0.0001f));
+
+        trans->SetPosition(math_t::Vec3f32((f32)itr->m_horizontalBearing[0] * 0.0001f,
+                                           (f32)itr->m_horizontalBearing[1] * 0.0001f - rect.GetHeight(),
+                                           0));
 
         quad->SetRectangle(rect);
 
@@ -183,6 +188,52 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
 #endif
 
+  // -----------------------------------------------------------------------
+  // A thing rectangle signifying the baseline
+
+    gfx_med::Image redPng;
+    redPng.Create(core_ds::MakeTuple(2, 2), gfx_t::Color(1.0f, 0.0f, 0.0f, 1.0f));
+
+    {
+      gfx_gl::texture_object_vso to;
+      to->Initialize(redPng);
+      to->Activate();
+
+      gfx_gl::uniform_vso u_to;
+      u_to->SetName("s_texture").SetValueAs(*to);
+
+      gfx_gl::shader_operator_vso so;
+      so->AddUniform(*u_to);
+
+      {
+        math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.0f),
+                               math_t::Rectf32_c::height(0.01f));
+        
+        core_cs::entity_vptr q =
+          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
+          TexCoords(true).Dimensions(rect).Create();
+
+        pref_gfx::Material(entityMgr.get(), compMgr.get())
+          .AddUniform(u_to.get())
+          .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+          core_io::Path(GetAssetsPath() + shaderPathFS));
+      }
+
+      {
+        math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.01f),
+                               math_t::Rectf32_c::height(1.0f));
+        
+        core_cs::entity_vptr q =
+          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
+          TexCoords(true).Dimensions(rect).Create();
+
+        pref_gfx::Material(entityMgr.get(), compMgr.get())
+          .AddUniform(u_to.get())
+          .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+          core_io::Path(GetAssetsPath() + shaderPathFS));
+      }
+    }
+
   //------------------------------------------------------------------------
   // Load the required resources
 
@@ -223,8 +274,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.25f),
-                         math_t::Rectf32_c::height(0.25f));
+  math_t::Rectf32_bl rect(math_t::Rectf32_bl::width(0.25f),
+                         math_t::Rectf32_bl::height(0.25f));
   core_cs::entity_vptr q =
     pref_gfx::Quad(entityMgr.get(), compMgr.get()).
                    TexCoords(true).Dimensions(rect).Create();
