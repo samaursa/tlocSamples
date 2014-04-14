@@ -115,13 +115,13 @@ int TLOC_MAIN(int argc, char *argv[])
                               L"1234567890!@#$%^&*()_+-=[]" 
                               L"{}\\|;:'\",<.>/?`~";
 
-  gfx_med::Font::Params_Font fontParams(50);
+  gfx_med::Font::Params fontParams(50);
   fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.1f))
             .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.2f))
             .PaddingDim(core_ds::MakeTuple(1, 1));
 
   gfx_med::image_sptr charImg =
-    f.GenerateFontCache
+    f.GenerateGlyphCache
     (symbols.c_str(), fontParams)->GetSpriteSheet();
 
   TLOC_LOG_CORE_INFO() <<

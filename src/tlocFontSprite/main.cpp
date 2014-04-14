@@ -121,7 +121,10 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
   gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.AddClearBit<clear::ColorBufferBit>();
+  p.Enable<enable_disable::Blend>()
+   .AddClearBit<clear::ColorBufferBit>()
+   .SetBlendFunction<blend_function::SourceAlpha,
+                     blend_function::OneMinusSourceAlpha>();
   renderer->SetParams(p);
 
   //------------------------------------------------------------------------
@@ -216,7 +219,7 @@ int TLOC_MAIN(int argc, char *argv[])
         pref_gfx::Material(entityMgr.get(), compMgr.get())
           .AddUniform(u_to.get())
           .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-          core_io::Path(GetAssetsPath() + shaderPathFS));
+                  core_io::Path(GetAssetsPath() + shaderPathFS));
       }
 
       {
@@ -230,7 +233,7 @@ int TLOC_MAIN(int argc, char *argv[])
         pref_gfx::Material(entityMgr.get(), compMgr.get())
           .AddUniform(u_to.get())
           .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-          core_io::Path(GetAssetsPath() + shaderPathFS));
+                  core_io::Path(GetAssetsPath() + shaderPathFS));
       }
     }
 
@@ -249,13 +252,13 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::font_vso f;
   f->Initialize(fontContents);
 
-  gfx_med::Font::Params_Font fontParams(50);
-  fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.1f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.2f))
+  gfx_med::Font::Params fontParams(50);
+  fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.7f))
+            .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.7f))
             .PaddingDim(core_ds::MakeTuple(1, 1));
 
   gfx_med::const_sprite_sheet_ul_vptr fontSs = 
-    f->GenerateFontCache(g_symbols.c_str(), fontParams);
+    f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 
   TLOC_LOG_CORE_INFO() 
     << "Char image size: " << fontSs->GetSpriteSheet()->GetWidth() 
@@ -288,8 +291,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Prefab library also has a sprite sheet loader
 
+  using gfx_med::algos::compare::sprite_info::MakeName;
+
   pref_gfx::SpriteAnimation(entityMgr.get(), compMgr.get())
-    .Paused(true).Add(q, fontSs->begin(), fontSs->end());
+    .Paused(true).Add(q, fontSs->begin(), fontSs->end() );
 
   KeyboardCallback kb(q, f.get());
   keyboard->Register(&kb);
