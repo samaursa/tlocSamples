@@ -16,7 +16,7 @@ namespace {
     g_symbols = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
                 L"abcdefghijklmnopqrstuvwxyz" 
                 L"1234567890!@#$%^&*()_+-=[]" 
-                L"{}\\|;:'\",<.>/?`~";
+                L"{}\\|;:'\",<.>/?`~ ";
 
 };
 
@@ -36,68 +36,6 @@ public:
   bool  m_endProgram;
 };
 TLOC_DEF_TYPE(WindowCallback);
-
-class KeyboardCallback
-{
-public:
-  KeyboardCallback(core_cs::entity_vptr a_spriteEnt, 
-                   gfx_med::const_font_vptr a_font)
-    : m_spriteEnt(a_spriteEnt)
-    , m_font(a_font)
-  { }
-
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
-  {
-    gfx_cs::texture_animator_vptr ta =
-      m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
-
-    TLOC_ASSERT(ta->GetSpriteSequence(0).GetNumSets() == g_symbols.length(),
-                "Not enough sprites for all symbols");
-
-    char8 keyChar = a_event.ToChar();
-
-    for (tl_size i = 0; i < g_symbols.length(); ++i)
-    {
-      if (core_str::CharWideToAscii(g_symbols.at(i)) == keyChar)
-      {
-        gfx_med::Font::const_glyph_metrics_iterator 
-          itr = m_font->GetGlyphMetric(keyChar);
-
-        gfx_cs::quad_vptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
-        math_cs::transform_f32_vptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
-
-        math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.0001f),
-                                math_t::Rectf32_bl::height((f32)itr->m_dim[1] * 0.0001f));
-
-        trans->SetPosition(math_t::Vec3f32((f32)itr->m_horizontalBearing[0] * 0.0001f,
-                                           (f32)itr->m_horizontalBearing[1] * 0.0001f - rect.GetHeight(),
-                                           0));
-
-        quad->SetRectangle(rect);
-
-        ta->SetFrame(i);
-        break;
-      }
-    }
-
-    return false;
-  }
-
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& )
-  { return false; }
-
-private:
-  core_cs::entity_vptr                  m_spriteEnt;
-  gfx_med::const_font_vptr              m_font;
-
-};
-TLOC_DEF_TYPE(KeyboardCallback);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
@@ -128,22 +66,6 @@ int TLOC_MAIN(int argc, char *argv[])
   renderer->SetParams(p);
 
   //------------------------------------------------------------------------
-  // Creating InputManager - This manager will handle all of our HIDs during
-  // its lifetime. More than one InputManager can be instantiated.
-  ParamList<core_t::Any> kbParams;
-  kbParams.m_param1 = win.GetWindowHandle();
-
-  input::input_mgr_b_ptr inputMgr =
-    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
-
-  //------------------------------------------------------------------------
-  // Creating a keyboard and mouse HID
-  input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-
-  // Check pointers
-  TLOC_ASSERT_NOT_NULL(keyboard);
-
-  //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
   //
@@ -154,6 +76,13 @@ int TLOC_MAIN(int argc, char *argv[])
   // the components are destroyed, the smart pointers will not let us dereference
   // them and will trigger an assertion.
   core_cs::component_pool_mgr_vso compMgr;
+
+  // -----------------------------------------------------------------------
+  // static text component
+
+  gfx_cs::static_text_vso st;
+  st->Set(L"SKOPWORKS");
+  st->SetSize(10);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -171,8 +100,32 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   //------------------------------------------------------------------------
-  // TextureAnimation system to animate sprites
-  gfx_cs::TextureAnimatorSystem taSys(eventMgr.get(), entityMgr.get());
+  // Load the required font
+
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+    "fonts/VeraMono-Bold.ttf" ).c_str() );
+
+  core_io::FileIO_ReadB rb(fontPath);
+  rb.Open();
+
+  core_str::String fontContents;
+  rb.GetContents(fontContents);
+
+  gfx_med::font_vso f;
+  f->Initialize(fontContents);
+
+  gfx_med::Font::Params fontParams(20);
+  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingDim(core_ds::MakeTuple(1, 1));
+
+  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+
+  // -----------------------------------------------------------------------
+  // Static text render system
+  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get(), *f,
+                                         math_t::Mat2f32(0.0001f, 0, 0, 0.0001f));
+  textSys.SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -238,73 +191,23 @@ int TLOC_MAIN(int argc, char *argv[])
     }
 
   //------------------------------------------------------------------------
-  // Load the required resources
-
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/VeraMono-Bold.ttf" ).c_str() );
-
-  core_io::FileIO_ReadB rb(fontPath);
-  rb.Open();
-
-  core_str::String fontContents;
-  rb.GetContents(fontContents);
-
-  gfx_med::font_vso f;
-  f->Initialize(fontContents);
-
-  gfx_med::Font::Params fontParams(50);
-  fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.7f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.7f))
-            .PaddingDim(core_ds::MakeTuple(1, 1));
-
-  gfx_med::const_sprite_sheet_ul_vptr fontSs = 
-    f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
-
-  TLOC_LOG_CORE_INFO() 
-    << "Char image size: " << fontSs->GetSpriteSheet()->GetWidth() 
-    << ", "  << fontSs->GetSpriteSheet()->GetHeight();
-
-  gfx_gl::texture_object_vso to;
-  to->Initialize(*fontSs->GetSpriteSheet());
-  to->Activate();
-
-  gfx_gl::uniform_vso u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
-
-  gfx_gl::shader_operator_vso so;
-  so->AddUniform(*u_to);
-
-  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32_bl rect(math_t::Rectf32_bl::width(0.25f),
-                         math_t::Rectf32_bl::height(0.25f));
-  core_cs::entity_vptr q =
-    pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-                   TexCoords(true).Dimensions(rect).Create();
+  core_cs::entity_vptr textNode =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
 
-  pref_gfx::Material(entityMgr.get(), compMgr.get())
-    .AddUniform(u_to.get())
-    .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-            core_io::Path(GetAssetsPath() + shaderPathFS));
+  entityMgr->InsertComponent(textNode, st.get());
 
-  // -----------------------------------------------------------------------
-  // Prefab library also has a sprite sheet loader
-
-  using gfx_med::algos::compare::sprite_info::MakeName;
-
-  pref_gfx::SpriteAnimation(entityMgr.get(), compMgr.get())
-    .Paused(true).Add(q, fontSs->begin(), fontSs->end() );
-
-  KeyboardCallback kb(q, f.get());
-  keyboard->Register(&kb);
+  textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
+                     core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
   quadSys.Initialize();
   matSys.Initialize();
-  taSys.Initialize();
+  textSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -314,11 +217,9 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    inputMgr->Update();
-
     renderer->ApplyRenderSettings();
-    taSys.ProcessActiveEntities(1);
     quadSys.ProcessActiveEntities();
+    textSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }
