@@ -99,7 +99,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required resources
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "Qlassik_TB.ttf" ).c_str() );
+    "fonts/Qlassik_TB.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
@@ -121,7 +121,7 @@ int TLOC_MAIN(int argc, char *argv[])
             .PaddingDim(core_ds::MakeTuple(1, 1));
 
   gfx_med::image_sptr charImg =
-    f.GenerateSpriteSheet
+    f.GenerateFontCache
     (symbols.c_str(), fontParams)->GetSpriteSheet();
 
   TLOC_LOG_CORE_INFO() <<

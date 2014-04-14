@@ -40,8 +40,10 @@ TLOC_DEF_TYPE(WindowCallback);
 class KeyboardCallback
 {
 public:
-  KeyboardCallback(core_cs::entity_vptr a_spriteEnt)
+  KeyboardCallback(core_cs::entity_vptr a_spriteEnt, 
+                   gfx_med::const_font_vptr a_font)
     : m_spriteEnt(a_spriteEnt)
+    , m_font(a_font)
   { }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -61,6 +63,16 @@ public:
     {
       if (core_str::CharWideToAscii(g_symbols.at(i)) == keyChar)
       {
+        gfx_med::Font::const_glyph_metrics_iterator 
+          itr = m_font->GetGlyphMetric(keyChar);
+
+        gfx_cs::quad_vptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
+
+        math_t::Rectf32_c rect(math_t::Rectf32_c::width((f32)itr->m_dim[0] * 0.0001f),
+                               math_t::Rectf32_c::height((f32)itr->m_dim[1] * 0.0001f));
+
+        quad->SetRectangle(rect);
+
         ta->SetFrame(i);
         break;
       }
@@ -76,7 +88,8 @@ public:
   { return false; }
 
 private:
-  core_cs::entity_vptr  m_spriteEnt;
+  core_cs::entity_vptr                  m_spriteEnt;
+  gfx_med::const_font_vptr              m_font;
 
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -99,7 +112,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // Get the default renderer
+  using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
+
+  gfx_rend::Renderer::Params p(renderer->GetParams());
+  p.AddClearBit<clear::ColorBufferBit>();
+  renderer->SetParams(p);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -169,7 +187,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required resources
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "Qlassik_TB.ttf" ).c_str() );
+    "fonts/VeraMono-Bold.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
@@ -177,16 +195,16 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String fontContents;
   rb.GetContents(fontContents);
 
-  gfx_med::Font f;
-  f.Initialize(fontContents);
+  gfx_med::font_vso f;
+  f->Initialize(fontContents);
 
   gfx_med::Font::Params_Font fontParams(50);
   fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.1f))
             .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.2f))
             .PaddingDim(core_ds::MakeTuple(1, 1));
 
-  gfx_med::sprite_sheet_ul_vso fontSs = 
-    f.GenerateSpriteSheet(g_symbols.c_str(), fontParams);
+  gfx_med::const_sprite_sheet_ul_vptr fontSs = 
+    f->GenerateFontCache(g_symbols.c_str(), fontParams);
 
   TLOC_LOG_CORE_INFO() 
     << "Char image size: " << fontSs->GetSpriteSheet()->GetWidth() 
@@ -205,8 +223,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
-                         math_t::Rectf32_c::height(0.5f));
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.25f),
+                         math_t::Rectf32_c::height(0.25f));
   core_cs::entity_vptr q =
     pref_gfx::Quad(entityMgr.get(), compMgr.get()).
                    TexCoords(true).Dimensions(rect).Create();
@@ -222,7 +240,7 @@ int TLOC_MAIN(int argc, char *argv[])
   pref_gfx::SpriteAnimation(entityMgr.get(), compMgr.get())
     .Paused(true).Add(q, fontSs->begin(), fontSs->end());
 
-  KeyboardCallback kb(q);
+  KeyboardCallback kb(q, f.get());
   keyboard->Register(&kb);
 
   //------------------------------------------------------------------------
