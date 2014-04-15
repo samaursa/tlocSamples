@@ -69,11 +69,11 @@ public:
         gfx_cs::quad_vptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
         math_cs::transform_f32_vptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
 
-        math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.0001f),
-                                math_t::Rectf32_bl::height((f32)itr->m_dim[1] * 0.0001f));
+        math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.01f),
+                                math_t::Rectf32_bl::height((f32)itr->m_dim[1] * 0.01f));
 
-        trans->SetPosition(math_t::Vec3f32((f32)itr->m_horizontalBearing[0] * 0.0001f,
-                                           (f32)itr->m_horizontalBearing[1] * 0.0001f - rect.GetHeight(),
+        trans->SetPosition(math_t::Vec3f32((f32)itr->m_horizontalBearing[0] * 0.01f,
+                                           (f32)itr->m_horizontalBearing[1] * 0.01f - rect.GetHeight(),
                                            0));
 
         quad->SetRectangle(rect);

@@ -1,3 +1,5 @@
+#include <tlocCore/tlocNoOpt.h>
+
 #include <tlocCore/tloc_core.h>
 #include <tlocCore/tloc_core.inl.h>
 #include <tlocGraphics/tloc_graphics.h>
@@ -45,7 +47,7 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
+  win.Create( gfx_win::Window::graphics_mode::Properties(800, 300),
              gfx_win::WindowSettings("tlocFontSprite") );
 
   //------------------------------------------------------------------------
@@ -81,8 +83,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // static text component
 
   gfx_cs::static_text_vso st;
-  st->Set(L"SKOPWORKS");
-  st->SetSize(10);
+  st->Set(L"The quick brown fox jumped over the lazy dog. 1234567890");
+
+  gfx_cs::static_text_vso stSkopWorks;
+  stSkopWorks->Set(L"SkopWorks Inc.");
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -99,11 +103,19 @@ int TLOC_MAIN(int argc, char *argv[])
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
+  // -----------------------------------------------------------------------
+  // SceneNodes require the SceneGraphSystem
+  gfx_cs::SceneGraphSystem  sgSys(eventMgr.get(), entityMgr.get());
+
+  // -----------------------------------------------------------------------
+  // Camera system
+  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
+
   //------------------------------------------------------------------------
   // Load the required font
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/VeraMono-Bold.ttf" ).c_str() );
+    "fonts/Qlassik_TB.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
@@ -111,20 +123,19 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String fontContents;
   rb.GetContents(fontContents);
 
-  gfx_med::font_vso f;
+  gfx_med::font_sptr f(new gfx_med::font_sptr::value_type());
   f->Initialize(fontContents);
 
-  gfx_med::Font::Params fontParams(20);
+  gfx_med::Font::Params fontParams(24);
   fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(1, 1));
+            .PaddingDim(core_ds::MakeTuple(0, 0));
 
   f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 
   // -----------------------------------------------------------------------
   // Static text render system
-  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get(), *f,
-                                         math_t::Mat2f32(0.0001f, 0, 0, 0.0001f));
+  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get(), f);
   textSys.SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
@@ -148,7 +159,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // A thin rectangle signifying the baseline
 
     gfx_med::Image redPng;
-    redPng.Create(core_ds::MakeTuple(2, 2), gfx_t::Color(1.0f, 0.0f, 0.0f, 1.0f));
+    redPng.Create(core_ds::MakeTuple(2, 2), gfx_t::Color(1.0f, 0.0f, 0.0f, 0.3f));
 
     {
       gfx_gl::texture_object_vso to;
@@ -162,8 +173,8 @@ int TLOC_MAIN(int argc, char *argv[])
       so->AddUniform(*u_to);
 
       {
-        math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.0f),
-                               math_t::Rectf32_c::height(0.01f));
+        math_t::Rectf32_c rect(math_t::Rectf32_c::width((f32)win.GetWidth()),
+                               math_t::Rectf32_c::height(2.0f));
         
         core_cs::entity_vptr q =
           pref_gfx::Quad(entityMgr.get(), compMgr.get()).
@@ -176,8 +187,8 @@ int TLOC_MAIN(int argc, char *argv[])
       }
 
       {
-        math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.01f),
-                               math_t::Rectf32_c::height(1.0f));
+        math_t::Rectf32_c rect(math_t::Rectf32_c::width(2.0f),
+                               math_t::Rectf32_c::height((f32)win.GetHeight()));
         
         core_cs::entity_vptr q =
           pref_gfx::Quad(entityMgr.get(), compMgr.get()).
@@ -197,10 +208,42 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
     .Create();
 
+  textNode->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(-250.0f, 0, 0));
+
+  core_cs::entity_vptr textNodeSkopWorks =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeSkopWorks->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(-60.0f, -30.0f, 0));
+
   entityMgr->InsertComponent(textNode, st.get());
+  entityMgr->InsertComponent(textNodeSkopWorks, stSkopWorks.get());
 
   textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
+
+  // -----------------------------------------------------------------------
+  // create a camera
+
+  tl_float winWidth = (tl_float) win.GetWidth();
+  tl_float winHeight = (tl_float) win.GetHeight();
+
+  math_t::Rectf_c fRect =
+    math_t::Rectf_c(math_t::Rectf_c::width(winWidth), 
+                    math_t::Rectf_c::height(winHeight));
+
+  math_proj::frustum_ortho_f32 fr =
+    math_proj::FrustumOrtho(fRect, 0.1f, 100.0f);
+  fr.BuildFrustum();
+
+  core_cs::entity_vptr camEnt = 
+    pref_gfx::Camera(entityMgr.get(), compMgr.get())
+    .Create(fr, math_t::Vec3f(0, 0, 1.0f)); 
+
+  quadSys.SetCamera(camEnt);
+  textSys.SetCamera(camEnt);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
@@ -208,6 +251,8 @@ int TLOC_MAIN(int argc, char *argv[])
   quadSys.Initialize();
   matSys.Initialize();
   textSys.Initialize();
+  sgSys.Initialize();
+  camSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -218,6 +263,8 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     renderer->ApplyRenderSettings();
+    camSys.ProcessActiveEntities();
+    sgSys.ProcessActiveEntities();
     quadSys.ProcessActiveEntities();
     textSys.ProcessActiveEntities();
 
