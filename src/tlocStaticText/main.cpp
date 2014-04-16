@@ -83,7 +83,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // static text component
 
   gfx_cs::static_text_vso st;
-  st->Set(L"The quick brown fox jumped over the lazy dog. 1234567890");
+  st->Set(L"The quick brown fox jumps over the lazy dog. 1234567890");
   st->Align(gfx_cs::StaticText::k_align_center);
 
   gfx_cs::static_text_vso stSkopWorks;
@@ -101,6 +101,17 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_cs::static_text_vso stAlignCenter;
   stAlignCenter->Set(L"Align Center");
+
+  gfx_cs::static_text_vso stEmpty;
+  stEmpty->Set(L"");
+
+  gfx_cs::static_text_vso stOneChar;
+  stOneChar->Set(L"A");
+  stOneChar->Align(gfx_cs::StaticText::k_align_center);
+
+  gfx_cs::static_text_vso stTwoChar;
+  stTwoChar->Set(L"Z!");
+  stTwoChar->Align(gfx_cs::StaticText::k_align_center);
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -140,7 +151,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::font_sptr f(new gfx_med::font_sptr::value_type());
   f->Initialize(fontContents);
 
-  gfx_med::Font::Params fontParams(24);
+  gfx_med::Font::Params fontParams(32);
   fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingDim(core_ds::MakeTuple(0, 0));
@@ -250,11 +261,32 @@ int TLOC_MAIN(int argc, char *argv[])
   textNodeSkopWorks->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
 
+  core_cs::entity_vptr textNodeEmpty =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  core_cs::entity_vptr textNodeOneChar =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeOneChar->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
+
+  core_cs::entity_vptr textNodeTwoChar =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeTwoChar->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
+
   entityMgr->InsertComponent(textNode, st.get());
   entityMgr->InsertComponent(textNodeAlignLeft, stAlignLeft.get());
   entityMgr->InsertComponent(textNodeAlignCenter, stAlignRight.get());
   entityMgr->InsertComponent(textNodeAlignRight, stAlignCenter.get());
   entityMgr->InsertComponent(textNodeSkopWorks, stSkopWorks.get());
+  entityMgr->InsertComponent(textNodeEmpty, stEmpty.get());
+  entityMgr->InsertComponent(textNodeOneChar, stOneChar.get());
+  entityMgr->InsertComponent(textNodeTwoChar, stTwoChar.get());
 
   textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -283,18 +315,25 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
+  TLOC_LOG_CORE_DEBUG() << "Initializing Quad Render System"; 
   quadSys.Initialize();
+  TLOC_LOG_CORE_DEBUG() << "Initializing Material System"; 
   matSys.Initialize();
+  TLOC_LOG_CORE_DEBUG() << "Initializing Text Render System"; 
   textSys.Initialize();
+  TLOC_LOG_CORE_DEBUG() << "Initializing SceneGraph System"; 
   sgSys.Initialize();
+  TLOC_LOG_CORE_DEBUG() << "Initializing Camera System"; 
   camSys.Initialize();
 
-  TLOC_LOG_CORE_DEBUG() << "Logging started";
   //------------------------------------------------------------------------
   // Main loop
 
+  TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
+
   core_time::Timer timer;
 
+  bool textAligned = false;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -307,13 +346,17 @@ int TLOC_MAIN(int argc, char *argv[])
     quadSys.ProcessActiveEntities();
     textSys.ProcessActiveEntities();
 
-    if (timer.ElapsedSeconds() > 1.0f && timer.ElapsedSeconds() < 1.1f)
+    if (timer.ElapsedSeconds() > 1.0f && !textAligned)
     {
+      TLOC_LOG_CORE_INFO() << "Aligning text...";
       // we purposefully align after the systems are processed at least once
       // to see if alignment is updated during updates
       stAlignLeft->Align(gfx_cs::StaticText::k_align_left);
       stAlignRight->Align(gfx_cs::StaticText::k_align_right);
       stAlignCenter->Align(gfx_cs::StaticText::k_align_center);
+      TLOC_LOG_CORE_INFO() << "Aligning text... COMPLETE";
+
+      textAligned = true;
     }
 
     win.SwapBuffers();
