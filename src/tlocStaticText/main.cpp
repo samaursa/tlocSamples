@@ -84,9 +84,23 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_cs::static_text_vso st;
   st->Set(L"The quick brown fox jumped over the lazy dog. 1234567890");
+  st->Align(gfx_cs::StaticText::k_align_center);
 
   gfx_cs::static_text_vso stSkopWorks;
   stSkopWorks->Set(L"SkopWorks Inc.");
+  stSkopWorks->Align(gfx_cs::StaticText::k_align_center);
+
+  // -----------------------------------------------------------------------
+  // NOTE: We purposefully don't align these texts at the start to test
+  //       whether they can be aligned during updates (see update loop)
+  gfx_cs::static_text_vso stAlignLeft;
+  stAlignLeft->Set(L"Align Left");
+
+  gfx_cs::static_text_vso stAlignRight;
+  stAlignRight->Set(L"Align Right");
+
+  gfx_cs::static_text_vso stAlignCenter;
+  stAlignCenter->Set(L"Align Center");
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -208,17 +222,38 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
     .Create();
 
-  textNode->GetComponent<math_cs::Transformf32>()->
-    SetPosition(math_t::Vec3f32(-250.0f, 0, 0));
+  core_cs::entity_vptr textNodeAlignLeft =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeAlignLeft->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(0.0f, 90.0f, 0));
+
+  core_cs::entity_vptr textNodeAlignCenter =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeAlignCenter->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(0.0f, 60.0f, 0));
+
+  core_cs::entity_vptr textNodeAlignRight =
+    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
+    .Create();
+
+  textNodeAlignRight->GetComponent<math_cs::Transformf32>()->
+    SetPosition(math_t::Vec3f32(0.0f, 30.0f, 0));
 
   core_cs::entity_vptr textNodeSkopWorks =
     pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
     .Create();
 
   textNodeSkopWorks->GetComponent<math_cs::Transformf32>()->
-    SetPosition(math_t::Vec3f32(-60.0f, -30.0f, 0));
+    SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
 
   entityMgr->InsertComponent(textNode, st.get());
+  entityMgr->InsertComponent(textNodeAlignLeft, stAlignLeft.get());
+  entityMgr->InsertComponent(textNodeAlignCenter, stAlignRight.get());
+  entityMgr->InsertComponent(textNodeAlignRight, stAlignCenter.get());
   entityMgr->InsertComponent(textNodeSkopWorks, stSkopWorks.get());
 
   textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -254,8 +289,12 @@ int TLOC_MAIN(int argc, char *argv[])
   sgSys.Initialize();
   camSys.Initialize();
 
+  TLOC_LOG_CORE_DEBUG() << "Logging started";
   //------------------------------------------------------------------------
   // Main loop
+
+  core_time::Timer timer;
+
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -267,6 +306,15 @@ int TLOC_MAIN(int argc, char *argv[])
     sgSys.ProcessActiveEntities();
     quadSys.ProcessActiveEntities();
     textSys.ProcessActiveEntities();
+
+    if (timer.ElapsedSeconds() > 1.0f && timer.ElapsedSeconds() < 1.1f)
+    {
+      // we purposefully align after the systems are processed at least once
+      // to see if alignment is updated during updates
+      stAlignLeft->Align(gfx_cs::StaticText::k_align_left);
+      stAlignRight->Align(gfx_cs::StaticText::k_align_right);
+      stAlignCenter->Align(gfx_cs::StaticText::k_align_center);
+    }
 
     win.SwapBuffers();
   }
