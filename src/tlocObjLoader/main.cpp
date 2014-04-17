@@ -236,7 +236,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_vso eventMgr;
-  core_cs::entity_manager_vso entityMgr(eventMgr.get());
+  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
 
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
