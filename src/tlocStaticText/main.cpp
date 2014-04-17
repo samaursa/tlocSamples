@@ -303,11 +303,11 @@ int TLOC_MAIN(int argc, char *argv[])
       // we purposefully align after the systems are processed at least once
       // to see if alignment is updated during updates
       textNodeAlignLeft->GetComponent<gfx_cs::StaticText>()
-        ->Align(gfx_cs::alignment::k_align_left);
+        ->SetAlignment(gfx_cs::alignment::k_align_left);
       textNodeAlignRight->GetComponent<gfx_cs::StaticText>()
-        -> Align(gfx_cs::alignment::k_align_right);
+        ->SetAlignment(gfx_cs::alignment::k_align_right);
       textNodeAlignCenter->GetComponent<gfx_cs::StaticText>()
-        ->Align(gfx_cs::alignment::k_align_center);
+        ->SetAlignment(gfx_cs::alignment::k_align_center);
       TLOC_LOG_CORE_INFO() << "Aligning text... COMPLETE";
 
       textAligned = true;
