@@ -79,40 +79,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // them and will trigger an assertion.
   core_cs::component_pool_mgr_vso compMgr;
 
-  // -----------------------------------------------------------------------
-  // static text component
-
-  gfx_cs::static_text_vso st;
-  st->Set(L"The quick brown fox jumps over the lazy dog. 1234567890");
-  st->Align(gfx_cs::StaticText::k_align_center);
-
-  gfx_cs::static_text_vso stSkopWorks;
-  stSkopWorks->Set(L"SkopWorks Inc.");
-  stSkopWorks->Align(gfx_cs::StaticText::k_align_center);
-
-  // -----------------------------------------------------------------------
-  // NOTE: We purposefully don't align these texts at the start to test
-  //       whether they can be aligned during updates (see update loop)
-  gfx_cs::static_text_vso stAlignLeft;
-  stAlignLeft->Set(L"Align Left");
-
-  gfx_cs::static_text_vso stAlignRight;
-  stAlignRight->Set(L"Align Right");
-
-  gfx_cs::static_text_vso stAlignCenter;
-  stAlignCenter->Set(L"Align Center");
-
-  gfx_cs::static_text_vso stEmpty;
-  stEmpty->Set(L"");
-
-  gfx_cs::static_text_vso stOneChar;
-  stOneChar->Set(L"A");
-  stOneChar->Align(gfx_cs::StaticText::k_align_center);
-
-  gfx_cs::static_text_vso stTwoChar;
-  stTwoChar->Set(L"Z!");
-  stTwoChar->Align(gfx_cs::StaticText::k_align_center);
-
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_vso  eventMgr;
@@ -229,64 +195,49 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  core_cs::entity_vptr textNode =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
+  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"The quick brown fox jumps over the lazy dog. 1234567890");
 
   core_cs::entity_vptr textNodeAlignLeft =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
-
+    pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Create(L"Align Left");
   textNodeAlignLeft->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 90.0f, 0));
 
   core_cs::entity_vptr textNodeAlignCenter =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
-
+    pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Create(L"Align Center");
   textNodeAlignCenter->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 60.0f, 0));
 
   core_cs::entity_vptr textNodeAlignRight =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
-
+    pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Create(L"Align Right");
   textNodeAlignRight->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 30.0f, 0));
 
-  core_cs::entity_vptr textNodeSkopWorks =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
+  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"SkopWorks Inc.")
+    ->GetComponent<math_cs::Transformf32>()
+    ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
 
-  textNodeSkopWorks->GetComponent<math_cs::Transformf32>()->
-    SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
+  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"");
 
-  core_cs::entity_vptr textNodeEmpty =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
+  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"A")
+    ->GetComponent<math_cs::Transformf32>()
+    ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
 
-  core_cs::entity_vptr textNodeOneChar =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
-
-  textNodeOneChar->GetComponent<math_cs::Transformf32>()->
-    SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
-
-  core_cs::entity_vptr textNodeTwoChar =
-    pref_gfx::SceneNode(entityMgr.get(), compMgr.get())
-    .Create();
-
-  textNodeTwoChar->GetComponent<math_cs::Transformf32>()->
-    SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
-
-  entityMgr->InsertComponent(textNode, st.get());
-  entityMgr->InsertComponent(textNodeAlignLeft, stAlignLeft.get());
-  entityMgr->InsertComponent(textNodeAlignCenter, stAlignRight.get());
-  entityMgr->InsertComponent(textNodeAlignRight, stAlignCenter.get());
-  entityMgr->InsertComponent(textNodeSkopWorks, stSkopWorks.get());
-  entityMgr->InsertComponent(textNodeEmpty, stEmpty.get());
-  entityMgr->InsertComponent(textNodeOneChar, stOneChar.get());
-  entityMgr->InsertComponent(textNodeTwoChar, stTwoChar.get());
+  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"Z!")
+    ->GetComponent<math_cs::Transformf32>()
+    ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
 
   textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -351,9 +302,12 @@ int TLOC_MAIN(int argc, char *argv[])
       TLOC_LOG_CORE_INFO() << "Aligning text...";
       // we purposefully align after the systems are processed at least once
       // to see if alignment is updated during updates
-      stAlignLeft->Align(gfx_cs::StaticText::k_align_left);
-      stAlignRight->Align(gfx_cs::StaticText::k_align_right);
-      stAlignCenter->Align(gfx_cs::StaticText::k_align_center);
+      textNodeAlignLeft->GetComponent<gfx_cs::StaticText>()
+        ->Align(gfx_cs::alignment::k_align_left);
+      textNodeAlignRight->GetComponent<gfx_cs::StaticText>()
+        -> Align(gfx_cs::alignment::k_align_right);
+      textNodeAlignCenter->GetComponent<gfx_cs::StaticText>()
+        ->Align(gfx_cs::alignment::k_align_center);
       TLOC_LOG_CORE_INFO() << "Aligning text... COMPLETE";
 
       textAligned = true;
