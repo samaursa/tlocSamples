@@ -198,7 +198,7 @@ struct glProgram
       {
         gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
-        if (mat != core_sptr::ToVirtualPtr(m_crateMat))
+        if (mat != m_crateMat)
         { *mat = *m_crateMat;}
 
         printf("\nIntersecting with circle!");
@@ -213,7 +213,7 @@ struct glProgram
       {
         gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
-        if (mat != core_sptr::ToVirtualPtr(m_henryMat))
+        if (mat != m_henryMat)
         { *mat = *m_henryMat; }
 
         printf("\nNOT intersecting with circle!");
@@ -360,9 +360,9 @@ struct glProgram
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(m_henryMat);
+      (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
-      m_entityMgr->InsertComponent(m_fanEnt, *(*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_fanEnt, *(*matPoolItr)->GetValuePtr());
       m_entityMgr->InsertComponent(m_fanEnt, m_henryMat);
     }
 
@@ -373,9 +373,9 @@ struct glProgram
         .Sides(12).Circle(circle).Create();
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(m_crateMat);
+      (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_crateMat));
 
-      m_entityMgr->InsertComponent(m_mouseFan, *(*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_mouseFan, *(*matPoolItr)->GetValuePtr());
       m_entityMgr->InsertComponent(m_mouseFan, m_crateMat);
     }
 
