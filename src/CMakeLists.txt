@@ -11,6 +11,7 @@ function(add_common_libraries EXEC_NAME)
     tlocPrefab
     tlocAnimation
     Box2D
+    FreeType
     )
 
   if (TLOC_PLATFORM_WIN32)
@@ -73,6 +74,7 @@ include_directories(
   ${TLOC_ENGINE_PATH}/src/
   ${TLOC_DEP_PATH}/include/
   ${TLOC_DEP_PATH}/include/Box2D/
+  ${TLOC_DEP_PATH}/include/FreeType/
   ${TLOC_DEP_PATH}/include/CATCH/
   ${USER_PATH}/src/
 
@@ -90,6 +92,7 @@ link_directories(
   ${TLOC_ENGINE_BUILD_PATH}/src/tlocAnimation/
 
   ${TLOC_DEP_BUILD_PATH}/src/Box2D/
+  ${TLOC_DEP_BUILD_PATH}/src/FreeType/
   )
 
 # -----------------------------------------------------------------------------

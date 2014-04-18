@@ -51,7 +51,7 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    gfx_cs::texture_animator_vptr ta =
+    gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT(ta->GetSpriteSequence(0).GetNumSets() == g_symbols.length(),
@@ -66,8 +66,8 @@ public:
         gfx_med::Font::const_glyph_metrics_iterator 
           itr = m_font->GetGlyphMetric(keyChar);
 
-        gfx_cs::quad_vptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
-        math_cs::transform_f32_vptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
+        gfx_cs::quad_sptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
+        math_cs::transform_f32_sptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
 
         math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.01f),
                                 math_t::Rectf32_bl::height((f32)itr->m_dim[1] * 0.01f));

@@ -252,45 +252,14 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    if (t.ElapsedSeconds() > 0.032f)
+    if (t.ElapsedSeconds() > 0.001f)
     {
       counter++;
-      if (counter == 10)
-      { counter = 0; }
 
-      switch(counter)
-      {
-      case 0:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"00");
-        break;
-      case 1:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"01");
-        break;
-      case 2:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"02");
-        break;
-      case 3:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"03");
-        break;
-      case 4:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"04");
-        break;
-      case 5:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"05");
-        break;
-      case 6:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"06");
-        break;
-      case 7:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"07");
-        break;
-      case 8:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"08");
-        break;
-      case 9:
-        dText->GetComponent<gfx_cs::Text>()->Set(L"09");
-        break;
-      }
+      core_str::String numStr = core_str::Format("%i", counter);
+      core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
+
+      dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
       t.Reset();
     }
 
