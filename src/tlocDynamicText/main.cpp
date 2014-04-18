@@ -197,7 +197,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::entity_vptr dText = 
     pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
+    .Alignment(gfx_cs::alignment::k_align_right)
     .Create(L"00");
 
   textSys->SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -243,8 +243,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
 
-  core_time::Timer t;
-
+  core_time::Timer t, tAlign;
+  
   tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
@@ -252,7 +252,7 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    if (t.ElapsedSeconds() > 0.001f)
+    if (t.ElapsedSeconds() > 0.01f)
     {
       counter++;
 
@@ -261,6 +261,19 @@ int TLOC_MAIN(int argc, char *argv[])
 
       dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
       t.Reset();
+    }
+    
+    if (tAlign.ElapsedSeconds() > 1.0f)
+    {
+      gfx_cs::dynamic_text_sptr dt = 
+        dText->GetComponent<gfx_cs::DynamicText>(); 
+
+      if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
+      { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
+      else 
+      { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
+
+      tAlign.Reset();
     }
 
     renderer->ApplyRenderSettings();
