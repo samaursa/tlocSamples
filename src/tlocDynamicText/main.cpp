@@ -195,7 +195,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
+  core_cs::entity_vptr dText = 
+    pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
     .Alignment(gfx_cs::alignment::k_align_center)
     .Create(L"00");
 
@@ -242,11 +243,56 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
 
+  core_time::Timer t;
+
+  tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
+
+    if (t.ElapsedSeconds() > 0.032f)
+    {
+      counter++;
+      if (counter == 10)
+      { counter = 0; }
+
+      switch(counter)
+      {
+      case 0:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"00");
+        break;
+      case 1:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"01");
+        break;
+      case 2:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"02");
+        break;
+      case 3:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"03");
+        break;
+      case 4:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"04");
+        break;
+      case 5:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"05");
+        break;
+      case 6:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"06");
+        break;
+      case 7:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"07");
+        break;
+      case 8:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"08");
+        break;
+      case 9:
+        dText->GetComponent<gfx_cs::Text>()->Set(L"09");
+        break;
+      }
+      t.Reset();
+    }
 
     renderer->ApplyRenderSettings();
     camSys.ProcessActiveEntities();

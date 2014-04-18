@@ -196,7 +196,7 @@ struct glProgram
       ++intersectionCounter;
       if (intersectionCounter == 1)
       {
-        gfx_cs::material_vptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != core_sptr::ToVirtualPtr(m_crateMat))
         { *mat = *m_crateMat;}
@@ -211,7 +211,7 @@ struct glProgram
 
       if (nonIntersectionCounter == 1)
       {
-        gfx_cs::material_vptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != core_sptr::ToVirtualPtr(m_henryMat))
         { *mat = *m_henryMat; }
@@ -360,10 +360,10 @@ struct glProgram
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(*m_henryMat);
+      (*matPoolItr)->SetValue(m_henryMat);
 
-      m_entityMgr->InsertComponent(m_fanEnt, (*matPoolItr)->GetValue());
-      m_entityMgr->InsertComponent(m_fanEnt, core_sptr::ToVirtualPtr(m_henryMat));
+      m_entityMgr->InsertComponent(m_fanEnt, *(*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_fanEnt, m_henryMat);
     }
 
     {
@@ -373,10 +373,10 @@ struct glProgram
         .Sides(12).Circle(circle).Create();
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(*m_crateMat);
+      (*matPoolItr)->SetValue(m_crateMat);
 
-      m_entityMgr->InsertComponent(m_mouseFan, (*matPoolItr)->GetValue());
-      m_entityMgr->InsertComponent(m_mouseFan, core_sptr::ToVirtualPtr(m_crateMat));
+      m_entityMgr->InsertComponent(m_mouseFan, *(*matPoolItr)->GetValue());
+      m_entityMgr->InsertComponent(m_mouseFan, m_crateMat);
     }
 
     tl_float winWidth = (tl_float)m_win.GetWidth();

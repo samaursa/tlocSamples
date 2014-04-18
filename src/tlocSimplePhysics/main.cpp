@@ -155,7 +155,7 @@ int TLOC_MAIN(int argc, char *argv[])
       q->GetComponents(phys_cs::components::k_rigidBody);
     if (rbList.size())
     {
-      phys_cs::rigid_body_vptr myRb = rbList[0];
+      phys_cs::rigid_body_sptr myRb = rbList[0];
       phys_box2d::RigidBody::vec_type pos;
       myRb->GetRigidBody().GetPosition(pos);
       if (pos[1] < -1.0f)

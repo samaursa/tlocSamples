@@ -121,15 +121,15 @@ public:
 
     if (m_flags.IsMarked(k_rotating))
     {
-      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       arcBall->MoveVertical(yRel * 0.01f );
       arcBall->MoveHorizontal(xRel * 0.01f );
     }
     else if (m_flags.IsMarked(k_panning))
     {
-      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
-      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
+      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
@@ -142,7 +142,7 @@ public:
     }
     else if (m_flags.IsMarked(k_dolly))
     {
-      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
+      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
 
       math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
 
@@ -433,10 +433,11 @@ int TLOC_MAIN(int argc, char *argv[])
   prefMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
                    core_io::Path(GetAssetsPath() + shaderPathFS));
 
-  gfx_cs::scene_node_vptr parentNode = ent->GetComponent<gfx_cs::SceneNode>();
+  gfx_cs::scene_node_sptr parentNode = ent->GetComponent<gfx_cs::SceneNode>();
 
   // Set ent as the parent of ent2
-  parentNode->AddChild(ent_2->GetComponent<gfx_cs::SceneNode>());
+  parentNode->AddChild
+    (core_sptr::ToVirtualPtr(ent_2->GetComponent<gfx_cs::SceneNode>()) );
 
   anim_t::keyframe_sequence_mat4f32 KFs;
   anim_t::keyframe_sequence_mat4f32 KFs_2ndCrate;

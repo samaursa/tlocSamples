@@ -31,7 +31,7 @@ TLOC_DEF_TYPE(WindowCallback);
 
 void MoveEntity(const core_cs::entity_vptr a_ent, const math_t::Vec2f& a_deltaPos)
 {
-  math_cs::transform_vptr transform = a_ent->GetComponent<math_cs::Transform>();
+  math_cs::transform_sptr transform = a_ent->GetComponent<math_cs::Transform>();
 
   math_cs::Transform::position_type position(transform->GetPosition());
   position[0] += a_deltaPos[0];
@@ -42,7 +42,7 @@ void MoveEntity(const core_cs::entity_vptr a_ent, const math_t::Vec2f& a_deltaPo
 
 void MoveEntityToPosition(const core_cs::entity_vptr a_ent, const math_t::Vec2f& a_position)
 {
-  math_cs::transform_vptr transform = a_ent->GetComponent<math_cs::Transform>();
+  math_cs::transform_sptr transform = a_ent->GetComponent<math_cs::Transform>();
   transform->SetPosition(a_position.ConvertTo<math_t::Vec3f>());
 }
 

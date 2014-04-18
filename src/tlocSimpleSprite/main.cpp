@@ -47,7 +47,7 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    gfx_cs::texture_animator_vptr ta =
+    gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT_NOT_NULL(ta);

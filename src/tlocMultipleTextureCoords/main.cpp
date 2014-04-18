@@ -48,7 +48,7 @@ public:
   bool OnTouchPress(const tl_size,
                     const input::TouchSurfaceEvent&)
   {
-    gfx_cs::texture_animator_vptr ta =
+    gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
 
     TLOC_ASSERT_NOT_NULL(ta);
@@ -84,10 +84,10 @@ public:
   bool OnKeyPress(const tl_size ,
                   const input_hid::KeyboardEvent& a_event)
   {
-    gfx_cs::texture_animator_vptr ta =
+    gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(0);
 
-    gfx_cs::texture_animator_vptr ta2 =
+    gfx_cs::texture_animator_sptr ta2 =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(1);
 
     TLOC_ASSERT_NOT_NULL(ta);
@@ -225,7 +225,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // used later, but since it is a component, it must appear before entity
   // manager to avoid destruction issues
-  gfx_cs::texture_coords_vso tcoord2;
+  gfx_cs::texture_coords_sptr tcoord2 = 
+    core_sptr::MakeShared<gfx_cs::TextureCoords>();
 
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -254,7 +255,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::entity_vptr spriteEnt =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
-  entityMgr->InsertComponent(spriteEnt, tcoord2.get());
+  entityMgr->InsertComponent(spriteEnt, tcoord2);
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
@@ -374,7 +375,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //
   // TODO: Make this into a meta function in the engine
 
-  gfx_cs::material_vptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
+  gfx_cs::material_sptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
   TLOC_ASSERT(spriteEntMat->GetShaderOperators().size() == 1,
     "Unexpected number of shader operators");
 

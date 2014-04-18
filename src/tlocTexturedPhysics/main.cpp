@@ -222,14 +222,14 @@ struct glProgram
       u_henryTo->SetName("shaderTexture").SetValueAs(*to);
     }
 
-    gfx_cs::material_vptr crateMat =
+    gfx_cs::material_sptr crateMat =
       pref_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_crateTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
 
-    gfx_cs::material_vptr henryMat =
+    gfx_cs::material_sptr henryMat =
       pref_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
       .AddUniform(u_henryTo.get())
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),

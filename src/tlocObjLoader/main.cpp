@@ -117,15 +117,15 @@ public:
 
     if (m_flags.IsMarked(k_rotating))
     {
-      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       arcBall->MoveVertical(yRel * 0.01f );
       arcBall->MoveHorizontal(xRel * 0.01f );
     }
     else if (m_flags.IsMarked(k_panning))
     {
-      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
-      gfx_cs::arcball_vptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
+      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
+      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
 
       math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
       math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
@@ -138,7 +138,7 @@ public:
     }
     else if (m_flags.IsMarked(k_dolly))
     {
-      math_cs::transform_vptr t = m_camera->GetComponent<math_cs::Transform>();
+      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
 
       math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
 
