@@ -48,7 +48,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 300),
-             gfx_win::WindowSettings("tlocStaticText") );
+             gfx_win::WindowSettings("Static Text with Alignment") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

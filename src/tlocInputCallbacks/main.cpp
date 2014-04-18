@@ -204,7 +204,7 @@ int TLOC_MAIN(int, char**)
   const tl_int winHeight = 600;
 
   win.Create( gfx_win::Window::graphics_mode::Properties(winWidth, winHeight),
-    gfx_win::WindowSettings("tlocInput") );
+    gfx_win::WindowSettings("Input Callbacks") );
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during

@@ -53,7 +53,7 @@ int TLOC_MAIN(int , char *[])
   win.Register(&winCallback);
 
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
-    gfx_win::WindowSettings("tlocInput") );
+    gfx_win::WindowSettings("Simple Input") );
 
   const tl_size winWidth = win.GetWidth();
   const tl_size winHeight = win.GetHeight();

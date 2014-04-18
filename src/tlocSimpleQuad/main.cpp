@@ -40,7 +40,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-             gfx_win::WindowSettings("tlocSimpleQuad") );
+             gfx_win::WindowSettings("One Quad") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

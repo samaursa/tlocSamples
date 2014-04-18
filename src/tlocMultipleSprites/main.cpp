@@ -184,7 +184,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-    gfx_win::WindowSettings("Sprite Animation") );
+    gfx_win::WindowSettings("Multiple Sprites with Animation") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

@@ -40,7 +40,7 @@ int main()
   win.Register(&winCallback);
 
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
-              gfx_win::WindowSettings("tlocWindow") );
+              gfx_win::WindowSettings("Window Only") );
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {

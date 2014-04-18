@@ -195,7 +195,7 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  gfx_win::WindowSettings ws("Stereoscopic 3D");
+  gfx_win::WindowSettings ws("Basic Stereoscopic 3D");
   if (g_fullScreen)
   {
     ws.ClearStyles().AddStyle<gfx_win::p_window_settings::style::FullScreen>();
