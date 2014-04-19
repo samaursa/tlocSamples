@@ -74,8 +74,8 @@ struct glProgram
 
     ParamList<core_t::Any> params;
     params.m_param1 = m_win.GetWindowHandle();
-    m_inputMgr = input::input_mgr_b_ptr(new input::InputManagerB(params));
-    m_inputMgrImm = input::input_mgr_i_ptr(new input::InputManagerI(params));
+    m_inputMgr = core_sptr::MakeShared<input::InputManagerB>(params);
+    m_inputMgrImm = core_sptr::MakeShared<input::InputManagerI>(params);
 
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
@@ -290,11 +290,11 @@ struct glProgram
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
 
-    m_henryMat.reset(new gfx_cs::Material());
-    m_crateMat.reset(new gfx_cs::Material());
+    m_henryMat = core_sptr::MakeShared<gfx_cs::Material>();
+    m_crateMat = core_sptr::MakeShared<gfx_cs::Material>();
 
-    m_texObjHenry.reset(new gfx_gl::TextureObject());
-    m_texObjCrate.reset(new gfx_gl::TextureObject());
+    m_texObjHenry = core_sptr::MakeShared<gfx_gl::TextureObject>();
+    m_texObjCrate = core_sptr::MakeShared<gfx_gl::TextureObject>();
 
     AddShaders(core_sptr::ToVirtualPtr(m_henryMat));
     AddShaders(core_sptr::ToVirtualPtr(m_crateMat));

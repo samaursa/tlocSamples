@@ -73,7 +73,7 @@ struct glProgram
 
     ParamList<core_t::Any> params;
     params.m_param1 = m_win.GetWindowHandle();
-    m_inputMgr = input::input_mgr_b_ptr(new input::InputManagerB(params));
+    m_inputMgr = core_sptr::MakeShared<input::InputManagerB>(params);
 
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
@@ -187,7 +187,8 @@ struct glProgram
 
     gl::uniform_vso  u_crateTo;
     {
-      gfx_gl::texture_object_sptr crateTo(new gfx_gl::TextureObject());
+      gfx_gl::texture_object_sptr crateTo =
+        core_sptr::MakeShared<gfx_gl::TextureObject>();
       {
         gfx_med::ImageLoaderPng png;
         {
@@ -205,7 +206,8 @@ struct glProgram
 
     gl::uniform_vso  u_henryTo;
     {
-      gfx_gl::texture_object_sptr to(new gfx_gl::TextureObject());
+      gfx_gl::texture_object_sptr to =
+        core_sptr::MakeShared<gfx_gl::TextureObject>();
       {
         gfx_med::ImageLoaderPng png;
         {
@@ -251,7 +253,8 @@ struct glProgram
           pref_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
           .Dimensions(rect).Create();
 
-        box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
+        box2d::rigid_body_def_sptr rbDef =
+          core_sptr::MakeShared<box2d::RigidBodyDef>();
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
 
@@ -271,7 +274,8 @@ struct glProgram
           .Circle(circle)
           .Create();
 
-        box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
+        box2d::rigid_body_def_sptr rbDef =
+          core_sptr::MakeShared<box2d::RigidBodyDef>();
         rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
         rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
         pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
@@ -293,7 +297,8 @@ struct glProgram
       ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
-      box2d::rigid_body_def_sptr rbDef(new box2d::RigidBodyDef());
+      box2d::rigid_body_def_sptr rbDef =
+        core_sptr::MakeShared<box2d::RigidBodyDef>();
       rbDef->SetType<box2d::p_rigid_body::StaticBody>();
       rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
       pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())

@@ -114,7 +114,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String fontContents;
   rb.GetContents(fontContents);
 
-  gfx_med::font_sptr f(new gfx_med::font_sptr::value_type());
+  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
   f->Initialize(fontContents);
 
   gfx_med::Font::Params fontParams(32);
@@ -137,13 +137,13 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
   // -----------------------------------------------------------------------

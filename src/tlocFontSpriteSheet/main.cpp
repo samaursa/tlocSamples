@@ -86,13 +86,13 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
   //------------------------------------------------------------------------

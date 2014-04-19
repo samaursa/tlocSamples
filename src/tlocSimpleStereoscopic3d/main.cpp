@@ -235,7 +235,7 @@ int TLOC_MAIN(int argc, char *argv[])
     using namespace gfx_gl;
     using namespace gfx_med;
 
-    toLeft.reset(new TextureObject() );
+    toLeft = core_sptr::MakeShared<TextureObject>();
     Image rttImg;
     rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toLeft->Initialize(rttImg);
@@ -246,11 +246,11 @@ int TLOC_MAIN(int argc, char *argv[])
     rboParam.Dimensions(halfWinDim.ConvertTo<RenderbufferObject::Params::dimension_type>());
 
     gfx_gl::render_buffer_object_sptr rbo;
-    rbo.reset(new RenderbufferObject(rboParam));
+    rbo = core_sptr::MakeShared<RenderbufferObject>(rboParam);
     rbo->Initialize();
 
     using namespace gfx_gl::p_framebuffer_object;
-    framebuffer_object_sptr fbo(new FramebufferObject());
+    framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
     fbo->Attach<target::Framebuffer,
                 attachment::ColorAttachment<0> >(*toLeft);
     fbo->Attach<target::Framebuffer,
@@ -265,7 +265,7 @@ int TLOC_MAIN(int argc, char *argv[])
      .SetClearColor(g_clearColor)
      .SetDimensions(halfWinDim.ConvertTo<Renderer::dimension_type>());
 
-    rttRenderLeft.reset(new Renderer(p));
+    rttRenderLeft = core_sptr::MakeShared<Renderer>(p);
   }
 
   {
@@ -278,7 +278,7 @@ int TLOC_MAIN(int argc, char *argv[])
       texParams.InternalFormat<p_texture_object::internal_format::DepthComponent>();
       texParams.Format<p_texture_object::format::DepthComponent>();
     }
-    toRight.reset(new TextureObject(texParams) );
+    toRight = core_sptr::MakeShared<TextureObject>(texParams);
     Image rttImg;
     rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toRight->Initialize(rttImg);
@@ -292,11 +292,11 @@ int TLOC_MAIN(int argc, char *argv[])
     rboParam.Dimensions(halfWinDim.ConvertTo<RenderbufferObject::Params::dimension_type>());
 
     gfx_gl::render_buffer_object_sptr rbo;
-    rbo.reset(new RenderbufferObject(rboParam));
+    rbo = core_sptr::MakeShared<RenderbufferObject>(rboParam);
     rbo->Initialize();
 
     using namespace gfx_gl::p_framebuffer_object;
-    framebuffer_object_sptr fbo(new FramebufferObject());
+    framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
     if (g_renderDepthToRightViewport)
     {
       fbo->Attach<target::DrawFramebuffer,
@@ -321,7 +321,7 @@ int TLOC_MAIN(int argc, char *argv[])
      .SetClearColor(g_clearColor)
      .SetDimensions(halfWinDim.ConvertTo<Renderer::dimension_type>());
 
-    rttRenderRight.reset(new Renderer(p));
+    rttRenderRight = core_sptr::MakeShared<Renderer>(p);
   }
 
   //------------------------------------------------------------------------
@@ -331,7 +331,7 @@ int TLOC_MAIN(int argc, char *argv[])
   kbParams.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_b_ptr inputMgr =
-    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
+    core_sptr::MakeShared<input::InputManagerB>(kbParams);
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular

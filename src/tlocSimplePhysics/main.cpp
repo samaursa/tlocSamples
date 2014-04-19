@@ -116,7 +116,8 @@ int TLOC_MAIN(int argc, char *argv[])
                                  &physMgr.GetWorld());
 
   // Make the above quad a rigidbody
-  phys_box2d::rigid_body_def_sptr rbDef(new phys_box2d::RigidBodyDef());
+  phys_box2d::rigid_body_def_sptr rbDef =
+    core_sptr::MakeShared<phys_box2d::RigidBodyDef>();
   rbDef->SetPosition(phys_box2d::RigidBodyDef::vec_type(0, 1.0f));
   rbDef->SetType<phys_box2d::p_rigid_body::DynamicBody>();
 

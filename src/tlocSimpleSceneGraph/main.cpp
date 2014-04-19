@@ -295,7 +295,7 @@ int TLOC_MAIN(int argc, char *argv[])
   kbParams.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_b_ptr inputMgr =
-    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
+    core_sptr::MakeShared<input::InputManagerB>(kbParams);
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID

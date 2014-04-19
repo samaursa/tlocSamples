@@ -92,7 +92,9 @@ int TLOC_MAIN(int argc, char *argv[])
   rttTo->Activate();
 
   using namespace gfx_gl::p_framebuffer_object;
-  gfx_gl::framebuffer_object_sptr fbo(new gfx_gl::FramebufferObject());
+  gfx_gl::framebuffer_object_sptr fbo =
+    core_sptr::MakeShared<gfx_gl::FramebufferObject>();
+  
   fbo->Attach<target::DrawFramebuffer,
               attachment::ColorAttachment<0> >(*rttTo);
 
@@ -103,7 +105,8 @@ int TLOC_MAIN(int argc, char *argv[])
    .AddClearBit<clear::DepthBufferBit>()
    .SetClearColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
    .SetDimensions(core_ds::MakeTuple(g_rttResX, g_rttResY));
-  gfx_rend::renderer_sptr rttRenderer(new gfx_rend::Renderer(p));
+  gfx_rend::renderer_sptr rttRenderer =
+    core_sptr::MakeShared<gfx_rend::Renderer>(p);
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
