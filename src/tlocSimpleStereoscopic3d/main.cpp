@@ -519,8 +519,9 @@ int TLOC_MAIN(int argc, char *argv[])
   frLeft.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEntLeft =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
-    Create(frLeft, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Create(frLeft);
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntLeft);
 
@@ -536,8 +537,9 @@ int TLOC_MAIN(int argc, char *argv[])
   frRight.BuildFrustum();
 
   core_cs::entity_vptr m_cameraEntRight =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
-    Create(frRight, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Create(frRight);
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEntRight);
 

@@ -106,7 +106,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required font
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/VeraMono-Bold.ttf" ).c_str() );
+    "fonts/Qlassik_TB.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
@@ -126,7 +126,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // Text render system
-  gfx_cs::text_render_system_vso textSys( MakeArgs(eventMgr.get(), entityMgr.get(), f) );
+  gfx_cs::dyn_text_render_system_vso 
+    textSys( MakeArgs(eventMgr.get(), entityMgr.get(), f) );
   textSys->SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
@@ -145,6 +146,22 @@ int TLOC_MAIN(int argc, char *argv[])
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
+
+  core_str::String vsSource, fsSource;
+
+  {
+    core_io::Path vsPath( (GetAssetsPath() + shaderPathVS) );
+    core_io::FileIO_ReadA f(vsPath);
+    f.Open();
+    f.GetContents(vsSource);
+  }
+
+  {
+    core_io::Path fsPath ( (GetAssetsPath() + shaderPathFS) );
+    core_io::FileIO_ReadA f(fsPath);
+    f.Open();
+    f.GetContents(fsSource);
+  }
 
   // -----------------------------------------------------------------------
   // A thin rectangle signifying the baseline
@@ -198,28 +215,20 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::entity_vptr dText = 
     pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
     .Alignment(gfx_cs::alignment::k_align_right)
-    .Create(L"00");
+    .Create(L"High Score");
 
-  textSys->SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
-                      core_io::Path(GetAssetsPath() + shaderPathFS));
+  textSys->SetShaders(vsSource, fsSource);
 
   // -----------------------------------------------------------------------
   // create a camera
 
-  tl_float winWidth = (tl_float) win.GetWidth();
-  tl_float winHeight = (tl_float) win.GetHeight();
-
-  math_t::Rectf_c fRect =
-    math_t::Rectf_c(math_t::Rectf_c::width(winWidth), 
-                    math_t::Rectf_c::height(winHeight));
-
-  math_proj::frustum_ortho_f32 fr =
-    math_proj::FrustumOrtho(fRect, 0.1f, 100.0f);
-  fr.BuildFrustum();
-
   core_cs::entity_vptr camEnt = 
     pref_gfx::Camera(entityMgr.get(), compMgr.get())
-    .Create(fr, math_t::Vec3f(0, 0, 1.0f)); 
+    .Near(0.1f)
+    .Far(100.0f)
+    .Position(math_t::Vec3f(0, 0, 1.0f))
+    .Perspective(false)
+    .Create(win.GetDimensions()); 
 
   quadSys.SetCamera(camEnt);
   textSys->SetCamera(camEnt);
@@ -245,36 +254,36 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_time::Timer t, tAlign;
   
-  tl_int counter = 0;
+  //tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
-    if (t.ElapsedSeconds() > 0.01f)
-    {
-      counter++;
+    //if (t.ElapsedSeconds() > 0.01f)
+    //{
+    //  counter++;
 
-      core_str::String numStr = core_str::Format("%i", counter);
-      core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
+    //  core_str::String numStr = core_str::Format("%i", counter);
+    //  core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
 
-      dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
-      t.Reset();
-    }
-    
-    if (tAlign.ElapsedSeconds() > 1.0f)
-    {
-      gfx_cs::dynamic_text_sptr dt = 
-        dText->GetComponent<gfx_cs::DynamicText>(); 
+    //  dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
+    //  t.Reset();
+    //}
+    //
+    //if (tAlign.ElapsedSeconds() > 1.0f)
+    //{
+    //  gfx_cs::dynamic_text_sptr dt = 
+    //    dText->GetComponent<gfx_cs::DynamicText>(); 
 
-      if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
-      { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
-      else 
-      { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
+    //  if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
+    //  { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
+    //  else 
+    //  { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
 
-      tAlign.Reset();
-    }
+    //  tAlign.Reset();
+    //}
 
     renderer->ApplyRenderSettings();
     camSys.ProcessActiveEntities();

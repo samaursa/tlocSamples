@@ -146,6 +146,22 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
+  core_str::String vsSource, fsSource;
+
+  {
+    core_io::Path vsPath( (GetAssetsPath() + shaderPathVS) );
+    core_io::FileIO_ReadA f(vsPath);
+    f.Open();
+    f.GetContents(vsSource);
+  }
+
+  {
+    core_io::Path fsPath ( (GetAssetsPath() + shaderPathFS) );
+    core_io::FileIO_ReadA f(fsPath);
+    f.Open();
+    f.GetContents(fsSource);
+  }
+
   // -----------------------------------------------------------------------
   // A thin rectangle signifying the baseline
 
@@ -239,26 +255,18 @@ int TLOC_MAIN(int argc, char *argv[])
     ->GetComponent<math_cs::Transformf32>()
     ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
 
-  textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
-                     core_io::Path(GetAssetsPath() + shaderPathFS));
+  textSys.SetShaders(vsSource, fsSource);
 
   // -----------------------------------------------------------------------
   // create a camera
 
-  tl_float winWidth = (tl_float) win.GetWidth();
-  tl_float winHeight = (tl_float) win.GetHeight();
-
-  math_t::Rectf_c fRect =
-    math_t::Rectf_c(math_t::Rectf_c::width(winWidth), 
-                    math_t::Rectf_c::height(winHeight));
-
-  math_proj::frustum_ortho_f32 fr =
-    math_proj::FrustumOrtho(fRect, 0.1f, 100.0f);
-  fr.BuildFrustum();
-
   core_cs::entity_vptr camEnt = 
     pref_gfx::Camera(entityMgr.get(), compMgr.get())
-    .Create(fr, math_t::Vec3f(0, 0, 1.0f)); 
+    .Near(0.1f)
+    .Far(100.0f)
+    .Perspective(false)
+    .Position(math_t::Vec3f(0, 0, 1.0f))
+    .Create(win.GetDimensions()); 
 
   quadSys.SetCamera(camEnt);
   textSys.SetCamera(camEnt);

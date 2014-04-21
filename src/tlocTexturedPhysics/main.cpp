@@ -311,27 +311,21 @@ struct glProgram
         m_entityMgr->InsertComponent(fanEnt, henryMat);
     }
 
-    tl_float winWidth = (tl_float)m_win.GetWidth();
-    tl_float winHeight = (tl_float)m_win.GetHeight();
-
-    // For some reason, if we remove the brackets, C++ assumes the following is
-    // a function declaration. Generally, something like math_t::Rectf proj();
-    // might be considered a function declaration but not when we give
-    // arguments
-    //
-    // TODO: Look into this problem and find a way to remove the extra
-    // brackets.
-    math_t::Rectf_c fRect( math_t::Rectf_c::width(winWidth / 10.0f),
-                           math_t::Rectf_c::height(winHeight / 10.0f) );
-
-    m_ortho = math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
-    m_ortho.BuildFrustum();
+    // -----------------------------------------------------------------------
+    // Create the camera from the prefab library
 
     m_cameraEnt = pref_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
-      .Create(m_ortho, math_t::Vec3f(0, 0, 1.0f));
+      .Near(0.1f)
+      .Far(10.0f)
+      .Perspective(false)
+      .Position(math_t::Vec3f(0, 0, 1.0f))
+      .Create(core_ds::Divide(10u, m_win.GetDimensions()) );
 
     quadSys.SetCamera(m_cameraEnt);
     fanSys.SetCamera(m_cameraEnt);
+
+    // -----------------------------------------------------------------------
+    // Initialize all the system
 
     camSys.Initialize();
 
