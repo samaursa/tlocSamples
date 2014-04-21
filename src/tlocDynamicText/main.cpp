@@ -106,7 +106,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required font
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/Qlassik_TB.ttf" ).c_str() );
+    "fonts/HelveticaNeue-Light.otf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
@@ -254,36 +254,36 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_time::Timer t, tAlign;
   
-  //tl_int counter = 0;
+  tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
-    //if (t.ElapsedSeconds() > 0.01f)
-    //{
-    //  counter++;
+    if (t.ElapsedSeconds() > 0.01f)
+    {
+      counter++;
 
-    //  core_str::String numStr = core_str::Format("%i", counter);
-    //  core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
+      core_str::String numStr = core_str::Format("%i", counter);
+      core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
 
-    //  dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
-    //  t.Reset();
-    //}
-    //
-    //if (tAlign.ElapsedSeconds() > 1.0f)
-    //{
-    //  gfx_cs::dynamic_text_sptr dt = 
-    //    dText->GetComponent<gfx_cs::DynamicText>(); 
+      dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
+      t.Reset();
+    }
+    
+    if (tAlign.ElapsedSeconds() > 1.0f)
+    {
+      gfx_cs::dynamic_text_sptr dt = 
+        dText->GetComponent<gfx_cs::DynamicText>(); 
 
-    //  if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
-    //  { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
-    //  else 
-    //  { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
+      if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
+      { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
+      else 
+      { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
 
-    //  tAlign.Reset();
-    //}
+      tAlign.Reset();
+    }
 
     renderer->ApplyRenderSettings();
     camSys.ProcessActiveEntities();
