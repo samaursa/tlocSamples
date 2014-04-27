@@ -102,31 +102,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // Camera system
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
 
-  //------------------------------------------------------------------------
-  // Load the required font
-
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/Qlassik_TB.ttf" ).c_str() );
-
-  core_io::FileIO_ReadB rb(fontPath);
-  rb.Open();
-
-  core_str::String fontContents;
-  rb.GetContents(fontContents);
-
-  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
-  f->Initialize(fontContents);
-
-  gfx_med::Font::Params fontParams(32);
-  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(0, 0));
-
-  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
-
   // -----------------------------------------------------------------------
   // Static text render system
-  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get(), f);
+  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get());
   textSys.SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
@@ -209,53 +187,122 @@ int TLOC_MAIN(int argc, char *argv[])
     }
 
   //------------------------------------------------------------------------
+  // Load the required font
+
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+    "fonts/Qlassik_TB.ttf" ).c_str() );
+
+  core_io::FileIO_ReadB rb(fontPath);
+  rb.Open();
+
+  core_str::String fontContents;
+  rb.GetContents(fontContents);
+
+  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
+  f->Initialize(fontContents);
+
+  gfx_med::Font::Params fontParams(32);
+  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingDim(core_ds::MakeTuple(2, 2));
+
+  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+
+  // -----------------------------------------------------------------------
+  // material will require the correct texture object
+
+  gfx_gl::texture_object_vso to;
+  to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
+  to->Activate();
+
+  gfx_gl::uniform_vso u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
+
+  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"The quick brown fox jumps over the lazy dog. 1234567890");
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+      .Alignment(gfx_cs::alignment::k_align_center)
+      .Create(L"The quick brown fox jumps over the lazy dog. 1234567890", f);
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
   core_cs::entity_vptr textNodeAlignLeft =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Left");
+    .Create(L"Align Left", f);
   textNodeAlignLeft->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 90.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignLeft, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignCenter =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Center");
+    .Create(L"Align Center", f);
   textNodeAlignCenter->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 60.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignCenter, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignRight =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Right");
+    .Create(L"Align Right", f);
   textNodeAlignRight->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 30.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignRight, vsSource, fsSource);
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"SkopWorks Inc.")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"SkopWorks Inc.", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"");
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"", f);
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"A")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"A", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"Z!")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
-
-  textSys.SetShaders(vsSource, fsSource);
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"Z!", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
   // -----------------------------------------------------------------------
   // create a camera

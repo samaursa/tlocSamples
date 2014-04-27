@@ -118,7 +118,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::Font::Params fontParams(50);
   fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.1f))
             .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.2f))
-            .PaddingDim(core_ds::MakeTuple(1, 1));
+            .PaddingDim(core_ds::MakeTuple(3, 3));
 
   gfx_med::image_sptr charImg =
     f.GenerateGlyphCache

@@ -102,32 +102,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // Camera system
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
 
-  //------------------------------------------------------------------------
-  // Load the required font
-
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/HelveticaNeue-Light.otf" ).c_str() );
-
-  core_io::FileIO_ReadB rb(fontPath);
-  rb.Open();
-
-  core_str::String fontContents;
-  rb.GetContents(fontContents);
-
-  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
-  f->Initialize(fontContents);
-
-  gfx_med::Font::Params fontParams(32);
-  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(0, 0));
-
-  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
-
   // -----------------------------------------------------------------------
   // Text render system
   gfx_cs::dyn_text_render_system_vso 
-    textSys( MakeArgs(eventMgr.get(), entityMgr.get(), f) );
+    textSys( MakeArgs(eventMgr.get(), entityMgr.get()) );
   textSys->SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
@@ -210,14 +188,47 @@ int TLOC_MAIN(int argc, char *argv[])
   }
 
   //------------------------------------------------------------------------
+  // Load the required font
+
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+    "fonts/HelveticaNeue-Light.otf" ).c_str() );
+
+  core_io::FileIO_ReadB rb(fontPath);
+  rb.Open();
+
+  core_str::String fontContents;
+  rb.GetContents(fontContents);
+
+  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
+  f->Initialize(fontContents);
+
+  gfx_med::Font::Params fontParams(32);
+  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingDim(core_ds::MakeTuple(2, 2));
+
+  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+
+  // -----------------------------------------------------------------------
+  // material will require the correct texture object
+
+  gfx_gl::texture_object_vso to;
+  to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
+  to->Activate();
+
+  gfx_gl::uniform_vso u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
+
+  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
   core_cs::entity_vptr dText = 
     pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
     .Alignment(gfx_cs::alignment::k_align_right)
-    .Create(L"High Score");
-
-  textSys->SetShaders(vsSource, fsSource);
+    .Create(L"High Score", f);
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(dText, vsSource, fsSource);
 
   // -----------------------------------------------------------------------
   // create a camera
