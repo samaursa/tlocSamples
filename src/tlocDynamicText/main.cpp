@@ -202,10 +202,14 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
   f->Initialize(fontContents);
 
-  gfx_med::Font::Params fontParams(32);
+  using gfx_med::FontSize;
+  FontSize fSize(FontSize::em(18),
+                 FontSize::dpi(win.GetDPI()) );
+
+  gfx_med::Font::Params fontParams(fSize);
   fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(2, 2));
+            .PaddingDim(core_ds::MakeTuple(10, 10));
 
   f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 

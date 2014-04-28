@@ -115,7 +115,10 @@ int TLOC_MAIN(int argc, char *argv[])
                               L"1234567890!@#$%^&*()_+-=[]" 
                               L"{}\\|;:'\",<.>/?`~";
 
-  gfx_med::Font::Params fontParams(50);
+  using gfx_med::FontSize;
+  FontSize fSize(FontSize::pixels(50));
+
+  gfx_med::Font::Params fontParams(fSize);
   fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.1f))
             .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.2f))
             .PaddingDim(core_ds::MakeTuple(3, 3));
