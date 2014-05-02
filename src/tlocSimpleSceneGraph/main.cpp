@@ -447,6 +447,9 @@ int TLOC_MAIN(int argc, char *argv[])
   using namespace anim_t::p_keyframe;
   {
     transform.SetPosition(math_t::Vec3f32(0, 0, 0));
+    math_t::Mat3f32 mat;
+    mat.MakeRotationZ(3.142f * 0.75f);
+    transform.SetOrientation(mat);
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 0,
       anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
@@ -454,6 +457,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     transform.SetPosition(math_t::Vec3f32(10.0f, 0, 0));
+    math_t::Mat3f32 mat;
+    //mat.MakeEulerZYX(180, 0, 0);
+    mat.MakeRotationZ(3.142f * 0.75f);
+    transform.SetOrientation(mat);
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 4,
       anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);
@@ -461,6 +468,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     transform.SetPosition(math_t::Vec3f32(0.0f, 0, 0));
+    math_t::Mat3f32 mat;
+    mat.MakeRotationZ(3.142f * 0.75f);
+    transform.SetOrientation(mat);
     anim_t::keyframe_mat4f32 kf(transform.GetTransformation(), 24 * 8,
       anim_t::keyframe_mat4f32::interpolation_type(k_linear));
     KFs.AddKeyframe(kf);

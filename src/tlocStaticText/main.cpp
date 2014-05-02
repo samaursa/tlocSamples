@@ -149,6 +149,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     {
       gfx_gl::texture_object_vso to;
+
       to->Initialize(redPng);
       to->Activate();
 
@@ -203,14 +204,14 @@ int TLOC_MAIN(int argc, char *argv[])
   f->Initialize(fontContents);
 
   using gfx_med::FontSize;
-  FontSize fSize(FontSize::em(18),
+  FontSize fSize(FontSize::em(12),
                  FontSize::dpi(win.GetDPI()) );
 
   gfx_med::Font::Params fontParams(fSize);
   fontParams.FontColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
             .BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(2, 2));
+            .PaddingDim(core_ds::MakeTuple(1, 1));
 
   f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 
@@ -218,6 +219,14 @@ int TLOC_MAIN(int argc, char *argv[])
   // material will require the correct texture object
 
   gfx_gl::texture_object_vso to;
+
+  // without specifying the nearest filter, the font will appear blurred in 
+  // some cases (especially on smaller sizes)
+  gfx_gl::TextureObject::Params toParams;
+  toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  to->SetParams(toParams);
+
   to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
   to->Activate();
 

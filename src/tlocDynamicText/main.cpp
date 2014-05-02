@@ -217,6 +217,14 @@ int TLOC_MAIN(int argc, char *argv[])
   // material will require the correct texture object
 
   gfx_gl::texture_object_vso to;
+
+  // without specifying the nearest filter, the font will appear blurred in 
+  // some cases (especially on smaller sizes)
+  gfx_gl::TextureObject::Params toParams;
+  toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  to->SetParams(toParams);
+
   to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
   to->Activate();
 
