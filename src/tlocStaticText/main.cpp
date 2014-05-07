@@ -336,21 +336,21 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  TLOC_LOG_CORE_DEBUG() << "Initializing Quad Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Quad Render System"; 
   quadSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Material System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Material System"; 
   matSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Text Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Text Render System"; 
   textSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing SceneGraph System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing SceneGraph System"; 
   sgSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Camera System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Camera System"; 
   camSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
 
-  TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
+  TLOC_LOG_CORE_INFO() << "Setup complete... running main loop";
 
   core_time::Timer timer;
 

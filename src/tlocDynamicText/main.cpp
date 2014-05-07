@@ -242,6 +242,10 @@ int TLOC_MAIN(int argc, char *argv[])
     .AddUniform(u_to.get())
     .Add(dText, vsSource, fsSource);
 
+  // test to see if deactivation works - we should never see the "High Score" 
+  // text being displayed
+  gfx_cs::SceneGraphSystem::DeactivateHierarchy(dText);
+
   // -----------------------------------------------------------------------
   // create a camera
 
@@ -259,23 +263,25 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  TLOC_LOG_CORE_DEBUG() << "Initializing Quad Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Quad Render System"; 
   quadSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Material System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Material System"; 
   matSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Text Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Text Render System"; 
   textSys->Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing SceneGraph System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing SceneGraph System"; 
   sgSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Camera System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Camera System"; 
   camSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
 
-  TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
+  TLOC_LOG_CORE_INFO() << "Setup complete... running main loop";
+  TLOC_LOG_CORE_INFO() << "Text starts disabled (for testing) "
+                       << "- re-enabled after 1s";
 
-  core_time::Timer t, tAlign;
+  core_time::Timer t, tStartTime, tAlign;
   
   tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
@@ -284,8 +290,15 @@ int TLOC_MAIN(int argc, char *argv[])
     while (win.GetEvent(evt))
     { }
 
-    if (t.ElapsedSeconds() > 0.01f)
+    if (tStartTime.ElapsedSeconds() > 1.0f && t.ElapsedSeconds() > 0.01f)
     {
+      if (dText->IsActive() == false)
+      { 
+        gfx_cs::SceneGraphSystem::ActivateHierarchy(dText);
+        textSys->ProcessActiveEntities(); // force a refresh of the system to
+                                          // void High Score from showing
+      }
+
       counter++;
 
       core_str::String numStr = core_str::Format("%i", counter);
