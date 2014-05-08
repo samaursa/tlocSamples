@@ -134,7 +134,7 @@ int TLOC_MAIN(int argc, char *argv[])
   kbParams.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_b_ptr inputMgr =
-    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
+    core_sptr::MakeShared<input::InputManagerB>(kbParams);
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
@@ -182,13 +182,13 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
 
   // -----------------------------------------------------------------------
@@ -252,7 +252,10 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::font_vso f;
   f->Initialize(fontContents);
 
-  gfx_med::Font::Params fontParams(50);
+  using gfx_med::FontSize;
+  FontSize fSize(FontSize::pixels(50));
+
+  gfx_med::Font::Params fontParams(fSize);
   fontParams.BgColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.7f))
             .PaddingColor(gfx_t::Color(0.0f, 0.5f, 0.0f, 0.7f))
             .PaddingDim(core_ds::MakeTuple(1, 1));

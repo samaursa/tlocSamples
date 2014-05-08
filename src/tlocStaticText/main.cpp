@@ -62,6 +62,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_rend::Renderer::Params p(renderer->GetParams());
   p.Enable<enable_disable::Blend>()
+   .SetClearColor(gfx_t::Color::COLOR_WHITE)
    .AddClearBit<clear::ColorBufferBit>()
    .SetBlendFunction<blend_function::SourceAlpha,
                      blend_function::OneMinusSourceAlpha>();
@@ -102,31 +103,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // Camera system
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
 
-  //------------------------------------------------------------------------
-  // Load the required font
-
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/Qlassik_TB.ttf" ).c_str() );
-
-  core_io::FileIO_ReadB rb(fontPath);
-  rb.Open();
-
-  core_str::String fontContents;
-  rb.GetContents(fontContents);
-
-  gfx_med::font_sptr f(new gfx_med::font_sptr::value_type());
-  f->Initialize(fontContents);
-
-  gfx_med::Font::Params fontParams(32);
-  fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(0, 0));
-
-  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
-
   // -----------------------------------------------------------------------
   // Static text render system
-  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get(), f);
+  gfx_cs::StaticTextRenderSystem textSys(eventMgr.get(), entityMgr.get());
   textSys.SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).
@@ -137,14 +116,30 @@ int TLOC_MAIN(int argc, char *argv[])
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
+
+  core_str::String vsSource, fsSource;
+
+  {
+    core_io::Path vsPath( (GetAssetsPath() + shaderPathVS) );
+    core_io::FileIO_ReadA f(vsPath);
+    f.Open();
+    f.GetContents(vsSource);
+  }
+
+  {
+    core_io::Path fsPath ( (GetAssetsPath() + shaderPathFS) );
+    core_io::FileIO_ReadA f(fsPath);
+    f.Open();
+    f.GetContents(fsSource);
+  }
 
   // -----------------------------------------------------------------------
   // A thin rectangle signifying the baseline
@@ -154,6 +149,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     {
       gfx_gl::texture_object_vso to;
+
       to->Initialize(redPng);
       to->Activate();
 
@@ -193,72 +189,146 @@ int TLOC_MAIN(int argc, char *argv[])
     }
 
   //------------------------------------------------------------------------
+  // Load the required font
+
+  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+    "fonts/Qlassik_TB.ttf" ).c_str() );
+
+  core_io::FileIO_ReadB rb(fontPath);
+  rb.Open();
+
+  core_str::String fontContents;
+  rb.GetContents(fontContents);
+
+  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
+  f->Initialize(fontContents);
+
+  using gfx_med::FontSize;
+  FontSize fSize(FontSize::em(12),
+                 FontSize::dpi(win.GetDPI()) );
+
+  gfx_med::Font::Params fontParams(fSize);
+  fontParams.FontColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
+            .BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+            .PaddingDim(core_ds::MakeTuple(1, 1));
+
+  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+
+  // -----------------------------------------------------------------------
+  // material will require the correct texture object
+
+  gfx_gl::texture_object_vso to;
+
+  // without specifying the nearest filter, the font will appear blurred in 
+  // some cases (especially on smaller sizes)
+  gfx_gl::TextureObject::Params toParams;
+  toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
+  to->SetParams(toParams);
+
+  to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
+  to->Activate();
+
+  gfx_gl::uniform_vso u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
+
+  //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"The quick brown fox jumps over the lazy dog. 1234567890");
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+      .Alignment(gfx_cs::alignment::k_align_center)
+      .Create(L"The quick brown fox jumps over the lazy dog. 1234567890", f);
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
   core_cs::entity_vptr textNodeAlignLeft =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Left");
+    .Create(L"Align Left", f);
   textNodeAlignLeft->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 90.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignLeft, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignCenter =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Center");
+    .Create(L"Align Center", f);
   textNodeAlignCenter->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 60.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignCenter, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignRight =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Right");
+    .Create(L"Align Right", f);
   textNodeAlignRight->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 30.0f, 0));
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(textNodeAlignRight, vsSource, fsSource);
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"SkopWorks Inc.")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"SkopWorks Inc.", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"");
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"", f);
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"A")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"A", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
-  pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Alignment(gfx_cs::alignment::k_align_center)
-    .Create(L"Z!")
-    ->GetComponent<math_cs::Transformf32>()
-    ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
-
-  textSys.SetShaders(core_io::Path(GetAssetsPath() + shaderPathVS),
-                     core_io::Path(GetAssetsPath() + shaderPathFS));
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .Create(L"Z!", f);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_to.get())
+      .Add(ent, vsSource, fsSource);
+  }
 
   // -----------------------------------------------------------------------
   // create a camera
 
-  tl_float winWidth = (tl_float) win.GetWidth();
-  tl_float winHeight = (tl_float) win.GetHeight();
-
-  math_t::Rectf_c fRect =
-    math_t::Rectf_c(math_t::Rectf_c::width(winWidth), 
-                    math_t::Rectf_c::height(winHeight));
-
-  math_proj::frustum_ortho_f32 fr =
-    math_proj::FrustumOrtho(fRect, 0.1f, 100.0f);
-  fr.BuildFrustum();
-
   core_cs::entity_vptr camEnt = 
     pref_gfx::Camera(entityMgr.get(), compMgr.get())
-    .Create(fr, math_t::Vec3f(0, 0, 1.0f)); 
+    .Near(0.1f)
+    .Far(100.0f)
+    .Perspective(false)
+    .Position(math_t::Vec3f(0, 0, 1.0f))
+    .Create(win.GetDimensions()); 
 
   quadSys.SetCamera(camEnt);
   textSys.SetCamera(camEnt);
@@ -266,21 +336,21 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  TLOC_LOG_CORE_DEBUG() << "Initializing Quad Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Quad Render System"; 
   quadSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Material System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Material System"; 
   matSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Text Render System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Text Render System"; 
   textSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing SceneGraph System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing SceneGraph System"; 
   sgSys.Initialize();
-  TLOC_LOG_CORE_DEBUG() << "Initializing Camera System"; 
+  TLOC_LOG_CORE_INFO() << "Initializing Camera System"; 
   camSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
 
-  TLOC_LOG_CORE_DEBUG() << "Setup complete... running main loop";
+  TLOC_LOG_CORE_INFO() << "Setup complete... running main loop";
 
   core_time::Timer timer;
 

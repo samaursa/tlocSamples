@@ -74,8 +74,8 @@ struct glProgram
 
     ParamList<core_t::Any> params;
     params.m_param1 = m_win.GetWindowHandle();
-    m_inputMgr = input::input_mgr_b_ptr(new input::InputManagerB(params));
-    m_inputMgrImm = input::input_mgr_i_ptr(new input::InputManagerI(params));
+    m_inputMgr = core_sptr::MakeShared<input::InputManagerB>(params);
+    m_inputMgrImm = core_sptr::MakeShared<input::InputManagerI>(params);
 
     m_keyboard = m_inputMgr->CreateHID<input::hid::KeyboardB>();
     m_keyboard->Register(this);
@@ -290,11 +290,11 @@ struct glProgram
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
 
-    m_henryMat.reset(new gfx_cs::Material());
-    m_crateMat.reset(new gfx_cs::Material());
+    m_henryMat = core_sptr::MakeShared<gfx_cs::Material>();
+    m_crateMat = core_sptr::MakeShared<gfx_cs::Material>();
 
-    m_texObjHenry.reset(new gfx_gl::TextureObject());
-    m_texObjCrate.reset(new gfx_gl::TextureObject());
+    m_texObjHenry = core_sptr::MakeShared<gfx_gl::TextureObject>();
+    m_texObjCrate = core_sptr::MakeShared<gfx_gl::TextureObject>();
 
     AddShaders(core_sptr::ToVirtualPtr(m_henryMat));
     AddShaders(core_sptr::ToVirtualPtr(m_crateMat));
@@ -379,22 +379,17 @@ struct glProgram
       m_entityMgr->InsertComponent(m_mouseFan, m_crateMat);
     }
 
-    tl_float winWidth = (tl_float)m_win.GetWidth();
-    tl_float winHeight = (tl_float)m_win.GetHeight();
-
-    math_t::Rectf_c fRect = 
-      math_t::Rectf_c( math_t::Rectf_c::width(winWidth / 10.0f),
-                       math_t::Rectf_c::height(winHeight / 10.0f) );
-
-    math_proj::frustum_ortho_f32 fr =
-      math_proj::FrustumOrtho (fRect, 0.1f, 100.0f);
-    fr.BuildFrustum();
-
+    // randomize camera position to ensure it's taken into account when 
+    // performing ray intersections
     tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
     tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
 
     m_cameraEnt = pref_gfx::Camera(m_entityMgr.get(), m_compPoolMgr.get())
-      .Create(fr, math_t::Vec3f(posX, posY, 1.0f));
+      .Near(0.1f)
+      .Far(100.0f)
+      .Perspective(false)
+      .Position(math_t::Vec3f(posX, posY, 1.0f))
+      .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
     quadSys.SetCamera(m_cameraEnt);
     fanSys.SetCamera(m_cameraEnt);

@@ -294,7 +294,7 @@ int TLOC_MAIN(int argc, char *argv[])
   kbParams.m_param1 = win.GetWindowHandle();
 
   input::input_mgr_b_ptr inputMgr =
-    input::input_mgr_b_ptr(new input::InputManagerB(kbParams));
+    core_sptr::MakeShared<input::InputManagerB>(kbParams);
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
@@ -405,19 +405,13 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
-  math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)win.GetWidth()),
-    math_t::AspectRatio::height( (tl_float)win.GetHeight()) );
-  math_t::FOV fov(math_t::Degree(60.0f), ar, math_t::p_FOV::vertical());
-
-  math_proj::FrustumPersp::Params params(fov);
-  params.SetFar(100.0f).SetNear(1.0f);
-
-  math_proj::FrustumPersp fr(params);
-  fr.BuildFrustum();
-
   core_cs::entity_vptr m_cameraEnt =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get()).
-    Create(fr, math_t::Vec3f(0.0f, 0.0f, 5.0f));
+    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    .Near(1.0f)
+    .Far(100.0f)
+    .VerticalFOV(math_t::Degree(60.0f))
+    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Create(win.GetDimensions());
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
 
