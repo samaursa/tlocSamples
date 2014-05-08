@@ -278,8 +278,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // Main loop
 
   TLOC_LOG_CORE_INFO() << "Setup complete... running main loop";
-  TLOC_LOG_CORE_INFO() << "Text starts disabled (for testing) "
-                       << "- re-enabled after 1s";
+  TLOC_LOG_CORE_DEBUG() << "Text starts disabled (for testing) "
+                        << "- re-enabled after 1 second";
 
   core_time::Timer t, tStartTime, tAlign;
   
