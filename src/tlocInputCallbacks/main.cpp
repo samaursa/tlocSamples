@@ -299,7 +299,7 @@ int TLOC_MAIN(int, char**)
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally\n");
+  TLOC_LOG_CORE_INFO() << "Existing normally from sample";
 
   return 0;
 }

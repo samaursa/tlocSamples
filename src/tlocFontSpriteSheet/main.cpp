@@ -178,7 +178,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Exiting
-  printf("\nExiting normally\n");
+  TLOC_LOG_CORE_INFO() << "Existing normally from sample";
 
   return 0;
 }
