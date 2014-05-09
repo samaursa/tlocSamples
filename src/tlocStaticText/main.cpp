@@ -191,47 +191,92 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Load the required font
 
-  core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/Qlassik_TB.ttf" ).c_str() );
+  gfx_med::font_sptr font1 = core_sptr::MakeShared<gfx_med::Font>();
+  {
+    core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+      "fonts/Qlassik_TB.ttf" ).c_str() );
 
-  core_io::FileIO_ReadB rb(fontPath);
-  rb.Open();
+    core_io::FileIO_ReadB rb(fontPath);
+    rb.Open();
 
-  core_str::String fontContents;
-  rb.GetContents(fontContents);
+    core_str::String fontContents;
+    rb.GetContents(fontContents);
 
-  gfx_med::font_sptr f = core_sptr::MakeShared<gfx_med::Font>();
-  f->Initialize(fontContents);
+    font1->Initialize(fontContents);
 
-  using gfx_med::FontSize;
-  FontSize fSize(FontSize::em(12),
-                 FontSize::dpi(win.GetDPI()) );
+    using gfx_med::FontSize;
+    FontSize fSize(FontSize::em(12),
+                   FontSize::dpi(win.GetDPI()) );
 
-  gfx_med::Font::Params fontParams(fSize);
-  fontParams.FontColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
-            .BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(1, 1));
+    gfx_med::Font::Params fontParams(fSize);
+    fontParams.FontColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
+              .BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+              .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+              .PaddingDim(core_ds::MakeTuple(1, 1));
 
-  f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+    font1->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+  }
+
+  gfx_med::font_sptr font2 = core_sptr::MakeShared<gfx_med::Font>();
+  {
+    core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
+      "fonts/VeraMono-Bold.ttf" ).c_str() );
+
+    core_io::FileIO_ReadB rb(fontPath);
+    rb.Open();
+
+    core_str::String fontContents;
+    rb.GetContents(fontContents);
+
+    font2->Initialize(fontContents);
+
+    using gfx_med::FontSize;
+    FontSize fSize(FontSize::em(12),
+                   FontSize::dpi(win.GetDPI()) );
+
+    gfx_med::Font::Params fontParams(fSize);
+    fontParams.FontColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
+              .BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+              .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
+              .PaddingDim(core_ds::MakeTuple(1, 1));
+
+    font2->GenerateGlyphCache(g_symbols.c_str(), fontParams);
+  }
 
   // -----------------------------------------------------------------------
   // material will require the correct texture object
 
-  gfx_gl::texture_object_vso to;
+  gfx_gl::texture_object_vso toFont1;
+  {
+    // without specifying the nearest filter, the font will appear blurred in 
+    // some cases (especially on smaller sizes)
+    gfx_gl::TextureObject::Params toParams;
+    toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+    toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
+    toFont1->SetParams(toParams);
 
-  // without specifying the nearest filter, the font will appear blurred in 
-  // some cases (especially on smaller sizes)
-  gfx_gl::TextureObject::Params toParams;
-  toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
-  toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
-  to->SetParams(toParams);
+    toFont1->Initialize(*font1->GetSpriteSheetPtr()->GetSpriteSheet());
+    toFont1->Activate();
+  }
 
-  to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
-  to->Activate();
+  gfx_gl::uniform_vso u_toFont1;
+  u_toFont1->SetName("s_texture").SetValueAs(*toFont1);
 
-  gfx_gl::uniform_vso u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
+  gfx_gl::texture_object_vso toFont2;
+  {
+    // without specifying the nearest filter, the font will appear blurred in 
+    // some cases (especially on smaller sizes)
+    gfx_gl::TextureObject::Params toParams;
+    toParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+    toParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
+    toFont2->SetParams(toParams);
+
+    toFont2->Initialize(*font2->GetSpriteSheetPtr()->GetSpriteSheet());
+    toFont2->Activate();
+  }
+
+  gfx_gl::uniform_vso u_toFont2;
+  u_toFont2->SetName("s_texture").SetValueAs(*toFont2);
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
@@ -240,48 +285,48 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
       .Alignment(gfx_cs::alignment::k_align_center)
-      .Create(L"The quick brown fox jumps over the lazy dog. 1234567890", f);
+      .Create(L"The quick brown fox jumps over the lazy dog. 1234567890", font1);
     pref_gfx::Material(entityMgr.get(), compMgr.get())
-      .AddUniform(u_to.get())
+      .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);
   }
 
   core_cs::entity_vptr textNodeAlignLeft =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Left", f);
+    .Create(L"Align Left", font1);
   textNodeAlignLeft->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 90.0f, 0));
   pref_gfx::Material(entityMgr.get(), compMgr.get())
-    .AddUniform(u_to.get())
+    .AddUniform(u_toFont1.get())
     .Add(textNodeAlignLeft, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignCenter =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Center", f);
+    .Create(L"Align Center", font1);
   textNodeAlignCenter->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 60.0f, 0));
   pref_gfx::Material(entityMgr.get(), compMgr.get())
-    .AddUniform(u_to.get())
+    .AddUniform(u_toFont1.get())
     .Add(textNodeAlignCenter, vsSource, fsSource);
 
   core_cs::entity_vptr textNodeAlignRight =
     pref_gfx::StaticText(entityMgr.get(), compMgr.get())
-    .Create(L"Align Right", f);
+    .Create(L"Align Right", font1);
   textNodeAlignRight->GetComponent<math_cs::Transformf32>()->
     SetPosition(math_t::Vec3f32(0.0f, 30.0f, 0));
   pref_gfx::Material(entityMgr.get(), compMgr.get())
-    .AddUniform(u_to.get())
+    .AddUniform(u_toFont1.get())
     .Add(textNodeAlignRight, vsSource, fsSource);
 
   {
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
         .Alignment(gfx_cs::alignment::k_align_center)
-        .Create(L"SkopWorks Inc.", f);
+        .Create(L"SkopWorks Inc.", font2);
     ent->GetComponent<math_cs::Transformf32>()
        ->SetPosition(math_t::Vec3f32(0.0f, -30.0f, 0));
     pref_gfx::Material(entityMgr.get(), compMgr.get())
-      .AddUniform(u_to.get())
+      .AddUniform(u_toFont2.get())
       .Add(ent, vsSource, fsSource);
   }
 
@@ -289,9 +334,9 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
         .Alignment(gfx_cs::alignment::k_align_center)
-        .Create(L"", f);
+        .Create(L"", font1);
     pref_gfx::Material(entityMgr.get(), compMgr.get())
-      .AddUniform(u_to.get())
+      .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);
   }
 
@@ -299,11 +344,11 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
         .Alignment(gfx_cs::alignment::k_align_center)
-        .Create(L"A", f);
+        .Create(L"A", font1);
     ent->GetComponent<math_cs::Transformf32>()
        ->SetPosition(math_t::Vec3f32(0.0f, -60.0f, 0));
     pref_gfx::Material(entityMgr.get(), compMgr.get())
-      .AddUniform(u_to.get())
+      .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);
   }
 
@@ -311,11 +356,11 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
         .Alignment(gfx_cs::alignment::k_align_center)
-        .Create(L"Z!", f);
+        .Create(L"Z!", font1);
     ent->GetComponent<math_cs::Transformf32>()
        ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
     pref_gfx::Material(entityMgr.get(), compMgr.get())
-      .AddUniform(u_to.get())
+      .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);
   }
 
