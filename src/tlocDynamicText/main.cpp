@@ -103,6 +103,13 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
+  // Transformation debug rendering
+
+  gfx_cs::DebugTransformRenderSystem dtrSys(eventMgr.get(), entityMgr.get());
+  dtrSys.SetScale(100.0f);
+  dtrSys.SetRenderer(renderer);
+
+  // -----------------------------------------------------------------------
   // Text render system
   gfx_cs::dyn_text_render_system_vso 
     textSys( MakeArgs(eventMgr.get(), entityMgr.get()) );
@@ -258,11 +265,13 @@ int TLOC_MAIN(int argc, char *argv[])
     .Create(win.GetDimensions()); 
 
   quadSys.SetCamera(camEnt);
+  dtrSys.SetCamera(camEnt);
   textSys->SetCamera(camEnt);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
+  dtrSys.Initialize();
   TLOC_LOG_CORE_INFO() << "Initializing Quad Render System"; 
   quadSys.Initialize();
   TLOC_LOG_CORE_INFO() << "Initializing Material System"; 
@@ -326,6 +335,8 @@ int TLOC_MAIN(int argc, char *argv[])
     sgSys.ProcessActiveEntities();
     quadSys.ProcessActiveEntities();
     textSys->ProcessActiveEntities();
+
+    dtrSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }

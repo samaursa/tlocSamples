@@ -207,6 +207,14 @@ int TLOC_MAIN(int argc, char *argv[])
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
 
+  gfx_rend::Renderer::Params pNoDepth(renderer->GetParams());
+  pNoDepth.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+          .Disable<enable_disable::DepthTest>() 
+          .AddClearBit<clear::DepthBufferBit>();
+
+  gfx_rend::renderer_sptr linesRenderer = 
+    core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
+
   renderer->SetParams(p);
 
   //------------------------------------------------------------------------
@@ -252,6 +260,13 @@ int TLOC_MAIN(int argc, char *argv[])
   // The camera's view transformations are calculated by the camera system
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
+
+  // -----------------------------------------------------------------------
+  // Transformation debug rendering
+
+  gfx_cs::DebugTransformRenderSystem dtrSys(eventMgr.get(), entityMgr.get());
+  dtrSys.SetScale(1.0f);
+  dtrSys.SetRenderer(linesRenderer);
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
@@ -345,6 +360,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
 
+  dtrSys.SetCamera(m_cameraEnt);
   meshSys.SetCamera(m_cameraEnt);
 
   MayaCam mayaCam(m_cameraEnt);
@@ -354,6 +370,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
+  dtrSys.Initialize();
   meshSys.Initialize();
   matSys.Initialize();
   camSys.Initialize();
@@ -377,6 +394,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
     renderer->ApplyRenderSettings();
     meshSys.ProcessActiveEntities();
+
+    linesRenderer->ApplyRenderSettings();
+    dtrSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }
