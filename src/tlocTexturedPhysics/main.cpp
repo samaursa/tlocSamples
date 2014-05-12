@@ -328,7 +328,6 @@ struct glProgram
     // Initialize all the system
 
     camSys.Initialize();
-
     PROFILE_START();
     matSys.Initialize();
     PROFILE_END("Material System Init");
@@ -449,10 +448,18 @@ struct glProgram
 
       if (m_keyPresses.IsMarked(key_cameraPersp) == false)
       {
+        using math_t::Rectf_c;
+        Rectf_c fRect =
+          Rectf_c(Rectf_c::width(core_utils::CastNumber<tl_float>(m_win.GetDimensions()[0])),
+                  Rectf_c::height(core_utils::CastNumber<tl_float>(m_win.GetDimensions()[1])) );
+
+        using math_proj::FrustumOrtho;
+        FrustumOrtho frOrtho = FrustumOrtho(fRect, 0.1f, 10.0f);
+        frOrtho.BuildFrustum();
+
         m_cameraEnt->GetComponent<math_cs::Transform>()->
           SetPosition(math_t::Vec3f32(0, 0, 1.0f));
-        m_cameraEnt->GetComponent<gfx_cs::Camera>()->
-          SetFrustum(m_ortho);
+        m_cameraEnt->GetComponent<gfx_cs::Camera>()->SetFrustum(frOrtho);
       }
       else
       {
@@ -503,8 +510,6 @@ struct glProgram
   core_time::Timer32                m_frameTimer;
   core_time::Timer32                m_renderFrameTime;
   core_time::Timer32                m_physFrameTime;
-
-  math_proj::FrustumOrtho           m_ortho;
 
   tl_int                            m_accumulator;
 
