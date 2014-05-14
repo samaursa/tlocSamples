@@ -152,6 +152,7 @@ struct glProgram
     using gfx_cs::FanRenderSystem;
     using gfx_cs::MaterialSystem;
     using phys_cs::RigidBodySystem;
+    using gfx_cs::DebugTransformRenderSystem;
 
     using core_str::String;
 
@@ -165,6 +166,10 @@ struct glProgram
     MaterialSystem    matSys    (m_eventMgr.get(), m_entityMgr.get());
     RigidBodySystem   physicsSys(m_eventMgr.get(), m_entityMgr.get(),
                                  &m_physicsMgr.GetWorld());
+
+    DebugTransformRenderSystem dtrSys(m_eventMgr.get(), m_entityMgr.get());
+    dtrSys.SetScale(2.0f);
+    dtrSys.SetRenderer(m_renderer);
 
     // attach the default renderer to both rendering systems
     quadSys.SetRenderer(m_renderer);
@@ -321,11 +326,14 @@ struct glProgram
       .Position(math_t::Vec3f(0, 0, 1.0f))
       .Create(core_ds::Divide(10u, m_win.GetDimensions()) );
 
+    dtrSys.SetCamera(m_cameraEnt);
     quadSys.SetCamera(m_cameraEnt);
     fanSys.SetCamera(m_cameraEnt);
 
     // -----------------------------------------------------------------------
     // Initialize all the system
+
+    dtrSys.Initialize();
 
     camSys.Initialize();
     PROFILE_START();
@@ -399,6 +407,8 @@ struct glProgram
         matSys.ProcessActiveEntities();
         quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
+
+        dtrSys.ProcessActiveEntities();
 
         m_win.SwapBuffers();
 
