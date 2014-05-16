@@ -149,6 +149,7 @@ int TLOC_MAIN(int argc, char *argv[])
               core_io::Path(GetAssetsPath() + shaderPathFS));
   }
 
+#ifndef TLOC_OS_IPHONE
   {//RG
     typedef gfx_med::image_rg_vso  image_rg_vso;
     image_rg_vso rg;
@@ -325,6 +326,7 @@ int TLOC_MAIN(int argc, char *argv[])
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
   }
+#endif // #ifndef TLOC_OS_IPHONE
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

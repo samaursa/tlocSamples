@@ -50,6 +50,9 @@ public:
   {
     gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
+    
+    gfx_cs::texture_animator_sptr ta2 =
+      m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(1);
 
     TLOC_ASSERT_NOT_NULL(ta);
 
@@ -64,6 +67,7 @@ public:
     }
 
     ta->SetCurrentSpriteSequence(currSpriteSet);
+    ta2->SetCurrentSpriteSequence(currSpriteSet);
     return false;
   }
 

@@ -324,7 +324,7 @@ struct glProgram
       .Far(10.0f)
       .Perspective(false)
       .Position(math_t::Vec3f(0, 0, 1.0f))
-      .Create(core_ds::Divide(10u, m_win.GetDimensions()) );
+      .Create(core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
     dtrSys.SetCamera(m_cameraEnt);
     quadSys.SetCamera(m_cameraEnt);
