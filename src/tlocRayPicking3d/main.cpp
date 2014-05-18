@@ -410,7 +410,7 @@ int TLOC_MAIN(int argc, char *argv[])
     .Near(1.0f)
     .Far(100.0f)
     .VerticalFOV(math_t::Degree(60.0f))
-    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Position(math_t::Vec3f(0.0f, 0.0f, 10.0f))
     .Create(win.GetDimensions());
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);

@@ -30,7 +30,7 @@ using namespace tloc;
 #define PROFILE_END(_text_)\
   do{\
     s32 timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
-    printf("\n"#_text_": %u us", timeInMs);\
+    TLOC_LOG_CORE_DEBUG() << #_text_ << ": " << timeInMs << " us";\
   }while(0)
 
 enum

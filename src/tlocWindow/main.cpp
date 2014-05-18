@@ -20,13 +20,13 @@ public:
     { m_endProgram = true; }
 
     if (a_event.m_type == gfx_win::WindowEvent::gained_focus)
-    { printf("\nWindow just gained focus"); }
+    { TLOC_LOG_CORE_INFO() << "Window just gained focus"; }
 
     if (a_event.m_type == gfx_win::WindowEvent::lost_focus)
-    { printf("\nWindow just lost focus"); }
+    { TLOC_LOG_CORE_INFO() << "Window just lost focus"; }
 
     if (a_event.m_type == gfx_win::WindowEvent::resized)
-    { printf("\nWindow just resized"); }
+    { TLOC_LOG_CORE_INFO() << "Window just resized"; }
   }
 
   bool  m_endProgram;

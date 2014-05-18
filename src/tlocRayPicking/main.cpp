@@ -201,7 +201,7 @@ struct glProgram
         if (mat != m_crateMat)
         { *mat = *m_crateMat;}
 
-        printf("\nIntersecting with circle!");
+        TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
       }
     }
     else
@@ -216,7 +216,7 @@ struct glProgram
         if (mat != m_henryMat)
         { *mat = *m_henryMat; }
 
-        printf("\nNOT intersecting with circle!");
+        TLOC_LOG_CORE_INFO() << "NOT intersecting with circle!";
       }
     }
   }
@@ -399,7 +399,7 @@ struct glProgram
     fanSys.Initialize();
     camSys.Initialize();
 
-    printf("\nV - toggle mouse cursor visibility");
+    TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
 
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
            m_endGame == false)

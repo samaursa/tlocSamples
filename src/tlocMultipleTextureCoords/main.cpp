@@ -227,11 +227,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // See explanation in SimpleQuad sample on why it must be created first.
   core_cs::component_pool_mgr_vso cpoolMgr;
 
-  // used later, but since it is a component, it must appear before entity
-  // manager to avoid destruction issues
-  gfx_cs::texture_coords_sptr tcoord2 = 
-    core_sptr::MakeShared<gfx_cs::TextureCoords>();
-
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_vso  eventMgr;
@@ -259,7 +254,10 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::entity_vptr spriteEnt =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
-  entityMgr->InsertComponent(spriteEnt, tcoord2);
+  gfx_cs::texture_coords_sptr tcoord2 = 
+    core_sptr::MakeShared<gfx_cs::TextureCoords>();
+  entityMgr->InsertComponent(spriteEnt, tcoord2, 
+                             core_cs::EntityManager::orphan(true));
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared
