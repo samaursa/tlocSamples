@@ -213,8 +213,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::TouchSurfaceB* touchSurface =
+  input_hid::keyboard_b_vptr      keyboard = 
+    inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::touch_surface_b_vptr touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceB>();
 
   // Check pointers

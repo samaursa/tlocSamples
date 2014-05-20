@@ -574,9 +574,10 @@ struct glProgram
 
   input::input_mgr_b_ptr      m_inputMgr;
   input::input_mgr_i_ptr      m_inputMgrImm;
-  input::hid::KeyboardB*      m_keyboard;
-  input::hid::MouseB*         m_mouse;
-  input::hid::TouchSurfaceI*  m_touchSurface;
+
+  input::hid::keyboard_b_vptr       m_keyboard;
+  input::hid::mouse_b_vptr          m_mouse;
+  input::hid::touch_surface_i_vptr  m_touchSurface;
 
   input_hid::TouchSurfaceI::touch_container_type  m_currentTouches;
   core::utils::Checkpoints                        m_keyPresses;

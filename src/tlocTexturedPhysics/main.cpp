@@ -524,7 +524,7 @@ struct glProgram
   tl_int                            m_accumulator;
 
   input::input_mgr_b_ptr            m_inputMgr;
-  input::hid::KeyboardB*            m_keyboard;
+  input::hid::keyboard_b_vptr       m_keyboard;
   core::utils::Checkpoints          m_keyPresses;
 
   core_cs::component_pool_mgr_vso   m_compPoolMgr;

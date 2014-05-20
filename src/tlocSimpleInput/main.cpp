@@ -85,9 +85,11 @@ int TLOC_MAIN(int , char *[])
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::KeyboardI* keyboard = inputMgr->CreateHID<input_hid::KeyboardI>();
-  input_hid::MouseI* mouse = inputMgr->CreateHID<input_hid::MouseI>();
-  input_hid::TouchSurfaceI* touchSurface =
+  input_hid::keyboard_i_vptr keyboard = 
+    inputMgr->CreateHID<input_hid::KeyboardI>();
+  input_hid::mouse_i_vptr mouse = 
+    inputMgr->CreateHID<input_hid::MouseI>();
+  input_hid::touch_surface_i_vptr touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceI>();
 
   // Create a container that we will save our touches in

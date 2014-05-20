@@ -217,11 +217,14 @@ int TLOC_MAIN(int, char**)
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::KeyboardB* keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::MouseB* mouse = inputMgr->CreateHID<input_hid::MouseB>();
-  input_hid::TouchSurfaceB* touchSurface =
+  input_hid::keyboard_b_vptr      keyboard = 
+    inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::mouse_b_vptr         mouse = 
+    inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::touch_surface_b_vptr touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceB>();
-  input_hid::JoystickB* joystick = inputMgr->CreateHID<input_hid::JoystickB>();
+  input_hid::joystick_b_vptr      joystick = 
+    inputMgr->CreateHID<input_hid::JoystickB>();
 
   // Check pointers
   TLOC_LOG_CORE_WARN_IF(keyboard == nullptr) << "No keyboard detected";
