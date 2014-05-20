@@ -272,15 +272,15 @@ int TLOC_MAIN(int argc, char *argv[])
 
   xmlPath = GetAssetsPath() + xmlPath;
 
-  core_io::FileIO_ReadA shaderFile( (core_io::Path(xmlPath)) );
+  core_io::FileIO_ReadA file( (core_io::Path(xmlPath)) );
 
-  if (shaderFile.Open() != ErrorSuccess)
+  if (file.Open() != ErrorSuccess)
   { printf("\nUnable to open the sprite sheet"); }
 
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String                    sspContents;
 
-  shaderFile.GetContents(sspContents);
+  file.GetContents(sspContents);
   ssp.Init(sspContents, png.GetImage().GetDimensions());
 
   pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
