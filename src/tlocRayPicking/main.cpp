@@ -538,14 +538,15 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void OnWindowEvent(const event_type& a_event)
+  core_dispatch::Event 
+    OnWindowEvent(const event_type& a_event)
   {
     using namespace gfx_win;
 
     if (a_event.m_type == WindowEvent::close)
-    {
-      m_endGame = true;
-    }
+    { m_endGame = true; }
+
+    return core_dispatch::f_event::Continue();
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

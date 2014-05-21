@@ -16,10 +16,13 @@ public:
     : m_endProgram(false)
   { }
 
-  void OnWindowEvent(const gfx_win::WindowEvent& a_event)
+  core_dispatch::Event 
+    OnWindowEvent(const gfx_win::WindowEvent& a_event)
   {
     if (a_event.m_type == gfx_win::WindowEvent::close)
     { m_endProgram = true; }
+
+    return core_dispatch::f_event::Continue();
   }
 
   bool  m_endProgram;
