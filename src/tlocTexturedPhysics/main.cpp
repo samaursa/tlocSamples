@@ -81,7 +81,7 @@ struct glProgram
     //------------------------------------------------------------------------
     // Initialize graphics platform
     if (gfx_gl::InitializePlatform() != ErrorSuccess)
-    { TLOC_ASSERT_FALSE("\nGraphics platform failed to initialize"); exit(0); }
+    { TLOC_ASSERT_FALSE("Graphics platform failed to initialize"); exit(0); }
 
     // -----------------------------------------------------------------------
     // Get the default renderer
@@ -352,8 +352,8 @@ struct glProgram
     physicsSys.Initialize();
     PROFILE_END("Physics System Init");
 
-    printf("\n\n[P] to pause simulation");
-    printf("\n[Q] to quit simulation");
+    TLOC_LOG_CORE_DEBUG() << "[P] to pause simulation";
+    TLOC_LOG_CORE_DEBUG() << "[Q] to quit simulation";
 
     const tl_int physicsDt = 10; //ms
 
@@ -435,12 +435,13 @@ struct glProgram
 
     crateMat.reset();
     henryMat.reset();
-    printf("\nExitting normally\n");
+    TLOC_LOG_CORE_INFO() << "Exitting normally";
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size, const input::hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size, const input::hid::KeyboardEvent& a_event)
   {
     using namespace input;
 
@@ -490,17 +491,19 @@ struct glProgram
       }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnKeyRelease(const tl_size, const input::hid::KeyboardEvent&)
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size, const input::hid::KeyboardEvent&)
   {
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void OnWindowEvent(const event_type& a_event)
+  core_dispatch::Event 
+    OnWindowEvent(const event_type& a_event)
   {
     using namespace gfx_win;
 
@@ -508,6 +511,8 @@ struct glProgram
     {
       m_endGame = true;
     }
+
+    return core_dispatch::f_event::Continue();
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

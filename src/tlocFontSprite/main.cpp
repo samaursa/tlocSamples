@@ -48,8 +48,8 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
@@ -83,14 +83,14 @@ public:
       }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& )
-  { return false; }
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& )
+  { return core_dispatch::f_event::Continue(); }
 
 private:
   core_cs::entity_vptr                  m_spriteEnt;
@@ -113,7 +113,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer

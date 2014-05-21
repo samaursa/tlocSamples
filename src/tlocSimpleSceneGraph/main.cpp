@@ -9,6 +9,8 @@
 
 #include <samplesAssetsPath.h>
 
+TLOC_DEFINE_THIS_FILE_NAME();
+
 using namespace tloc;
 
 anim_cs::transform_animation_vptr g_tformAnimComp = nullptr;
@@ -56,9 +58,10 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent&,
-                     const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonPress(const tl_size , 
+                  const input_hid::MouseEvent&, 
+                  const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -84,14 +87,15 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent&,
-                       const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size , 
+                    const input_hid::MouseEvent&, 
+                    const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -108,13 +112,13 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnMouseMove(const tl_size ,
-                   const input_hid::MouseEvent& a_event)
+  core_dispatch::Event 
+    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
     f32 xRel = core_utils::CastNumber<f32>(a_event.m_X.m_rel());
     f32 yRel = core_utils::CastNumber<f32>(a_event.m_Y.m_rel());
@@ -151,26 +155,26 @@ public:
       t->SetPosition(t->GetPosition() - dirVec);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
       m_flags.Mark(k_altPressed);
     }
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is released. Currently will printf tloc's representation
-  // of the key.
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& a_event)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
@@ -191,14 +195,17 @@ public:
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
     {
       g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() + g_fpsInterval);
-      printf("\nCurrent FPS: %lu", g_tformAnimComp->GetFPS());
+      TLOC_LOG_CORE_INFO() << 
+        core_str::Format("Current FPS: %lu", g_tformAnimComp->GetFPS());
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
     {
       if (g_tformAnimComp->GetFPS() >= g_fpsInterval)
       {
         g_tformAnimComp->SetFPS(g_tformAnimComp->GetFPS() - g_fpsInterval);
-      printf("\nCurrent FPS: %lu", g_tformAnimComp->GetFPS());
+
+      TLOC_LOG_CORE_INFO() << 
+        core_str::Format("Current FPS: %lu", g_tformAnimComp->GetFPS());
       }
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::i)
@@ -218,39 +225,39 @@ public:
       switch(kfSeq[0].GetInterpolationType())
       {
       case anim_t::p_keyframe::k_linear:
-        printf("\nInterpolation type: linear");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: linear";
         break;
       case anim_t::p_keyframe::k_ease_in_cubic:
-        printf("\nInterpolation type: ease in (cubic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in (cubic)";
         break;
       case anim_t::p_keyframe::k_ease_out_cubic:
-        printf("\nInterpolation type: ease out (cubic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease out (cubic)";
         break;
       case anim_t::p_keyframe::k_ease_in_out_cubic:
-        printf("\nInterpolation type: ease in-out (cubic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in-out (cubic)";
         break;
       case anim_t::p_keyframe::k_ease_in_quadratic:
-        printf("\nInterpolation type: ease in (quadratic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in (quadratic)";
         break;
       case anim_t::p_keyframe::k_ease_out_quadratic:
-        printf("\nInterpolation type: ease out (quadratic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease out (quadratic)";
         break;
       case anim_t::p_keyframe::k_ease_in_out_quadratic:
-        printf("\nInterpolation type: ease in-out (quadratic)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in-out (quadratic)";
         break;
       case anim_t::p_keyframe::k_ease_in_sin:
-        printf("\nInterpolation type: ease in (sin)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in (sin)";
         break;
       case anim_t::p_keyframe::k_ease_out_sin:
-        printf("\nInterpolation type: ease out (sin)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease out (sin)";
         break;
       case anim_t::p_keyframe::k_ease_in_out_sin:
-        printf("\nInterpolation type: ease in-out (sin)");
+        TLOC_LOG_CORE_INFO() << "Interpolation type: ease in-out (sin)";
         break;
       }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   core_cs::entity_vptr      m_camera;
@@ -272,7 +279,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -390,17 +397,26 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_io::FileIO_ReadA objFile(path);
   if (objFile.Open() != ErrorSuccess)
-  { printf("\nUnable to open the .obj file."); return 1;}
+  { 
+    TLOC_LOG_CORE_ERR() << "Unable to open the .obj file.";
+    return 1;
+  }
 
   core_str::String objFileContents;
   objFile.GetContents(objFileContents);
 
   gfx_med::ObjLoader objLoader;
   if (objLoader.Init(objFileContents) != ErrorSuccess)
-  { printf("\nParsing errors in .obj file."); return 1; }
+  { 
+    TLOC_LOG_CORE_ERR() << "Parsing errors in .obj file.";
+    return 1;
+  }
 
   if (objLoader.GetNumGroups() == 0)
-  { printf("\nObj file does not have any objects."); return 1; }
+  { 
+    TLOC_LOG_CORE_ERR() << "Obj file does not have any objects.";
+    return 1;
+  }
 
   gfx_med::ObjLoader::vert_cont_type vertices;
   objLoader.GetUnpacked(vertices, 0);
@@ -554,17 +570,21 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Main loop
 
-  printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << 
+    "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
 
-  printf("\nP - to toggle pause");
-  printf("\nL - to toggle looping");
-  printf("\nS - to toggle stop");
-  printf("\nI - to change interpolation type");
-  printf("\n= - increase FPS");
-  printf("\n- - decrease FPS");
-
-  printf("\n\nRight Arrow - goto previous frame");
-  printf("\nLeft Arrow  - goto next frame");
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "S - to toggle stop";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "I - to change interpolation type";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "= - increase FPS";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "- - decrease FPS";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "-----------------------------------";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "0 - First keyframe sequence";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "1 - Second keyframe sequence";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "-----------------------------------";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Right Arrow - goto previous frame";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Left Arrow  - goto next frame";
 
   core_time::Timer64 t;
 

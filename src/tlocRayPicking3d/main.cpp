@@ -61,9 +61,10 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent&,
-                     const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonPress(const tl_size , 
+                  const input_hid::MouseEvent&, 
+                  const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -89,14 +90,15 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent&,
-                       const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size , 
+                    const input_hid::MouseEvent&, 
+                    const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -113,13 +115,13 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnMouseMove(const tl_size ,
-                   const input_hid::MouseEvent& a_event)
+  core_dispatch::Event 
+    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
     f32 xRel = core_utils::CastNumber<f32>(a_event.m_X.m_rel());
     f32 yRel = core_utils::CastNumber<f32>(a_event.m_Y.m_rel());
@@ -131,7 +133,7 @@ public:
       arcBall->MoveVertical(yRel * 0.01f );
       arcBall->MoveHorizontal(xRel * 0.01f );
 
-      return true;
+      return core_dispatch::f_event::Veto();
     }
     else if (m_flags.IsMarked(k_panning))
     {
@@ -147,7 +149,7 @@ public:
       t->SetPosition(t->GetPosition() - leftVec + upVec);
       arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
 
-      return true;
+      return core_dispatch::f_event::Veto();
     }
     else if (m_flags.IsMarked(k_dolly))
     {
@@ -159,7 +161,7 @@ public:
 
       t->SetPosition(t->GetPosition() - dirVec);
 
-      return true;
+      return core_dispatch::f_event::Veto();
     }
 
     // otherwise, start picking
@@ -167,32 +169,33 @@ public:
     CheckCollisionWithRay((f32)a_event.m_X.m_abs().Get(),
                           (f32)a_event.m_Y.m_abs().Get());
 
-    return false;
+      return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
       m_flags.Mark(k_altPressed);
     }
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is released. Currently will printf tloc's representation
-  // of the key.
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& a_event)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
       m_flags.Unmark(k_altPressed);
     }
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
   void CheckCollisionWithRay(f32 absX, f32 absY)
@@ -201,8 +204,6 @@ public:
     typedef math_utils::scale_f32_f32::range_small range_small;
     typedef math_utils::scale_f32_f32::range_large range_large;
     using namespace core::component_system;
-
-    //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
 
     range_small smallR(-1.0f, 1.1f);
     range_large largeRX(0.0f, 1024.0f);
@@ -237,7 +238,7 @@ public:
       ++intersectionCounter;
       if (intersectionCounter == 1)
       {
-        printf("\nIntersecting with cube!");
+        TLOC_LOG_CORE_INFO() << "Intersecting with cube!";
       }
     }
     else
@@ -247,7 +248,7 @@ public:
 
       if (nonIntersectionCounter == 1)
       {
-        printf("\nNOT intersecting with cube!");
+        TLOC_LOG_CORE_INFO() << "NOT intersecting with cube!";
       }
     }
   }
@@ -272,7 +273,10 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { 
+    TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; 
+    return -1;
+  }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -380,7 +384,8 @@ int TLOC_MAIN(int argc, char *argv[])
   tl_float posY = rng::g_defaultRNG.GetRandomFloat(-2.0f, 2.0f);
   tl_float posZ = rng::g_defaultRNG.GetRandomFloat(-2.0f, 2.0f);
 
-  printf("\nCube position: %f, %f, %f", posX, posY, posZ);
+  TLOC_LOG_CORE_INFO() << 
+    core_str::Format("Cube position: %f, %f, %f", posX, posY, posZ);
 
   using math_t::Cuboidf32;
   g_cuboid = Cuboidf32
@@ -432,7 +437,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Main loop
 
-  printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
+  TLOC_LOG_CORE_DEBUG() << 
+    "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {

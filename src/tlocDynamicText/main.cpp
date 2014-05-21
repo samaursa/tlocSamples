@@ -53,7 +53,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer

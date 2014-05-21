@@ -38,26 +38,30 @@ public:
   KeyboardCallback()
   { }
 
-  //------------------------------------------------------------------------
-  // Called when a key is pressed. Currently will printf tloc's representation
-  // of the key.
-  bool OnKeyPress(const tl_size a_caller,
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyPress(const tl_size a_caller,
     const input_hid::KeyboardEvent& a_event)
   {
-    printf("\nCaller %i pressed a key. Key code is: %i",
-           (tl_int)a_caller, a_event.m_keyCode);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i pressed a key. Key code is: %i", 
+                      (tl_int)a_caller, a_event.m_keyCode);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is released. Currently will printf tloc's representation
-  // of the key.
-  bool OnKeyRelease(const tl_size a_caller,
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size a_caller,
     const input_hid::KeyboardEvent& a_event)
   {
-    printf("\nCaller %i released a key. Key code is %i",
-           (tl_int)a_caller, a_event.m_keyCode);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i released a key. Key code is %i", 
+                      (tl_int)a_caller, a_event.m_keyCode);
+
+    return core_dispatch::f_event::Continue();
   }
 };
 TLOC_DEF_TYPE(KeyboardCallback);
@@ -71,44 +75,50 @@ public:
   MouseCallback()
   { }
 
-  //------------------------------------------------------------------------
-  // Called when a button is pressed. Currently will printf tloc's representation
-  // of all buttons.
-  bool OnButtonPress(const tl_size a_caller,
-                     const input_hid::MouseEvent& a_event,
-                     const input_hid::MouseEvent::button_code_type)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnButtonPress(const tl_size a_caller, 
+                  const input_hid::MouseEvent& a_event, 
+                  const input_hid::MouseEvent::button_code_type)
   {
-    printf("\nCaller %i pushed a button. Button state is: %i",
-           (tl_int)a_caller, a_event.m_buttonCode);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i pushed a button. Button state is: %i", 
+                      (tl_int)a_caller, a_event.m_buttonCode);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a button is released. Currently will printf tloc's representation
-  // of all buttons.
-  bool OnButtonRelease(const tl_size a_caller,
-                       const input_hid::MouseEvent& a_event,
-                       const input_hid::MouseEvent::button_code_type)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size a_caller, 
+                    const input_hid::MouseEvent& a_event, 
+                    const input_hid::MouseEvent::button_code_type)
   {
-    printf("\nCaller %i released a button. Button state is %i",
-           (tl_int)a_caller, a_event.m_buttonCode);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i released a button. Button state is %i", 
+                      (tl_int)a_caller, a_event.m_buttonCode);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when mouse is moved. Currently will printf mouse's relative and
-  // absolute position.
-  bool OnMouseMove(const tl_size a_caller,
-    const input_hid::MouseEvent& a_event)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnMouseMove(const tl_size a_caller, const input_hid::MouseEvent& a_event)
   {
-    printf("\nCaller %i moved the mouse by %i %i %i ", (tl_int)a_caller,
-      a_event.m_X.m_rel(),
-      a_event.m_Y.m_rel(),
-      a_event.m_Z.m_rel());
-    printf("to %i %i %i", a_event.m_X.m_abs().Value(),
-      a_event.m_Y.m_abs().Value(),
-      a_event.m_Z.m_abs().Value());
-    return false;
+    TLOC_LOG_CORE_INFO() <<
+      core_str::Format("Caller %i moved the mouse by %i %i %i ", (tl_int)a_caller, 
+                       a_event.m_X.m_rel(), 
+                       a_event.m_Y.m_rel(), 
+                       a_event.m_Z.m_rel())
+                       <<
+      core_str::Format(" to %i %i %i", a_event.m_X.m_abs().Value(), 
+                       a_event.m_Y.m_abs().Value(), 
+                       a_event.m_Z.m_abs().Value());
+
+    return core_dispatch::f_event::Continue();
   }
 };
 TLOC_DEF_TYPE(MouseCallback);
@@ -116,29 +126,41 @@ TLOC_DEF_TYPE(MouseCallback);
 class TouchCallback
 {
 public:
-  bool OnTouchPress(const tl_size a_caller,
-                    const input::TouchSurfaceEvent& a_event)
+  core_dispatch::Event 
+    OnTouchPress(const tl_size a_caller, 
+                 const input::TouchSurfaceEvent& a_event)
   {
-    printf("\nCaller %i surface touch #%li at %f %f",
-           (tl_int)a_caller,
-           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i surface touch #%li at %f %f", 
+                      (tl_int)a_caller, 
+                      a_event.m_touchHandle, 
+                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+
+    return core_dispatch::f_event::Continue();
   }
-  bool OnTouchRelease(const tl_size a_caller,
-                      const input::TouchSurfaceEvent& a_event)
-  {
-    printf("\nCaller %i surface touch release #%li at %f %f",
-           (tl_int)a_caller,
-           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
-    return false;
-  }
-  bool OnTouchMove(const tl_size a_caller,
+  core_dispatch::Event 
+    OnTouchRelease(const tl_size a_caller, 
                    const input::TouchSurfaceEvent& a_event)
   {
-    printf("\nCaller %i surface touch move #%li at %f %f",
-           (tl_int)a_caller,
-           a_event.m_touchHandle, a_event.m_X.m_abs(), a_event.m_Y.m_abs());
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i surface touch release #%li at %f %f", 
+                      (tl_int)a_caller, 
+                      a_event.m_touchHandle, 
+                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+
+    return core_dispatch::f_event::Continue();
+  }
+  core_dispatch::Event 
+    OnTouchMove(const tl_size a_caller,
+                const input::TouchSurfaceEvent& a_event)
+  {
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %i surface touch move #%li at %f %f", 
+                      (tl_int)a_caller, 
+                      a_event.m_touchHandle, 
+                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+
+    return core_dispatch::f_event::Continue();
   }
 };
 TLOC_DEF_TYPE(TouchCallback);
@@ -146,50 +168,65 @@ TLOC_DEF_TYPE(TouchCallback);
 class JoystickCallback
 {
 public:
-  bool OnButtonPress(const tl_size a_caller,
-                     const input_hid::JoystickEvent& ,
-                     tl_int a_buttonIndex) const
+  core_dispatch::Event 
+    OnButtonPress(const tl_size a_caller, 
+                  const input_hid::JoystickEvent& , 
+                  tl_int a_buttonIndex) const
   {
-    printf("\nCaller %lu joystick button(%i) press", a_caller, a_buttonIndex);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %lu joystick button(%i) press", a_caller, a_buttonIndex);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnButtonRelease(const tl_size a_caller,
-                       const input_hid::JoystickEvent& ,
-                       tl_int a_buttonIndex) const
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size a_caller,
+                    const input_hid::JoystickEvent& , 
+                    tl_int a_buttonIndex) const
   {
-    printf("\nCaller %lu joystick button(%i) release", a_caller, a_buttonIndex);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %lu joystick button(%i) release", a_caller, a_buttonIndex);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnAxisChange(const tl_size a_caller,
-                    const input_hid::JoystickEvent& ,
-                    tl_int a_axisIndex,
-                    input_hid::JoystickEvent::axis_type a_axis) const
+  core_dispatch::Event 
+    OnAxisChange(const tl_size a_caller,
+                 const input_hid::JoystickEvent& , 
+                 tl_int a_axisIndex, 
+                 input_hid::JoystickEvent::axis_type a_axis) const
   {
-    printf("\nCaller %lu joystick axis(%i) change: %i, %i, %i", a_caller,
-      a_axisIndex, a_axis[0], a_axis[1], a_axis[2]);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %lu joystick axis(%i) change: %i, %i, %i", 
+      a_caller, a_axisIndex, a_axis[0], a_axis[1], a_axis[2]);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnSliderChange(const tl_size a_caller,
-                      const input_hid::JoystickEvent& ,
-                      tl_int a_sliderIndex,
-                      input_hid::JoystickEvent::slider_type a_slider) const
+  core_dispatch::Event 
+    OnSliderChange(const tl_size a_caller, 
+                   const input_hid::JoystickEvent& , 
+                   tl_int a_sliderIndex, 
+                   input_hid::JoystickEvent::slider_type a_slider) const
   {
-    printf("\nCaller %lu joystick slider(%i) change: %i, %i",
-            a_caller, a_sliderIndex, a_slider[0], a_slider[1]);
-    return false;
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %lu joystick slider(%i) change: %i, %i", 
+      a_caller, a_sliderIndex, a_slider[0], a_slider[1]);
+
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnPOVChange(const tl_size a_caller,
-                   const input_hid::JoystickEvent& ,
-                   tl_int a_povIndex,
-                   input_hid::JoystickEvent::pov_type a_pov) const
+  core_dispatch::Event 
+    OnPOVChange(const tl_size a_caller, 
+                const input_hid::JoystickEvent& , 
+                tl_int a_povIndex, 
+                input_hid::JoystickEvent::pov_type a_pov) const
   {
-    printf("\nCaller %lu joystick pov(%i) change: %s",
+    TLOC_LOG_CORE_INFO() << 
+      core_str::Format("Caller %lu joystick pov(%i) change: %s", 
       a_caller, a_povIndex, a_pov.GetDirectionAsString(a_pov.GetDirection()));
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 };
 TLOC_DEF_TYPE(JoystickCallback);
@@ -282,7 +319,7 @@ int TLOC_MAIN(int, char**)
       }
       if (keyboard && keyboard->IsKeyDown(input_hid::KeyboardEvent::h))
       {
-        printf("\nCAN I HAZ CHEEZEBURGERZZ");
+        TLOC_LOG_CORE_INFO() << "h key pressed in immediate mode";
       }
       if (keyboard && keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
       {

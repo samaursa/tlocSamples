@@ -61,7 +61,7 @@ int TLOC_MAIN(int , char *[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -205,7 +205,7 @@ int TLOC_MAIN(int , char *[])
       }
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::h))
       {
-        printf("\nCAN I HAZ CHEEZEBURGERZZ");
+        TLOC_LOG_CORE_DEBUG() << "h key pressed in immediate mode";
       }
 
       // Polling the mouse's absolute position, using that value to move the quad

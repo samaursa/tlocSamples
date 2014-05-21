@@ -8,6 +8,8 @@
 
 #include <samplesAssetsPath.h>
 
+TLOC_DEFINE_THIS_FILE_NAME();
+
 using namespace tloc;
 
 gfx_t::Color red(255, 65, 65, 255);
@@ -45,8 +47,8 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnTouchPress(const tl_size,
-                    const input::TouchSurfaceEvent&)
+  core_dispatch::Event 
+    OnTouchPress(const tl_size, const input::TouchSurfaceEvent&)
   {
     gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
@@ -68,25 +70,26 @@ public:
 
     ta->SetCurrentSpriteSequence(currSpriteSet);
     ta2->SetCurrentSpriteSequence(currSpriteSet);
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnTouchRelease(const tl_size,
-                      const input::TouchSurfaceEvent&)
-  { return false;  }
+  core_dispatch::Event 
+    OnTouchRelease(const tl_size, const input::TouchSurfaceEvent&)
+  { return core_dispatch::f_event::Continue();  }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnTouchMove(const tl_size,
-                   const input::TouchSurfaceEvent&)
-  { return false;  }
+  core_dispatch::Event 
+    OnTouchMove(const tl_size, const input::TouchSurfaceEvent&)
+  { return core_dispatch::f_event::Continue();  }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>(0);
@@ -155,14 +158,14 @@ public:
         SetValueAs(orange.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& )
-  { return false; }
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& )
+  { return core_dispatch::f_event::Continue(); }
 
 private:
 
@@ -186,7 +189,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -318,7 +321,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_io::FileIO_ReadA spriteData( (core_io::Path(spriteSheetDataPath)) );
 
   if (spriteData.Open() != ErrorSuccess)
-  { printf("\nUnable to open the sprite sheet"); }
+  { TLOC_LOG_GFX_ERR() << "Unable to open the sprite sheet"; }
 
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
@@ -405,14 +408,17 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nSprite sheet size: %lu, %lu",
-          ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
-  printf("\nImage size: %lu, %lu",
-          png.GetImage().GetWidth(), png.GetImage().GetHeight());
+  TLOC_LOG_CORE_DEBUG() << 
+    core_str::Format("Sprite sheet size: %lu, %lu", 
+                     ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
 
-  printf("\n\n\nRight Arrow - goto next animation sequence");
-  printf("\nLeft Arrow  - goto previous animation sequence");
-  printf("\n1 to 5 - change sprite color");
+  TLOC_LOG_CORE_DEBUG() << 
+    core_str::Format("Image size: %lu, %lu", 
+                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Right Arrow - goto next animation sequence";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Left Arrow  - goto previous animation sequence";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "1 to 5 - change sprite color";
 
   core_time::Timer64 t;
 

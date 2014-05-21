@@ -30,7 +30,7 @@ using namespace tloc;
 #define PROFILE_END(_text_)\
   do{\
     s32 timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
-    printf("\n"_text_": %u us", timeInMs);\
+    TLOC_LOG_CORE_INFO() << core_str::Format(_text_": %u us", timeInMs);\
   }while(0)
 
 enum
@@ -89,7 +89,7 @@ struct glProgram
     // Initialize graphics platform
     if (gfx_gl::InitializePlatform() != ErrorSuccess)
     {
-      TLOC_ASSERT_FALSE("\nGraphics platform failed to initialize");
+      TLOC_ASSERT_FALSE("Graphics platform failed to initialize");
       exit(0);
     }
 
@@ -148,8 +148,6 @@ struct glProgram
     typedef math_utils::scale_f32_f32::range_small range_small;
     typedef math_utils::scale_f32_f32::range_large range_large;
     using namespace core::component_system;
-
-    //printf("\n%i, %i", a_event.m_X.m_abs(), a_event.m_Y.m_abs());
 
     range_small smallR(-1.0f, 1.1f);
     range_large largeRX(0.0f, (f32)m_win.GetWidth());
@@ -234,13 +232,7 @@ struct glProgram
       shaderPath = GetAssetsPath() + shaderPath;
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
-      if(file.Open() != ErrorSuccess)
-      {
-        printf("\n%s", shaderPath.c_str());
-        printf("\nUnable to open vertex shader");
-        TLOC_ASSERT_FALSE("");
-      }
-
+      file.Open();
       core_str::String code;
       file.GetContents(code);
       a_mat->SetVertexSource(code);
@@ -446,7 +438,8 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size, const input::hid::KeyboardEvent& a_event)
+  core_dispatch::Event
+    OnKeyPress(const tl_size, const input::hid::KeyboardEvent& a_event)
   {
     using namespace input;
 
@@ -501,40 +494,46 @@ struct glProgram
       m_win.SetMouseVisibility(m_mouseVisible);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnKeyRelease(const tl_size, const input::hid::KeyboardEvent&)
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size, const input::hid::KeyboardEvent&)
   {
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
-  bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent& ,
-                     const input_hid::MouseEvent::button_code_type)
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnButtonPress(const tl_size , 
+                  const input_hid::MouseEvent& , 
+                  const input_hid::MouseEvent::button_code_type)
   {
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a button is released. Currently will printf tloc's representation
-  // of all buttons.
-  bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent& ,
-                       const input_hid::MouseEvent::button_code_type)
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size , 
+                    const input_hid::MouseEvent& , 
+                    const input_hid::MouseEvent::button_code_type)
   {
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when mouse is moved. Currently will printf mouse's relative and
-  // absolute position.
-  bool OnMouseMove(const tl_size ,
-                   const input_hid::MouseEvent& a_event)
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
     MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs().Get(),
                                (f32)a_event.m_Y.m_abs().Get());
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -594,6 +593,5 @@ int TLOC_MAIN(int, char* [])
   p.Initialize();
   p.RunGame();
 
-  printf("\n");
   return 0;
 }

@@ -8,6 +8,8 @@
 
 #include <samplesAssetsPath.h>
 
+TLOC_DEFINE_THIS_FILE_NAME()
+
 using namespace tloc;
 
 gfx_gl::texture_object_vptr
@@ -44,8 +46,8 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     gfx_cs::texture_animator_sptr ta =
       m_spriteEnt->GetComponent<gfx_cs::TextureAnimator>();
@@ -94,7 +96,7 @@ public:
       // produces rounding errors with the result that adding 1 to the current
       // FPS may not produce any change which is why we add 2
       ta->SetFPS(fps + 2);
-      printf("\nNew FPS: %lu", ta->GetFPS());
+      TLOC_LOG_CORE_INFO() << core_str::Format("New FPS: %lu", ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
@@ -104,7 +106,7 @@ public:
       // See note above for why we -2
       if (fps > 0)
       { ta->SetFPS(fps - 2); }
-      printf("\nNew FPS: %lu", ta->GetFPS());
+      TLOC_LOG_CORE_INFO() << core_str::Format("New FPS: %lu", ta->GetFPS());
     }
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::f)
@@ -126,14 +128,14 @@ public:
       GetTextureObjectPtr()->Update();
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& )
-  { return false; }
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& )
+  { return core_dispatch::f_event::Continue(); }
 
 private:
 
@@ -168,7 +170,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -275,7 +277,9 @@ int TLOC_MAIN(int argc, char *argv[])
   core_io::FileIO_ReadA file( (core_io::Path(xmlPath)) );
 
   if (file.Open() != ErrorSuccess)
-  { printf("\nUnable to open the sprite sheet"); }
+  { 
+    TLOC_LOG_GFX_ERR() << "Unable to open the sprite sheet";
+  }
 
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String                    sspContents;
@@ -299,21 +303,23 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Main loop
 
-  printf("\nSprite sheet size: %lu, %lu",
-          ssp.GetDimensions()[0], ssp.GetDimensions()[1]);
-  printf("\nImage size: %lu, %lu",
-          png.GetImage().GetWidth(), png.GetImage().GetHeight());
+  TLOC_LOG_CORE_DEBUG() << 
+    core_str::Format("Sprite sheet size: %li, %li", 
+                      ssp.GetDimensions()[0], ssp.GetDimensions()[1]); 
+  TLOC_LOG_CORE_DEBUG() << 
+    core_str::Format("Image size: %li, %li",
+                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
 
-  printf("\\nP - to toggle pause");
-  printf("\nL - to toggle looping");
-  printf("\nS - to toggle stop");
-  printf("\n= - increase FPS");
-  printf("\n- - decrease FPS");
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "S - to toggle stop";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "= - increase FPS";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "- - decrease FPS";
 
-  printf("\n\nf - toggle MinFilter between Linear and Nearest");
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "f - toggle MinFilter between Linear and Nearest";
 
-  printf("\n\nRight Arrow - goto previous frame");
-  printf("\nLeft Arrow  - goto next frame");
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Right Arrow - goto next animation sequence";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Left Arrow  - goto previous animation sequence";
 
   core_time::Timer64 t;
 

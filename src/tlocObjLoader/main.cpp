@@ -52,9 +52,10 @@ public:
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonPress(const tl_size ,
-                     const input_hid::MouseEvent&,
-                     const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonPress(const tl_size , 
+                  const input_hid::MouseEvent&, 
+                  const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -80,14 +81,15 @@ public:
       { m_flags.Unmark(k_dolly); }
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnButtonRelease(const tl_size ,
-                       const input_hid::MouseEvent&,
-                       const input_hid::MouseEvent::button_code_type a_button)
+  core_dispatch::Event 
+    OnButtonRelease(const tl_size , 
+                    const input_hid::MouseEvent&, 
+                    const input_hid::MouseEvent::button_code_type a_button)
   {
     if (a_button == input_hid::MouseEvent::left)
     {
@@ -104,13 +106,13 @@ public:
       m_flags.Unmark(k_dolly);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnMouseMove(const tl_size ,
-                   const input_hid::MouseEvent& a_event)
+  core_dispatch::Event 
+    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
     f32 xRel = core_utils::CastNumber<f32>(a_event.m_X.m_rel());
     f32 yRel = core_utils::CastNumber<f32>(a_event.m_Y.m_rel());
@@ -147,32 +149,33 @@ public:
       t->SetPosition(t->GetPosition() - dirVec);
     }
 
-    return false;
+    return core_dispatch::f_event::Continue();
   }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  bool OnKeyPress(const tl_size ,
-                  const input_hid::KeyboardEvent& a_event)
+  core_dispatch::Event 
+    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
       m_flags.Mark(k_altPressed);
     }
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
-  //------------------------------------------------------------------------
-  // Called when a key is released. Currently will printf tloc's representation
-  // of the key.
-  bool OnKeyRelease(const tl_size ,
-                    const input_hid::KeyboardEvent& a_event)
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event 
+    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& a_event)
   {
     if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
     {
       m_flags.Unmark(k_altPressed);
     }
-    return false;
+
+    return core_dispatch::f_event::Continue();
   }
 
   core_cs::entity_vptr      m_camera;
@@ -194,7 +197,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // Initialize graphics platform
   if (gfx_gl::InitializePlatform() != ErrorSuccess)
-  { printf("\nGraphics platform failed to initialize"); return -1; }
+  { TLOC_LOG_GFX_ERR() << "Graphics platform failed to initialize"; return -1; }
 
   // -----------------------------------------------------------------------
   // Get the default renderer
@@ -317,17 +320,26 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_io::FileIO_ReadA objFile(path);
   if (objFile.Open() != ErrorSuccess)
-  { printf("\nUnable to open the .obj file."); return 1;}
+  { 
+    TLOC_LOG_GFX_ERR() << "Unable to open the .obj file."; 
+    return 1;
+  }
 
   core_str::String objFileContents;
   objFile.GetContents(objFileContents);
 
   gfx_med::ObjLoader objLoader;
   if (objLoader.Init(objFileContents) != ErrorSuccess)
-  { printf("\nParsing errors in .obj file."); return 1; }
+  { 
+    TLOC_LOG_GFX_ERR() << "Parsing errors in .obj file.";
+    return 1;
+  }
 
   if (objLoader.GetNumGroups() == 0)
-  { printf("\nObj file does not have any objects."); return 1; }
+  { 
+    TLOC_LOG_GFX_ERR() << "Obj file does not have any objects.";
+    return 1;
+  }
 
   gfx_med::ObjLoader::vert_cont_type vertices;
   objLoader.GetUnpacked(vertices, 0);
@@ -379,7 +391,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Main loop
 
-  printf("\nPress ALT and Left, Middle and Right mouse buttons to manipulate the camera");
+  TLOC_LOG_CORE_DEBUG() << 
+    "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
