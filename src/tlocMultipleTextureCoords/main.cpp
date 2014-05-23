@@ -263,8 +263,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_cs::texture_coords_sptr tcoord2 = 
     core_sptr::MakeShared<gfx_cs::TextureCoords>();
-  entityMgr->InsertComponent(spriteEnt, tcoord2, 
-                             core_cs::EntityManager::orphan(true));
+  entityMgr->InsertComponent(core_cs::EntityManager::Params(spriteEnt, tcoord2)
+                             .Orphan(true));
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The fan render system expects a few shader variables to be declared

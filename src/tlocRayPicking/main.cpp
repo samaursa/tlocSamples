@@ -354,8 +354,10 @@ struct glProgram
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
       (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
-      m_entityMgr->InsertComponent(m_fanEnt, *(*matPoolItr)->GetValuePtr());
-      m_entityMgr->InsertComponent(m_fanEnt, m_henryMat);
+      m_entityMgr->InsertComponent(core_cs::EntityManager::Params
+                                   (m_fanEnt, *(*matPoolItr)->GetValuePtr()) );
+      m_entityMgr->InsertComponent(core_cs::EntityManager::Params
+                                   (m_fanEnt, m_henryMat) );
     }
 
     {
@@ -367,8 +369,10 @@ struct glProgram
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
       (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_crateMat));
 
-      m_entityMgr->InsertComponent(m_mouseFan, *(*matPoolItr)->GetValuePtr());
-      m_entityMgr->InsertComponent(m_mouseFan, m_crateMat);
+      m_entityMgr->InsertComponent(core_cs::EntityManager::Params
+                                   (m_mouseFan, *(*matPoolItr)->GetValuePtr()) );
+      m_entityMgr->InsertComponent(core_cs::EntityManager::Params
+                                   (m_mouseFan, m_crateMat) );
     }
 
     // randomize camera position to ensure it's taken into account when 

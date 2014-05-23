@@ -268,7 +268,7 @@ struct glProgram
         pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(quadEnt, rect, pref_phys::RigidBodyShape::density(1.0f));
 
-        m_entityMgr->InsertComponent(quadEnt, crateMat);
+        m_entityMgr->InsertComponent(core_cs::EntityManager::Params(quadEnt, crateMat));
       }
       else
       {
@@ -291,7 +291,7 @@ struct glProgram
         pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
           .Add(fanEnt, rbShape);
 
-        m_entityMgr->InsertComponent(fanEnt, henryMat);
+        m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
       }
     }
     PROFILE_END("Generating Quads and Fans");
@@ -313,7 +313,7 @@ struct glProgram
       pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
         .Add(fanEnt, rbCircleShape);
 
-        m_entityMgr->InsertComponent(fanEnt, henryMat);
+        m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
     }
 
     // -----------------------------------------------------------------------
