@@ -43,7 +43,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-             gfx_win::WindowSettings("One Quad") );
+             gfx_win::WindowSettings("Multiple Systems (Simple)") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -54,16 +54,16 @@ int TLOC_MAIN(int argc, char *argv[])
   // Get the default renderer
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
+  using namespace gfx_rend::p_renderer;
+  gfx_rend::Renderer::Params p(renderer->GetParams());
+  p.AddClearBit<clear::ColorBufferBit>() 
+   .SetClearColor(gfx_t::Color(0.5f, 0.5f, 0.5f, 1.0f));
+  renderer->SetParams(p);
+
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-  //
-  // NOTES:
-  // It MUST be destroyed AFTER the EntityManager(s) that use its components.
-  // This is because upon destruction of EntityManagers, all entities are
-  // destroyed which trigger events for removal of all their components. If
-  // the components are destroyed, the smart pointers will not let us dereference
-  // them and will trigger an assertion.
+
   core_cs::component_pool_mgr_vso compMgr;
 
   //------------------------------------------------------------------------
@@ -74,8 +74,20 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
-  quadSys.SetRenderer(renderer);
+
+  // we can have multiple systems of the same type - to avoid both systems
+  // rendering the same quad, we will use selective dispatch
+
+  typedef core_conts::Array<gfx_cs::quad_render_system_sptr> quad_sys_cont;
+
+  quad_sys_cont quadRenderSystems;
+
+  for (tl_int i = 0; i < 10; ++i)
+  {
+    quadRenderSystems.push_back(core_sptr::MakeShared<gfx_cs::QuadRenderSystem> 
+                                (eventMgr.get(), entityMgr.get()));
+    quadRenderSystems.back()->SetRenderer(renderer);
+  }
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -101,14 +113,22 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
+  for (quad_sys_cont::iterator itr = quadRenderSystems.begin(), 
+       itrEnd = quadRenderSystems.end(); itr != itrEnd; ++itr)
   {
-    math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f),
-                           math_t::Rectf32_c::height(1.5f));
+
+    math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
+                           math_t::Rectf32_c::height(0.5f));
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get())
       .TexCoords(false)
       .Dimensions(rect)
+      .DispatchTo((*itr).get())
       .Create();
+
+    tl_float x = core_rng::g_defaultRNG.GetRandomFloat(-0.5f, 0.5f);
+    tl_float y = core_rng::g_defaultRNG.GetRandomFloat(-0.5f, 0.5f);
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(x, y, 0));
 
     pref_gfx::Material(entityMgr.get(), compMgr.get()).
       Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -118,11 +138,22 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  quadSys.Initialize();
+  for (quad_sys_cont::iterator itr = quadRenderSystems.begin(), 
+       itrEnd = quadRenderSystems.end(); itr != itrEnd; ++itr)
+  {
+    (*itr)->Initialize();
+  }
   matSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
+
+  TLOC_LOG_DEFAULT_DEBUG() << "Each of the 2 QuadRenderSystem is disabled for "
+    << "1 second - thus only 1 quad should show per second";
+
+  core_time::Timer t;
+
+  tl_int prevIndex = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -130,7 +161,22 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     renderer->ApplyRenderSettings();
-    quadSys.ProcessActiveEntities();
+
+    core_time::Timer::sec_type seconds = t.ElapsedSeconds();
+
+    if (seconds > quadRenderSystems.size())
+    { t.Reset(); }
+    else
+    {
+      tl_int index = (tl_int)seconds;
+      if (index != prevIndex)
+      {
+        TLOC_LOG_DEFAULT_INFO() << "QuadRenderSystem #" << index 
+          << " processing...";
+        prevIndex = index;
+      }
+      quadRenderSystems[index]->ProcessActiveEntities();
+    }
 
     win.SwapBuffers();
   }
