@@ -41,22 +41,12 @@ TLOC_DEF_TYPE(WindowCallback);
 //------------------------------------------------------------------------
 // KeyboardCallback
 
-class MayaCam
+class Raypicker
 {
-  enum
-  {
-    k_altPressed = 0,
-    k_rotating,
-    k_panning,
-    k_dolly,
-    k_count
-  };
-
 public:
-  MayaCam(core_cs::entity_vptr a_camera, core_cs::entity_vptr a_cube)
+  Raypicker(core_cs::entity_vptr a_camera, core_cs::entity_vptr a_cube)
     : m_camera(a_camera)
     , m_cube(a_cube)
-    , m_flags(k_count)
   {
     TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
       "Camera does not have ArcBall component");
@@ -67,136 +57,24 @@ public:
   core_dispatch::Event 
     OnButtonPress(const tl_size , 
                   const input_hid::MouseEvent&, 
-                  const input_hid::MouseEvent::button_code_type a_button)
-  {
-    if (a_button == input_hid::MouseEvent::left)
-    {
-      if (m_flags.IsMarked(k_altPressed))
-      { m_flags.Mark(k_rotating); }
-      else
-      { m_flags.Unmark(k_rotating); }
-    }
-
-    if (a_button == input_hid::MouseEvent::middle)
-    {
-      if (m_flags.IsMarked(k_altPressed))
-      { m_flags.Mark(k_panning); }
-      else
-      { m_flags.Unmark(k_panning); }
-    }
-
-    if (a_button == input_hid::MouseEvent::right)
-    {
-      if (m_flags.IsMarked(k_altPressed))
-      { m_flags.Mark(k_dolly); }
-      else
-      { m_flags.Unmark(k_dolly); }
-    }
-
-    return core_dispatch::f_event::Continue();
-  }
+                  const input_hid::MouseEvent::button_code_type )
+  { return core_dispatch::f_event::Continue(); }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
     OnButtonRelease(const tl_size , 
                     const input_hid::MouseEvent&, 
-                    const input_hid::MouseEvent::button_code_type a_button)
-  {
-    if (a_button == input_hid::MouseEvent::left)
-    {
-      m_flags.Unmark(k_rotating);
-    }
-
-    if (a_button == input_hid::MouseEvent::middle)
-    {
-      m_flags.Unmark(k_panning);
-    }
-
-    if (a_button == input_hid::MouseEvent::right)
-    {
-      m_flags.Unmark(k_dolly);
-    }
-
-    return core_dispatch::f_event::Continue();
-  }
+                    const input_hid::MouseEvent::button_code_type )
+  { return core_dispatch::f_event::Continue(); }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
     OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
-    f32 xRel = core_utils::CastNumber<f32>(a_event.m_X.m_rel());
-    f32 yRel = core_utils::CastNumber<f32>(a_event.m_Y.m_rel());
-
-    if (m_flags.IsMarked(k_rotating))
-    {
-      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
-
-      arcBall->MoveVertical(yRel * 0.01f );
-      arcBall->MoveHorizontal(xRel * 0.01f );
-
-      return core_dispatch::f_event::Veto();
-    }
-    else if (m_flags.IsMarked(k_panning))
-    {
-      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
-      gfx_cs::arcball_sptr arcBall = m_camera->GetComponent<gfx_cs::ArcBall>();
-
-      math_t::Vec3f32 leftVec; t->GetOrientation().GetCol(0, leftVec);
-      math_t::Vec3f32 upVec; t->GetOrientation().GetCol(1, upVec);
-
-      leftVec *= xRel * 0.01f;
-      upVec *= yRel * 0.01f;
-
-      t->SetPosition(t->GetPosition() - leftVec + upVec);
-      arcBall->SetFocus(arcBall->GetFocus() - leftVec + upVec);
-
-      return core_dispatch::f_event::Veto();
-    }
-    else if (m_flags.IsMarked(k_dolly))
-    {
-      math_cs::transform_sptr t = m_camera->GetComponent<math_cs::Transform>();
-
-      math_t::Vec3f32 dirVec; t->GetOrientation().GetCol(2, dirVec);
-
-      dirVec *= xRel * 0.01f;
-
-      t->SetPosition(t->GetPosition() - dirVec);
-
-      return core_dispatch::f_event::Veto();
-    }
-
-    // otherwise, start picking
-
     CheckCollisionWithRay((f32)a_event.m_X.m_abs().Get(),
                           (f32)a_event.m_Y.m_abs().Get());
-
-      return core_dispatch::f_event::Continue();
-  }
-
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnKeyPress(const tl_size , const input_hid::KeyboardEvent& a_event)
-  {
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
-    {
-      m_flags.Mark(k_altPressed);
-    }
-
-    return core_dispatch::f_event::Continue();
-  }
-
-  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnKeyRelease(const tl_size , const input_hid::KeyboardEvent& a_event)
-  {
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::left_alt)
-    {
-      m_flags.Unmark(k_altPressed);
-    }
 
     return core_dispatch::f_event::Continue();
   }
@@ -258,9 +136,8 @@ public:
 
   core_cs::entity_vptr    m_camera;
   core_cs::entity_vptr    m_cube;
-  core_utils::Checkpoints m_flags;
 };
-TLOC_DEF_TYPE(MayaCam);
+TLOC_DEF_TYPE(Raypicker);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
@@ -337,6 +214,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // The camera's view transformations are calculated by the camera system
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
+  input_cs::ArcBallControlSystem arcBallControlSys(eventMgr.get(), entityMgr.get());
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
@@ -422,12 +300,19 @@ int TLOC_MAIN(int argc, char *argv[])
     .Create(win.GetDimensions());
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
+  pref_input::ArcBallControl(entityMgr.get(), cpoolMgr.get())
+    .GlobalMultiplier(math_t::Vec2f(0.01f, 0.01f))
+    .Add(m_cameraEnt);
 
   meshSys.SetCamera(m_cameraEnt);
 
-  MayaCam mayaCam(m_cameraEnt, ent);
-  keyboard->Register(&mayaCam);
-  mouse->Register(&mayaCam);
+  keyboard->Register(&arcBallControlSys);
+  mouse->Register(&arcBallControlSys);
+
+  // Raypicker MUST be registered AFTER ArcBallControlSys to ensure that
+  // camera movement does not also result in picking
+  Raypicker rayPicker(m_cameraEnt, ent);
+  mouse->Register(&rayPicker);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
@@ -436,6 +321,7 @@ int TLOC_MAIN(int argc, char *argv[])
   matSys.Initialize();
   camSys.Initialize();
   arcBallSys.Initialize();
+  arcBallControlSys.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -451,6 +337,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    arcBallControlSys.ProcessActiveEntities();
     arcBallSys.ProcessActiveEntities();
     camSys.ProcessActiveEntities();
 
