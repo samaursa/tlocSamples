@@ -128,7 +128,7 @@ public:
       }
 
       GetTextureObjectPtr()->SetParams(texParams);
-      GetTextureObjectPtr()->Update();
+      GetTextureObjectPtr()->UpdateParameters();
     }
 
     return core_dispatch::f_event::Continue();

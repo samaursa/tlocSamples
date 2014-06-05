@@ -16,7 +16,8 @@ using namespace tloc;
 
 namespace {
 
-  const tl_int g_totalSystems = 10;
+  const tl_int g_imgRows = 100;
+  const tl_int g_imgCols = 100;
 
 };
 
@@ -49,7 +50,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(500, 500),
-             gfx_win::WindowSettings("Multiple Systems (Simple)") );
+             gfx_win::WindowSettings("Texture Streaming") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -60,16 +61,16 @@ int TLOC_MAIN(int argc, char *argv[])
   // Get the default renderer
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
 
-  using namespace gfx_rend::p_renderer;
-  gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.AddClearBit<clear::ColorBufferBit>() 
-   .SetClearColor(gfx_t::Color(0.5f, 0.5f, 0.5f, 1.0f));
-  renderer->SetParams(p);
-
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
   // session/level/section.
-
+  //
+  // NOTES:
+  // It MUST be destroyed AFTER the EntityManager(s) that use its components.
+  // This is because upon destruction of EntityManagers, all entities are
+  // destroyed which trigger events for removal of all their components. If
+  // the components are destroyed, the smart pointers will not let us dereference
+  // them and will trigger an assertion.
   core_cs::component_pool_mgr_vso compMgr;
 
   //------------------------------------------------------------------------
@@ -80,20 +81,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-
-  // we can have multiple systems of the same type - to avoid both systems
-  // rendering the same quad, we will use selective dispatch
-
-  typedef core_conts::Array<gfx_cs::quad_render_system_sptr> quad_sys_cont;
-
-  quad_sys_cont quadRenderSystems;
-
-  for (tl_int i = 0; i < g_totalSystems; ++i)
-  {
-    quadRenderSystems.push_back(core_sptr::MakeShared<gfx_cs::QuadRenderSystem> 
-                                (eventMgr.get(), entityMgr.get()));
-    quadRenderSystems.back()->SetRenderer(renderer);
-  }
+  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -105,85 +94,82 @@ int TLOC_MAIN(int argc, char *argv[])
   //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/tlocPassthroughFragmentShader_gl_es_2_0.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
+
+  // -----------------------------------------------------------------------
+  // add noise
+
+  TL_NESTED_FUNC_BEGIN(AddNoise) 
+    void AddNoise(gfx_med::image_rgba_vptr a_ptr)
+  {
+    for (tl_int row = 0; row < g_imgRows; ++row)
+    {
+      for (tl_int col = 0; col < g_imgCols; ++col)
+      {
+        tl_float r = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 1.0f);
+        tl_float g = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 1.0f);
+        tl_float b = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 1.0f);
+        tl_float a = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 1.0f);
+        a_ptr->SetPixel(row, col, gfx_med::image_rgba::color_type(r, g, b, a));
+      }
+    }
+  }
+  TL_NESTED_FUNC_END();
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
-  for (quad_sys_cont::iterator itr = quadRenderSystems.begin(), 
-       itrEnd = quadRenderSystems.end(); itr != itrEnd; ++itr)
-  {
+  typedef gfx_med::image_vso  image_vso;
+  image_vso rgba;
+  rgba->Create(core_ds::MakeTuple(g_imgRows, g_imgCols),
+               gfx_med::Image::color_type::COLOR_BLACK);
 
-    math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
-                           math_t::Rectf32_c::height(0.5f));
-    core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get())
-      .TexCoords(false)
-      .Dimensions(rect)
-      .DispatchTo((*itr).get())
-      .Create();
+  gfx_gl::texture_object_vso to;
+  to->Initialize(*rgba);
+  to->Activate();
 
-    tl_float x = core_rng::g_defaultRNG.GetRandomFloat(-0.5f, 0.5f);
-    tl_float y = core_rng::g_defaultRNG.GetRandomFloat(-0.5f, 0.5f);
-    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(x, y, 0));
+  gfx_gl::uniform_vso u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
 
-    pref_gfx::Material(entityMgr.get(), compMgr.get()).
-      Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-             core_io::Path(GetAssetsPath() + shaderPathFS));
-  }
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f),
+                         math_t::Rectf32_c::height(1.5f));
+  core_cs::entity_vptr q =
+    pref_gfx::Quad(entityMgr.get(), compMgr.get()).
+    TexCoords(true).Dimensions(rect).Create();
+
+  pref_gfx::Material(entityMgr.get(), compMgr.get())
+    .AddUniform(u_to.get())
+    .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+            core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  for (quad_sys_cont::iterator itr = quadRenderSystems.begin(), 
-       itrEnd = quadRenderSystems.end(); itr != itrEnd; ++itr)
-  {
-    (*itr)->Initialize();
-  }
+  quadSys.Initialize();
   matSys.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
-
-  TLOC_LOG_DEFAULT_DEBUG() << "Each of the " << g_totalSystems
-    << " QuadRenderSystem is disabled for 1 second - thus only 1 quad should "
-    << "show per second";
-
-  core_time::Timer t;
-
-  tl_int prevIndex = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
+    TL_NESTED_CALL(AddNoise)( rgba.get() );
+    to->Update(*rgba);
+
     renderer->ApplyRenderSettings();
-
-    core_time::Timer::sec_type seconds = t.ElapsedSeconds();
-
-    if (seconds > quadRenderSystems.size())
-    { t.Reset(); }
-    else
-    {
-      tl_int index = (tl_int)seconds;
-      if (index != prevIndex)
-      {
-        TLOC_LOG_DEFAULT_INFO() << "QuadRenderSystem #" << index 
-          << " processing...";
-        prevIndex = index;
-      }
-      quadRenderSystems[index]->ProcessActiveEntities();
-    }
+    quadSys.ProcessActiveEntities();
 
     win.SwapBuffers();
   }
