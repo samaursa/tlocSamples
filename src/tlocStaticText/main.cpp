@@ -18,7 +18,7 @@ namespace {
     g_symbols = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
                 L"abcdefghijklmnopqrstuvwxyz" 
                 L"1234567890!@#$%^&*()_+-=[]" 
-                L"{}\\|;:'\",<.>/?`~ ";
+                L"{}\\|;:'\",<.>/?`~\n ";
 
 };
 
@@ -361,7 +361,20 @@ int TLOC_MAIN(int argc, char *argv[])
         .Alignment(gfx_cs::alignment::k_align_center)
         .Create(L"Z!", font1);
     ent->GetComponent<math_cs::Transformf32>()
-       ->SetPosition(math_t::Vec3f32(0.0f, -90.0f, 0));
+       ->SetPosition(math_t::Vec3f32(0.0f, -80.0f, 0));
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .AddUniform(u_toFont1.get())
+      .Add(ent, vsSource, fsSource);
+  }
+
+  {
+    core_cs::entity_vptr ent =
+      pref_gfx::StaticText(entityMgr.get(), compMgr.get())
+        .Alignment(gfx_cs::alignment::k_align_center)
+        .VerticalKerning(-2.5f)
+        .Create(L"\nThis sentence\nis a single text\ncomponent split by newlines.\n@\n", font1);
+    ent->GetComponent<math_cs::Transformf32>()
+       ->SetPosition(math_t::Vec3f32(0.0f, -80.0f, 0));
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);

@@ -18,7 +18,7 @@ namespace {
     g_symbols = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
                 L"abcdefghijklmnopqrstuvwxyz" 
                 L"1234567890!@#$%^&*()_+-=[]" 
-                L"{}\\|;:'\",<.>/?`~ ";
+                L"{}\\|;:'\",<.>/?`~\n ";
 
 };
 
@@ -219,7 +219,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::Font::Params fontParams(fSize);
   fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(10, 10));
+            .PaddingDim(core_ds::MakeTuple(0, 0));
 
   f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 
@@ -313,7 +313,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
       counter++;
 
-      core_str::String numStr = core_str::Format("%i", counter);
+      core_str::String numStr = core_str::Format("Counter\n%i", counter);
       core_str::StringW numStrW = core_str::CharAsciiToWide(numStr);
 
       dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
