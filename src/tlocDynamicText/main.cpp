@@ -201,7 +201,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Load the required font
 
   core_io::Path fontPath( (core_str::String(GetAssetsPath()) +
-    "fonts/HelveticaNeue-Light.otf" ).c_str() );
+    "fonts/VeraMono-Bold.ttf" ).c_str() );
 
   core_io::FileIO_ReadB rb(fontPath);
   rb.Open();
