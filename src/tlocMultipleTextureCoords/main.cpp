@@ -137,28 +137,23 @@ public:
 
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)
     {
-      m_spriteColor->
-        SetValueAs(red.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+      m_spriteColor->SetValueAs(red);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n2)
     {
-      m_spriteColor->
-        SetValueAs(green.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+      m_spriteColor->SetValueAs(green);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n3)
     {
-      m_spriteColor->
-        SetValueAs(yellow.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+      m_spriteColor->SetValueAs(yellow);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n4)
     {
-      m_spriteColor->
-        SetValueAs(violet.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+      m_spriteColor->SetValueAs(violet);
     }
     else if (a_event.m_keyCode == input_hid::KeyboardEvent::n5)
     {
-      m_spriteColor->
-        SetValueAs(orange.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+      m_spriteColor->SetValueAs(orange);
     }
 
     return core_dispatch::f_event::Continue();
@@ -303,8 +298,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_gl::uniform_vso u_blockColor;
 
-  u_blockColor->SetName("u_blockColor").
-    SetValueAs(red.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>() );
+  u_blockColor->SetName("u_blockColor").SetValueAs(red);
 
   // -----------------------------------------------------------------------
   // create the material from prefab
