@@ -101,7 +101,12 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
   to->Initialize(png.GetImage());
-  to->Activate();
+
+  // reserving a texture unit for a particular texture object ensures
+  // that the texture object always occupies the same texture unit.
+  // The drawback is that the rest of the application has less 
+  // texture units available per render pass.
+  to->ReserveTextureUnit();
 
   //------------------------------------------------------------------------
   // Add a texture to the material. We need:

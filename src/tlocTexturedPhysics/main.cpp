@@ -204,7 +204,6 @@ struct glProgram
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
         crateTo->Initialize(png.GetImage());
-        crateTo->Activate();
       }
       u_crateTo->SetName("shaderTexture").SetValueAs(*crateTo);
     }
@@ -224,7 +223,6 @@ struct glProgram
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
         to->Initialize(png.GetImage());
-        to->Activate();
       }
       u_henryTo->SetName("shaderTexture").SetValueAs(*to);
     }

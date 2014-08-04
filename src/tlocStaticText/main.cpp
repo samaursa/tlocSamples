@@ -154,7 +154,6 @@ int TLOC_MAIN(int argc, char *argv[])
       gfx_gl::texture_object_vso to;
 
       to->Initialize(redPng);
-      to->Activate();
 
       gfx_gl::uniform_vso u_to;
       u_to->SetName("s_texture").SetValueAs(*to);
@@ -259,7 +258,6 @@ int TLOC_MAIN(int argc, char *argv[])
     toFont1->SetParams(toParams);
 
     toFont1->Initialize(*font1->GetSpriteSheetPtr()->GetSpriteSheet());
-    toFont1->Activate();
   }
 
   gfx_gl::uniform_vso u_toFont1;
@@ -275,7 +273,6 @@ int TLOC_MAIN(int argc, char *argv[])
     toFont2->SetParams(toParams);
 
     toFont2->Initialize(*font2->GetSpriteSheetPtr()->GetSpriteSheet());
-    toFont2->Activate();
   }
 
   gfx_gl::uniform_vso u_toFont2;

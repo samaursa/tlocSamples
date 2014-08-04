@@ -203,7 +203,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
   to->Initialize(png.GetImage());
-  to->Activate();
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular

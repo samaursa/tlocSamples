@@ -92,7 +92,6 @@ int TLOC_MAIN(int argc, char *argv[])
     Image rttImg;
     rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toLeft->Initialize(rttImg);
-    toLeft->Activate();
 
     RenderbufferObject::Params rboParam;
     rboParam.InternalFormat<p_renderbuffer_object::internal_format::DepthComponent24>();
@@ -135,7 +134,6 @@ int TLOC_MAIN(int argc, char *argv[])
     Image rttImg;
     rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
     toRight->Initialize(rttImg);
-    toRight->Activate();
 
     RenderbufferObject::Params rboParam;
     if (g_renderDepthToRightViewport == false)
@@ -262,7 +260,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso crateTo;
   crateTo->Initialize(png.GetImage());
-  crateTo->Activate();
 
   gfx_gl::uniform_vso  u_crateTo;
   u_crateTo->SetName("s_texture").SetValueAs(*crateTo);

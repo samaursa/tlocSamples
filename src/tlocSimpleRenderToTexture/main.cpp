@@ -76,8 +76,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
   to->Initialize(png.GetImage());
-  to->Activate();
-
 
   // -----------------------------------------------------------------------
   // to render to texture to a quad we need a renderer with the correct
@@ -92,7 +90,6 @@ int TLOC_MAIN(int argc, char *argv[])
      gfx_med::Image::color_type::COLOR_WHITE);
 
   rttTo->Initialize(rttImg);
-  rttTo->Activate();
 
   using namespace gfx_gl::p_framebuffer_object;
   gfx_gl::framebuffer_object_sptr fbo =

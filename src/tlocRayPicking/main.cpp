@@ -159,8 +159,14 @@ struct glProgram
                         scy.ScaleDown((f32)(m_win.GetHeight() -
                                             absY - 1 )),
                         -1.0f);
+
     math_t::Ray3f ray =
       m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
+
+    TLOC_LOG_DEFAULT_DEBUG() << "Ray: " 
+      << ray.GetOrigin()[0] << ", " 
+      << ray.GetOrigin()[1] << ", " 
+      << ray.GetOrigin()[2];
 
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
@@ -275,8 +281,6 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    QuadRenderSystem  quadSys(m_eventMgr.get(), m_entityMgr.get());
-    quadSys.SetRenderer(m_renderer);
     FanRenderSystem   fanSys(m_eventMgr.get(), m_entityMgr.get());
     fanSys.SetRenderer(m_renderer);
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
@@ -303,7 +307,6 @@ struct glProgram
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
       m_texObjHenry->Initialize(image.GetImage());
-      m_texObjHenry->Activate();
 
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
@@ -324,7 +327,6 @@ struct glProgram
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
       m_texObjCrate->Initialize(image.GetImage());
-      m_texObjCrate->Activate();
 
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);
@@ -387,11 +389,9 @@ struct glProgram
       .Position(math_t::Vec3f(posX, posY, 1.0f))
       .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
-    quadSys.SetCamera(m_cameraEnt);
     fanSys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
-    quadSys.Initialize();
     fanSys.Initialize();
     camSys.Initialize();
 
@@ -430,7 +430,6 @@ struct glProgram
         matSys.ProcessActiveEntities();
 
         m_renderer->ApplyRenderSettings();
-        quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
 
         m_win.SwapBuffers();

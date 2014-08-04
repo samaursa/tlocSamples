@@ -160,7 +160,6 @@ int TLOC_MAIN(int argc, char *argv[])
   {
     gfx_gl::texture_object_vso to;
     to->Initialize(redPng);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -236,7 +235,6 @@ int TLOC_MAIN(int argc, char *argv[])
   to->SetParams(toParams);
 
   to->Initialize(*f->GetSpriteSheetPtr()->GetSpriteSheet());
-  to->Activate();
 
   gfx_gl::uniform_vso u_to;
   u_to->SetName("s_texture").SetValueAs(*to);

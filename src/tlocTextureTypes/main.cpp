@@ -109,7 +109,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*rgba);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -135,7 +134,6 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::texture_object_vso to;
 
     to->Initialize(*rgb);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -162,7 +160,6 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::texture_object_vso to;
 
     to->Initialize(*rg);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -188,7 +185,6 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::texture_object_vso to;
 
     to->Initialize(*r);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -213,7 +209,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*img);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -238,7 +233,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*img);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -263,7 +257,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*img);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -288,7 +281,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*img);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
@@ -313,7 +305,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     gfx_gl::texture_object_vso to;
     to->Initialize(*img);
-    to->Activate();
 
     gfx_gl::uniform_vso u_to;
     u_to->SetName("s_texture").SetValueAs(*to);
