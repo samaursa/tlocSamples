@@ -91,7 +91,7 @@ public:
       ta->PrevFrame();
     }
 
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::equals)
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::period_main)
     {
       const tl_size fps = ta->GetFPS();
 
@@ -102,7 +102,7 @@ public:
       TLOC_LOG_CORE_INFO() << core_str::Format("New FPS: %lu", ta->GetFPS());
     }
 
-    if (a_event.m_keyCode == input_hid::KeyboardEvent::minus_main)
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::comma)
     {
       const tl_size fps = ta->GetFPS();
 
@@ -315,8 +315,8 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "S - to toggle stop";
-  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "= - increase FPS";
-  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "- - decrease FPS";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << ", - increase FPS";
+  TLOC_LOG_CORE_DEBUG_NO_FILENAME() << ". - decrease FPS";
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "f - toggle MinFilter between Linear and Nearest";
 
