@@ -5,8 +5,6 @@
 #include <tlocPrefab/tloc_prefab.h>
 #include <tlocAnimation/tloc_animation.h>
 
-#include <tlocCore/memory/tlocLinkMe.cpp>
-
 #include <samplesAssetsPath.h>
 
 TLOC_DEFINE_THIS_FILE_NAME();

@@ -6,8 +6,6 @@
 #include <tlocPrefab/tloc_prefab.h>
 #include <tlocInput/tloc_input.h>
 
-#include <tlocCore/memory/tlocLinkMe.cpp>
-
 #include <samplesAssetsPath.h>
 
 using namespace tloc;

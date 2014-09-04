@@ -4,8 +4,6 @@
 #include <tlocInput/tloc_input.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <tlocCore/memory/tlocLinkMe.cpp>
-
 #include <samplesAssetsPath.h>
 
 TLOC_DEFINE_THIS_FILE_NAME();

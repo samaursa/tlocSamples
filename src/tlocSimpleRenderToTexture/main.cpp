@@ -3,8 +3,6 @@
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <tlocCore/memory/tlocLinkMe.cpp>
-
 #include <samplesAssetsPath.h>
 
 using namespace tloc;

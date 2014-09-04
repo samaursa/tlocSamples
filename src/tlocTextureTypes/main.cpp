@@ -5,8 +5,6 @@
 #include <tlocMath/tloc_math.inl.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <tlocCore/memory/tlocLinkMe.cpp>
-
 #include <samplesAssetsPath.h>
 
 #include <tlocCore/smart_ptr/tloc_smart_ptr.inl.h>
