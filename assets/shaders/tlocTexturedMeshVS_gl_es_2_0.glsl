@@ -5,6 +5,7 @@ attribute lowp vec3 a_vPos;
 attribute lowp vec3 a_vNorm;
 attribute lowp vec2 a_tCoord;
 uniform lowp mat4 u_mvp;
+uniform lowp vec3 u_lightDir;
 
 varying lowp vec2 v_texCoord;
 varying lowp vec3 v_norm;
@@ -33,7 +34,7 @@ void main()
   v_norm.xyz = mvpRot * v_norm;
   v_norm = normalize(v_norm);
 
-  v_lightDir = vec3(0.2, 0.5, 1.0);
+  v_lightDir = u_lightDir;
   v_lightDir = normalize(v_lightDir);
 
   v_lightDir = mvpRot * v_lightDir;

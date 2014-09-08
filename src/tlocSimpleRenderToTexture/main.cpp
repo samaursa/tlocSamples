@@ -133,9 +133,6 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
@@ -160,11 +157,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //  * a TextureObject (preparing the image for OpenGL)
   //  * a Uniform (all textures are uniforms in shaders)
   //  * a ShaderOperator (this is what the material will take)
-  //
-  // The material takes in a 'MasterShaderOperator' which is the user defined
-  // shader operator and over-rides any shader operators that the systems
-  // may be setting. Any uniforms/shaders set in the 'MasterShaderOperator'
-  // that have the same name as the one in the system will be given preference.
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);

@@ -5,6 +5,7 @@ in vec3 a_vPos;
 in vec3 a_vNorm;
 in vec2 a_tCoord;
 uniform mat4 u_mvp;
+uniform vec3 u_lightDir;
 
 out vec2 v_texCoord;
 out vec3 v_norm;
@@ -34,7 +35,7 @@ void main()
   v_norm.xyz = normalMat * v_norm;
   v_norm = normalize(v_norm);
 
-  v_lightDir = vec3(0.2f, 0.5f, 1.0f);
+  v_lightDir = u_lightDir;
   v_lightDir = normalize(v_lightDir);
 
   v_lightDir = mvpRot * v_lightDir;

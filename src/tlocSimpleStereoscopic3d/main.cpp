@@ -8,7 +8,7 @@
 
 using namespace tloc;
 
-bool          g_renderDepthToRightViewport = false;
+bool          g_renderDepthToRightViewport = true;
 bool          g_fullScreen = false;
 f32           g_convergence = 1.0f;
 f32           g_interaxial = 0.05f;
@@ -129,9 +129,20 @@ int TLOC_MAIN(int argc, char *argv[])
       texParams.Format<p_texture_object::format::DepthComponent>();
     }
     toRight = core_sptr::MakeShared<TextureObject>(texParams);
-    Image rttImg;
-    rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
-    toRight->Initialize(rttImg);
+
+    if (g_renderDepthToRightViewport)
+    {
+      image_f32_r rttImg;
+      rttImg.Create(halfWinDim, image_f32_r::color_type(1.0f));
+      toRight->Initialize(rttImg);
+    }
+    else
+    {
+      Image rttImg;
+      rttImg.Create(halfWinDim, Image::color_type::COLOR_WHITE);
+      toRight->Initialize(rttImg);
+    }
+
 
     RenderbufferObject::Params rboParam;
     if (g_renderDepthToRightViewport == false)
@@ -147,12 +158,7 @@ int TLOC_MAIN(int argc, char *argv[])
     using namespace gfx_gl::p_framebuffer_object;
     framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
     if (g_renderDepthToRightViewport)
-    {
-      fbo->Attach<target::DrawFramebuffer,
-                  attachment::ColorAttachment<0> >(*rbo);
-      fbo->Attach<target::DrawFramebuffer,
-                  attachment::Depth>(*toRight);
-    }
+    { fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*toRight); }
     else
     {
       fbo->Attach<target::DrawFramebuffer,
@@ -225,9 +231,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
     core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
@@ -314,10 +317,14 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
+  gfx_gl::uniform_vso  u_lightDir;
+  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
+
   core_cs::entity_vptr crateMesh =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_crateTo.get())
+    .AddUniform(u_lightDir.get())
     .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
                     core_io::Path(GetAssetsPath() + meshShaderPathFS));
 

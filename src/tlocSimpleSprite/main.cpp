@@ -236,9 +236,6 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
 
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
 #if defined (TLOC_OS_WIN)
     core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)

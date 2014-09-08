@@ -222,9 +222,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The fan render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
@@ -258,6 +255,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_gl::uniform_vso u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
+
+  gfx_gl::uniform_vso  u_lightDir;
+  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -387,6 +387,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
+    .AddUniform(u_lightDir.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
