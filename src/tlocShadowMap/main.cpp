@@ -330,11 +330,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
+    meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
 
     // render the scene normally
     renderer->ApplyRenderSettings();
+    meshSys.SetCamera(m_cameraEnt);
     meshSys.SetRenderer(renderer);
     meshSys.ProcessActiveEntities();
 
