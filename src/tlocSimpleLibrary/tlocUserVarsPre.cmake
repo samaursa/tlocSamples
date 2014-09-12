@@ -5,8 +5,8 @@
 
 # Do NOT remove the following variables. Modify the variables to suit your project
 set(USER_SOURCE_FILES
-  simpleGrid.h
-  simpleGrid.cpp
+  src/simpleGrid.h
+  src/simpleGrid.cpp
   )
 
 # Do not include individual assets here. Only add paths

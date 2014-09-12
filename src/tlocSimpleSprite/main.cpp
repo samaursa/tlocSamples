@@ -112,17 +112,19 @@ public:
 
     if (a_event.m_keyCode == input_hid::KeyboardEvent::f)
     {
-      gfx_gl::TextureObject::Params texParams;
+      gfx_gl::TextureObject::Params texParams = GetTextureObjectPtr()->GetParams();
 
       if (m_filterNearest)
       {
         m_filterNearest = false;
         texParams.MinFilter<gfx_gl::p_texture_object::filter::Linear>();
+        texParams.MagFilter<gfx_gl::p_texture_object::filter::Linear>();
       }
       else
       {
         m_filterNearest = true;
         texParams.MinFilter<gfx_gl::p_texture_object::filter::Nearest>();
+        texParams.MagFilter<gfx_gl::p_texture_object::filter::Nearest>();
       }
 
       GetTextureObjectPtr()->SetParams(texParams);

@@ -20,17 +20,24 @@ list(GET p2list 0 USER_BUILD_FOLDER_NAME)
 # Install function for libraries
 
 function(tloc_install_library target_name include_folder)
-  if(USER_INCLUDE_FULL_SOURCE)
-    INSTALL(DIRECTORY "${USER_PATH}/src/${target_name}/${include_folder}/" 
-      DESTINATION "${USER_INSTALL_PATH}/include/${target_name}/" 
-      FILES_MATCHING PATTERN "*.h" PATTERN "*.cpp")
+  if(DISTRIBUTION_FULL_SOURCE)
+    file(WRITE ${CMAKE_BINARY_DIR}/${target_name}Copy.cmake
+      "file(COPY \"${USER_PATH}/src/${target_name}/${include_folder}\" 
+      DESTINATION \"${USER_INSTALL_PATH}/include/${target_name}\" 
+      FILES_MATCHING PATTERN \"*.h\" PATTERN \"*.cpp\"
+      )")
   else()
-    INSTALL(DIRECTORY "${USER_PATH}/src/${target_name}/${include_folder}/" 
-      DESTINATION "${USER_INSTALL_PATH}/include/${target_name}/" 
-      FILES_MATCHING PATTERN "*.h"
-      PATTERN "*.opt.inl.h" EXCLUDE)
+    file(WRITE ${CMAKE_BINARY_DIR}/${target_name}Copy.cmake
+      "file(COPY \"${USER_PATH}/src/${target_name}/${include_folder}\" 
+      DESTINATION \"${USER_INSTALL_PATH}/include/${target_name}\" 
+      FILES_MATCHING PATTERN \"*.h\" PATTERN \"*.opt.inl.h\" EXCLUDE
+      )")
   endif()
+
+  add_custom_command(TARGET ${target_name} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/${target_name}Copy.cmake")
 endfunction()
+
 
 #------------------------------------------------------------------------------
 # CACHE Variables
