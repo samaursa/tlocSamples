@@ -52,6 +52,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_rend::Renderer::Params p(renderer->GetParams());
   p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
    .Enable<enable_disable::DepthTest>()
+   .Disable<enable_disable::CullFace>()
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
 
@@ -94,6 +95,7 @@ int TLOC_MAIN(int argc, char *argv[])
       .AddClearBit<clear::DepthBufferBit>()
       .Enable<enable_disable::DepthTest>()
       .Enable<enable_disable::CullFace>()
+      .Cull<cull_face::Front>()
       .SetClearColor(gfx_t::Color::COLOR_WHITE)
       .SetDimensions(core_ds::MakeTuple(rttImg.GetWidth(), rttImg.GetHeight()));
 
@@ -392,11 +394,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
-    glCullFace(GL_FRONT);
     meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
-    glCullFace(GL_BACK);
 
     // render the scene normally
     renderer->ApplyRenderSettings();
