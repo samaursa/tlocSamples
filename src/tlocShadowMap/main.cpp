@@ -93,6 +93,7 @@ int TLOC_MAIN(int argc, char *argv[])
   pRtt.AddClearBit<clear::ColorBufferBit>()
       .AddClearBit<clear::DepthBufferBit>()
       .Enable<enable_disable::DepthTest>()
+      .Enable<enable_disable::CullFace>()
       .SetClearColor(gfx_t::Color::COLOR_WHITE)
       .SetDimensions(core_ds::MakeTuple(rttImg.GetWidth(), rttImg.GetHeight()));
 
@@ -158,7 +159,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshVS.glsl");
+    core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS.glsl");
     core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
@@ -166,94 +167,28 @@ int TLOC_MAIN(int argc, char *argv[])
 #endif
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshFS.glsl");
-    core_str::String shaderPathQuadFS("/shaders/tlocOneTextureFS.glsl");
+    core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshShadowFS.glsl");
+    core_str::String shaderPathQuadFS("/shaders/tlocOneTextureNoFlipFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
-    core_str::String shaderPathQuadFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+    core_str::String shaderPathQuadFS("/shaders/tlocOneTextureNoFlipFS_gl_es_2_0.glsl");
 #endif
-
-  // -----------------------------------------------------------------------
-  // Load the required resources
-
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) +
-                       "/images/crateTexture.png").c_str() );
-
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT_FALSE("Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
-
-  // -----------------------------------------------------------------------
-  // Add a texture to the material. We need:
-  //  * an image
-  //  * a TextureObject (preparing the image for OpenGL)
-  //  * a Uniform (all textures are uniforms in shaders)
-  //  * a ShaderOperator (this is what the material will take)
-
-  // -----------------------------------------------------------------------
-  // ObjLoader can load (basic) .obj files
-
-  path = core_io::Path( (core_str::String(GetAssetsPath()) +
-                         "/models/Crate.obj").c_str() );
-
-  core_io::FileIO_ReadA objFile(path);
-  if (objFile.Open() != ErrorSuccess)
-  { 
-    TLOC_LOG_GFX_ERR() << "Unable to open the .obj file."; 
-    return 1;
-  }
-
-  core_str::String objFileContents;
-  objFile.GetContents(objFileContents);
-
-  gfx_med::ObjLoader objLoader;
-  if (objLoader.Init(objFileContents) != ErrorSuccess)
-  { 
-    TLOC_LOG_GFX_ERR() << "Parsing errors in .obj file.";
-    return 1;
-  }
-
-  if (objLoader.GetNumGroups() == 0)
-  { 
-    TLOC_LOG_GFX_ERR() << "Obj file does not have any objects.";
-    return 1;
-  }
-
-  gfx_med::ObjLoader::vert_cont_type vertices;
-  objLoader.GetUnpacked(vertices, 0);
-
-  // -----------------------------------------------------------------------
-  // Create the mesh and add the material
-
-  core_cs::entity_vptr ent =
-    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
-
-  gfx_gl::uniform_vso  u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
-
-  gfx_gl::uniform_vso  u_lightDir;
-  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
-
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
-    .AddUniform(u_to.get())
-    .AddUniform(u_lightDir.get())
-    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathMeshVS),
-              core_io::Path(GetAssetsPath() + shaderPathMeshFS));
 
   // -----------------------------------------------------------------------
   // Create the quad and add the material
 
   using math_t::Rectf32_c;
-  Rectf32_c rectDim(Rectf32_c::width(0.2f), Rectf32_c::height(0.2f));
+  Rectf32_c rectDim(Rectf32_c::width(0.5f), Rectf32_c::height(0.5f));
 
   core_cs::entity_vptr rttQuad = 
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(rectDim)
     .Create();
+
+  rttQuad->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(1.0f - rectDim.GetWidth() * 0.5f, 
+                                1.0f - rectDim.GetHeight() * 0.5f, 
+                                0.0f));
 
   gfx_gl::uniform_vso u_toRtt;
   u_toRtt->SetName("s_texture").SetValueAs(*rttTo);
@@ -284,9 +219,11 @@ int TLOC_MAIN(int argc, char *argv[])
     .Near(1.0f)
     .Far(100.0f)
     .VerticalFOV(math_t::Degree(60.0f))
-    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Position(math_t::Vec3f(4.0f, 4.0f, 4.0f))
     .Create(win.GetDimensions());
 
+  m_lightCamera->GetComponent<gfx_cs::Camera>()->
+    LookAt(math_t::Vec3f32::ZERO);
 
   pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
   pref_input::ArcBallControl(entityMgr.get(), cpoolMgr.get())
@@ -299,6 +236,132 @@ int TLOC_MAIN(int argc, char *argv[])
   keyboard->Register(&arcBallControlSystem);
   mouse->Register(&arcBallControlSystem);
 
+  // initialize the camera system early and process it once to update all
+  // transformations
+  camSys.Initialize();
+  camSys.ProcessActiveEntities();
+
+  // -----------------------------------------------------------------------
+  // Load a grayscale texture
+
+  gfx_gl::texture_object_vso crateTextureTo;
+  {
+    gfx_med::ImageLoaderPng png;
+    core_io::Path path(( core_str::String(GetAssetsPath()) +
+      "/images/crateTexture.png" ).c_str());
+
+    if (png.Load(path) != ErrorSuccess)
+    { TLOC_ASSERT_FALSE("Image did not load!"); }
+
+    // gl::Uniform supports quite a few types, including a TextureObject
+    crateTextureTo->Initialize(png.GetImage());
+  }
+
+  gfx_gl::texture_object_vso to;
+  {
+    gfx_med::Image grayCol;
+    grayCol.Create(core_ds::MakeTuple(2, 2),
+                   gfx_med::Image::color_type::COLOR_GREY);
+
+    // gl::Uniform supports quite a few types, including a TextureObject
+    to->Initialize(grayCol);
+  }
+
+  // -----------------------------------------------------------------------
+  // ObjLoader can load (basic) .obj files
+
+  core_str::String objFileContents;
+  {
+    core_io::Path path = core_io::Path(( core_str::String(GetAssetsPath()) +
+      "/models/Crate.obj" ).c_str());
+
+    core_io::FileIO_ReadA objFile(path);
+    if (objFile.Open() != ErrorSuccess)
+    { TLOC_LOG_GFX_ERR() << "Unable to open the .obj file."; return 1; }
+
+    objFile.GetContents(objFileContents);
+  }
+
+  gfx_med::ObjLoader::vert_cont_type vertices;
+  {
+    gfx_med::ObjLoader objLoader;
+    if (objLoader.Init(objFileContents) != ErrorSuccess)
+    { TLOC_LOG_GFX_ERR() << "Parsing errors in .obj file."; return 1; }
+
+    if (objLoader.GetNumGroups() == 0)
+    { TLOC_LOG_GFX_ERR() << "Obj file does not have any objects."; return 1; }
+
+    objLoader.GetUnpacked(vertices, 0);
+  }
+
+  // -----------------------------------------------------------------------
+  // For shadow maps, we need the MVP matrix of the light with a scaling 
+  // matrix
+
+  math_cs::Transform::transform_type lightCamTrans = 
+    m_lightCamera->GetComponent<math_cs::Transform>()->GetTransformation();
+
+  const math_t::Vec3f32 lightDir = 
+    lightCamTrans.GetCol(2).ConvertTo<math_t::Vec3f32>();
+
+  // the bias matrix - this is need to convert the NDC coordinates to texture
+  // space coordinates (i.e. from -1,1 to 0,1).
+  // to put it another way: v_screen = v_NDC * 0.5 + 0.5;
+  const math_t::Mat4f32 lightMVPBias(0.5f, 0.0f, 0.0f, 0.5f,
+                                     0.0f, 0.5f, 0.0f, 0.5f,
+                                     0.0f, 0.0f, 0.5f, 0.5f,
+                                     0.0f, 0.0f, 0.0f, 1.0f);
+
+  gfx_cs::Camera::matrix_type lightMVP = 
+    m_lightCamera->GetComponent<gfx_cs::Camera>()->GetViewProjRef();
+
+  lightMVP = lightMVPBias * lightMVP;
+
+  // -----------------------------------------------------------------------
+  // Create the mesh and add the material
+
+  core_cs::entity_vptr ent =
+    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+
+  using math_t::Cuboidf32;
+  Cuboidf32 cubSize(Cuboidf32::width(10.0f),
+                    Cuboidf32::height(0.1f), 
+                    Cuboidf32::depth(10.0f));
+  cubSize.Offset(Cuboidf32::point_type(0, -2.0f, 0));
+
+  core_cs::entity_vptr floorMesh = 
+    pref_gfx::Cuboid(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(cubSize)
+    .Create();
+
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*crateTextureTo);
+
+  gfx_gl::uniform_vso  u_toShadowMap;
+  u_toShadowMap->SetName("s_shadowMap").SetValueAs(*rttTo);
+
+  gfx_gl::uniform_vso  u_lightDir;
+  u_lightDir->SetName("u_lightDir").SetValueAs(lightDir);
+
+  gfx_gl::uniform_vso  u_lightMVP;
+  u_lightMVP->SetName("u_lightMVP").SetValueAs(lightMVP);
+
+  pref_gfx::Material meshMat(entityMgr.get(), cpoolMgr.get());
+  meshMat.AddUniform(u_to.get())
+         .AddUniform(u_lightDir.get())
+         .AddUniform(u_toShadowMap.get()) 
+         .AddUniform(u_lightMVP.get());
+
+  meshMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
+                   core_io::Path(GetAssetsPath() + shaderPathMeshFS));
+
+  // change the texture to grayscale - over-riding does not change the previously
+  // applied material because the uniforms are copied
+  u_to->SetValueAs(*to);
+
+  meshMat.Add(floorMesh, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
+                         core_io::Path(GetAssetsPath() + shaderPathMeshFS));
+
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
@@ -306,7 +369,6 @@ int TLOC_MAIN(int argc, char *argv[])
   meshSys.Initialize();
   matSys.Initialize();
   quadSys.Initialize();
-  camSys.Initialize();
   arcBallSys.Initialize();
   arcBallControlSystem.Initialize();
 
@@ -330,9 +392,11 @@ int TLOC_MAIN(int argc, char *argv[])
 
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
+    glCullFace(GL_FRONT);
     meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
+    glCullFace(GL_BACK);
 
     // render the scene normally
     renderer->ApplyRenderSettings();
