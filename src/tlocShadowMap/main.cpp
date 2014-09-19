@@ -322,19 +322,21 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::entity_vptr ent =
+  core_cs::entity_vptr crateEnt =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
 
   using math_t::Cuboidf32;
   Cuboidf32 cubSize(Cuboidf32::width(10.0f),
                     Cuboidf32::height(0.1f), 
                     Cuboidf32::depth(10.0f));
-  cubSize.Offset(Cuboidf32::point_type(0, -2.0f, 0));
 
   core_cs::entity_vptr floorMesh = 
     pref_gfx::Cuboid(entityMgr.get(), cpoolMgr.get())
     .Dimensions(cubSize)
     .Create();
+
+  floorMesh->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(0, -2.0f, 0));
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*crateTextureTo);
@@ -354,7 +356,7 @@ int TLOC_MAIN(int argc, char *argv[])
          .AddUniform(u_toShadowMap.get()) 
          .AddUniform(u_lightMVP.get());
 
-  meshMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
+  meshMat.Add(crateEnt, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
                    core_io::Path(GetAssetsPath() + shaderPathMeshFS));
 
   // change the texture to grayscale - over-riding does not change the previously
@@ -380,6 +382,8 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << 
     "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
 
+  math_t::Degree d(0.0f);
+
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -392,20 +396,30 @@ int TLOC_MAIN(int argc, char *argv[])
     arcBallSys.ProcessActiveEntities();
     camSys.ProcessActiveEntities();
 
+    // rotate the crate
+    math_t::Mat3f32 newRot;
+    newRot.MakeRotationY(d);
+    d += 1.0f;
+    crateEnt->GetComponent<math_cs::Transform>()->SetOrientation(newRot);
+
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
+    meshSys.SetEnabledUniformModelMatrix(false);
     meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
 
     // render the scene normally
     renderer->ApplyRenderSettings();
+    meshSys.SetEnabledUniformModelMatrix(true);
     meshSys.SetCamera(m_cameraEnt);
     meshSys.SetRenderer(renderer);
     meshSys.ProcessActiveEntities();
 
+    rttQuad->Deactivate(); // to avoid rendering its coordinates
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
+    rttQuad->Activate();
 
     // draw the quad on top layer
     quadSys.ProcessActiveEntities();

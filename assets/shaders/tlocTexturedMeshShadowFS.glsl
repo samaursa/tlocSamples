@@ -29,7 +29,7 @@ void main()
   
   float vis = 1.0;
   if( (fragmentDepth - shadowDepth) > - 0.00001)
-  { vis = 0.1; }
+  { vis = 0.2; }
 
   o_color = o_color * vis;
 }
