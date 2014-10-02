@@ -8,7 +8,7 @@
 
 using namespace tloc;
 
-bool          g_renderDepthToRightViewport = true;
+bool          g_renderDepthToRightViewport = false;
 bool          g_fullScreen = false;
 f32           g_convergence = 1.0f;
 f32           g_interaxial = 0.05f;
