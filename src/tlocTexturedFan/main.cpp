@@ -113,8 +113,8 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
 
-  gfx_gl::shader_operator_vso so;
-  so->AddUniform(*u_to);
+  gfx_gl::uniform_vso  u_to2;
+  u_to2->SetName("s_texture").SetValueAs(*to);
 
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
@@ -124,6 +124,12 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
     .Sides(64).Circle(circ).Create();
 
+  math_t::Circlef32 circ2(math_t::Circlef32::radius(0.5f));
+
+  core_cs::entity_vptr q2 =
+    pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
+    .Sides(3).Circle(circ2).Create();
+
   // -----------------------------------------------------------------------
   // The prefab library can also create the material for us and attach it
   // to the entity
@@ -131,6 +137,11 @@ int TLOC_MAIN(int argc, char *argv[])
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+            core_io::Path(GetAssetsPath() + shaderPathFS));
+
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    .AddUniform(u_to2.get())
+    .Add(q2, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------

@@ -241,10 +241,10 @@ struct glProgram
               ->GetComponent<gfx_cs::Material>();
 
     PROFILE_START();
-    const tl_int repeat = 150;
+    const tl_int repeat = 200;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
-      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-5.0f, 5.0f);
+      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 480.0f);
 
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
@@ -272,7 +272,7 @@ struct glProgram
         // Create a fan ent
         Circlef32 circle( Circlef32::radius(1.5f) );
         ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
-          .Sides(8)
+          .Sides(30)
           .Circle(circle)
           .Create();
 
@@ -297,7 +297,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
-        .Sides(12).Circle(circle).Create();
+        .Sides(30).Circle(circle).Create();
 
       box2d::rigid_body_def_sptr rbDef =
         core_sptr::MakeShared<box2d::RigidBodyDef>();
