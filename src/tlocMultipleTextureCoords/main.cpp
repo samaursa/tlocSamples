@@ -237,6 +237,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // system to render this primitive
   gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
+  //quadSys.SetEnabledUseVBOs(false);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system

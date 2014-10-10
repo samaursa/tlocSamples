@@ -27,5 +27,6 @@ build*/**
 buildx64/**
 *.res
 *.swp
+samplesAssetsPath.h
 tlocAssetsPath.h
 tlocVersionFilePath.h
