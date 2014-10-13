@@ -396,11 +396,12 @@ struct glProgram
       {
         m_renderFrameTime.Reset();
 
+        if (m_keyPresses.IsMarked(key_pause) == false)
+        { physicsSys.ProcessActiveEntities(); }
+
         // Since all systems use one renderer, we need to do this only once
         m_renderer->ApplyRenderSettings();
-
         camSys.ProcessActiveEntities();
-        physicsSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
         quadSys.ProcessActiveEntities();
         fanSys.ProcessActiveEntities();
