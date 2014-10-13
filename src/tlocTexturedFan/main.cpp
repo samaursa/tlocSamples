@@ -120,15 +120,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // The prefab library has some prefabricated entities for us
 
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::entity_vptr q =
+  core_cs::entity_vptr ent =
     pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
     .Sides(64).Circle(circ).Create();
-
-  math_t::Circlef32 circ2(math_t::Circlef32::radius(0.5f));
-
-  core_cs::entity_vptr q2 =
-    pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
-    .Sides(3).Circle(circ2).Create();
 
   // -----------------------------------------------------------------------
   // The prefab library can also create the material for us and attach it
@@ -136,12 +130,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
-    .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
-            core_io::Path(GetAssetsPath() + shaderPathFS));
-
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
-    .AddUniform(u_to2.get())
-    .Add(q2, core_io::Path(GetAssetsPath() + shaderPathVS),
+    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));
 
   //------------------------------------------------------------------------
@@ -152,6 +141,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Main loop
+
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;

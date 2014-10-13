@@ -378,7 +378,7 @@ int TLOC_MAIN(int argc, char *argv[])
     "Unexpected number of shader operators");
 
   gfx_cs::Material::shader_op_ptr spriteEntMatSo =
-    spriteEntMat->GetShaderOperators()[0].get();
+    spriteEntMat->GetShaderOperators().front().get();
 
   gfx_gl::ShaderOperator::uniform_iterator itr =
     core::find_if(spriteEntMatSo->begin_uniforms(),
