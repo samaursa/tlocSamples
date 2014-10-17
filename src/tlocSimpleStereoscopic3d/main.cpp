@@ -132,8 +132,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (g_renderDepthToRightViewport)
     {
-      image_f32_r rttImg;
-      rttImg.Create(halfWinDim, image_f32_r::color_type(1.0f));
+      image_u16_r rttImg;
+      rttImg.Create(halfWinDim, image_u16_r::color_type(0));
       toRight->Initialize(rttImg);
     }
     else
@@ -196,12 +196,17 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::keyboard_b_vptr keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::mouse_b_vptr    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::keyboard_b_vptr
+    keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::mouse_b_vptr
+    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::touch_surface_b_vptr
+    touchSurface = inputMgr->CreateHID<input_hid::TouchSurfaceB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   // -----------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
@@ -286,7 +291,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // ObjLoader can load (basic) .obj files
 
   path = core_io::Path( (core_str::String(GetAssetsPath()) +
-                         "/models/crate.obj").c_str() );
+                         "/models/Crate.obj").c_str() );
 
   core_io::FileIO_ReadA objFile(path);
   if (objFile.Open() != ErrorSuccess)
@@ -415,6 +420,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   keyboard->Register(&arcBallControlSys);
   mouse->Register(&arcBallControlSys);
+  touchSurface->Register(&arcBallControlSys);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once

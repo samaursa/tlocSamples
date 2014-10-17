@@ -75,10 +75,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_gl::texture_object_vso rttTo;
   rttTo->SetParams(rttToParams);
-  gfx_med::image_f32_r rttImg;
+  gfx_med::image_u16_r rttImg;
 
   rttImg.Create(core_ds::MakeTuple(1024, 1024),
-                gfx_med::image_f32_r::color_type());
+                gfx_med::image_u16_r::color_type());
   rttTo->Initialize(rttImg);
 
   using namespace gfx_gl::p_framebuffer_object;
@@ -113,12 +113,17 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::keyboard_b_vptr keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::mouse_b_vptr    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::keyboard_b_vptr
+    keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::mouse_b_vptr
+    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::touch_surface_b_vptr
+    touchSurface = inputMgr->CreateHID<input_hid::TouchSurfaceB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
@@ -164,7 +169,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS.glsl");
     core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+    core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS_gl_es_2_0.glsl");
     core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
 
@@ -172,7 +177,7 @@ int TLOC_MAIN(int argc, char *argv[])
     core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshShadowFS.glsl");
     core_str::String shaderPathQuadFS("/shaders/tlocOneTextureNoFlipFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+    core_str::String shaderPathMeshFS("/shaders/tlocTexturedMeshShadowFS_gl_es_2_0.glsl");
     core_str::String shaderPathQuadFS("/shaders/tlocOneTextureNoFlipFS_gl_es_2_0.glsl");
 #endif
 
@@ -237,6 +242,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   keyboard->Register(&arcBallControlSystem);
   mouse->Register(&arcBallControlSystem);
+  touchSurface->Register(&arcBallControlSystem);
 
   // initialize the camera system early and process it once to update all
   // transformations
