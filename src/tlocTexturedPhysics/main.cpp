@@ -543,8 +543,6 @@ TLOC_DEF_TYPE(glProgram);
 
 int TLOC_MAIN(int, char* [])
 {
-  core_mem::tracking::DoDisableTracking();
-
   glProgram p;
   p.Initialize();
   p.RunGame();
