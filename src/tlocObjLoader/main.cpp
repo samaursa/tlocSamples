@@ -98,6 +98,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
   gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
+  meshSys.SetEnabledUniformNormalMatrix(true);
   meshSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
