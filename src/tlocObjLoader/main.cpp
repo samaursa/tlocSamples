@@ -76,12 +76,17 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::keyboard_b_vptr keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
-  input_hid::mouse_b_vptr    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::keyboard_b_vptr
+    keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  input_hid::mouse_b_vptr
+    mouse = inputMgr->CreateHID<input_hid::MouseB>();
+  input_hid::touch_surface_b_vptr
+    touchSurface = inputMgr->CreateHID<input_hid::TouchSurfaceB>();
 
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
   TLOC_ASSERT_NOT_NULL(mouse);
+  TLOC_ASSERT_NOT_NULL(touchSurface);
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
@@ -225,6 +230,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   keyboard->Register(&arcBallControlSystem);
   mouse->Register(&arcBallControlSystem);
+  touchSurface->Register(&arcBallControlSystem);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
