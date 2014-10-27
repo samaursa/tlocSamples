@@ -416,10 +416,10 @@ int TLOC_MAIN(int argc, char *argv[])
     meshSys.SetRenderer(renderer);
     meshSys.ProcessActiveEntities();
 
-    rttQuad->Deactivate(); // to avoid rendering its coordinates
+    entityMgr->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
-    rttQuad->Activate();
+    entityMgr->ActivateEntity(rttQuad);
 
     // draw the quad on top layer
     quadSys.ProcessActiveEntities();

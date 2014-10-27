@@ -25,5 +25,3 @@ list(APPEND USER_EXECUTABLE_PROJECTS "tlocRayPicking;")
 list(APPEND USER_EXECUTABLE_PROJECTS "tlocRayPicking3d;")
 
 set(USER_LIBRARY_PROJECTS "tlocSimpleLibrary")
-
-set(USER_ASSETS_PATH "${CMAKE_SOURCE_DIR}/src/samplesAssetsPath.h")

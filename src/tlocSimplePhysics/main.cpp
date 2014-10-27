@@ -153,8 +153,11 @@ int TLOC_MAIN(int argc, char *argv[])
     }
 
     // Wrap the quad
-    core_cs::ComponentMapper<phys_cs::RigidBody> rbList =
-      q->GetComponents(phys_cs::components::k_rigidBody);
+    core_cs::ComponentMapper<phys_cs::RigidBody, 
+                             core_cs::Entity::const_component_iterator> rbList
+      ( q->begin_components<phys_cs::RigidBody>(),
+        q->end_components<phys_cs::RigidBody>());
+    
     if (rbList.size())
     {
       phys_cs::rigid_body_sptr myRb = rbList[0];

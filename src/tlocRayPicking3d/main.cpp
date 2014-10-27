@@ -46,7 +46,7 @@ public:
     : m_camera(a_camera)
     , m_cube(a_cube)
   {
-    TLOC_ASSERT(a_camera->HasComponent(gfx_cs::components::arcball),
+    TLOC_ASSERT(a_camera->HasComponent<gfx_cs::ArcBall>(),
       "Camera does not have ArcBall component");
   }
 
