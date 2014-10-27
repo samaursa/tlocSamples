@@ -12,5 +12,5 @@ void main()
   lowp float multiplier = dot(v_lightDir, v_norm);
   multiplier = clamp(multiplier, 0.1, 1.0);
   gl_FragColor.rgb = texture2D(s_texture, vec2(v_texCoord[0], 1.0 - v_texCoord[1])).rgb;
-  gl_FragColor = gl_FragColor * multiplier;
+  gl_FragColor.rgb = gl_FragColor.rgb * multiplier;
 }
