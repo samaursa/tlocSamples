@@ -253,7 +253,7 @@ int TLOC_MAIN(int argc, char *argv[])
     .Create(L"SkopWorks", f);
 
   dTextFixed->GetComponent<math_cs::Transform>()->
-    SetPosition(math_t::Vec3f32(0, 30, 0));
+    SetPosition(math_t::Vec3f32(0, 60, 0));
   
   pref_gfx::Material(entityMgr.get(), compMgr.get())
     .AddUniform(u_to.get())
@@ -336,12 +336,24 @@ int TLOC_MAIN(int argc, char *argv[])
       gfx_cs::dynamic_text_sptr dt = 
         dText->GetComponent<gfx_cs::DynamicText>(); 
 
+      math_cs::transform_sptr dtFixedTrans =
+        dTextFixed->GetComponent<math_cs::Transform>();
+
       if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
-      { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
+      { 
+        dt->SetAlignment(gfx_cs::alignment::k_align_right);
+        dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
+      }
       else if (dt->GetAlignment() == gfx_cs::alignment::k_align_right)
-      { dt->SetAlignment(gfx_cs::alignment::k_align_left); }
+      { 
+        dt->SetAlignment(gfx_cs::alignment::k_align_left);
+        dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
+      }
       else
-      { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
+      { 
+        dt->SetAlignment(gfx_cs::alignment::k_align_center);
+        dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
+      }
 
       tAlign.Reset();
     }
