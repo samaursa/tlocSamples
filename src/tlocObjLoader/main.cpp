@@ -247,12 +247,23 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_CORE_DEBUG() << 
     "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
+  TLOC_LOG_CORE_DEBUG() << "Press L to LookAt() the crate";
+  TLOC_LOG_CORE_DEBUG() << "Press F to focus on the crate";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
+
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::l))
+    {
+      m_cameraEnt->GetComponent<gfx_cs::Camera>()->LookAt(math_t::Vec3f32(0, 0, 0));
+    }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::f))
+    {
+      m_cameraEnt->GetComponent<gfx_cs::ArcBall>()->SetFocus(math_t::Vec3f32(0, 0, 0));
+    }
 
     inputMgr->Update();
 
