@@ -89,7 +89,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   rttTo->Initialize(rttImg);
 
-  using namespace gfx_gl::p_framebuffer_object;
+  using namespace gfx_gl::p_fbo;
   gfx_gl::framebuffer_object_sptr fbo =
     core_sptr::MakeShared<gfx_gl::FramebufferObject>();
   

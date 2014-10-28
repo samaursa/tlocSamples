@@ -246,9 +246,22 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
     .Alignment(gfx_cs::alignment::k_align_right)
     .Create(L"High Score", f);
+
+  core_cs::entity_vptr dTextFixed = 
+    pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
+    .Alignment(gfx_cs::alignment::k_align_center)
+    .Create(L"SkopWorks", f);
+
+  dTextFixed->GetComponent<math_cs::Transform>()->
+    SetPosition(math_t::Vec3f32(0, 30, 0));
+  
   pref_gfx::Material(entityMgr.get(), compMgr.get())
     .AddUniform(u_to.get())
     .Add(dText, vsSource, fsSource);
+
+  entityMgr->InsertComponent
+    (core_cs::EntityManager::Params(dTextFixed, 
+                                    dText->GetComponent<gfx_cs::Material>()) );
 
   // test to see if deactivation works - we should never see the "High Score" 
   // text being displayed
@@ -302,13 +315,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (tStartTime.ElapsedSeconds() > 1.0f && t.ElapsedSeconds() > 0.01f)
     {
-      if (dText->IsActive() == false)
-      { 
-        gfx_cs::f_scene_graph::ActivateHierarchy(entityMgr.get(), dText);
-        textSys->ProcessActiveEntities(); // force a refresh of the system to
-                                          // void High Score from showing
-      }
-
       counter++;
 
       core_str::String numStr = core_str::Format("Counter\n%i", counter);
@@ -316,6 +322,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
       dText->GetComponent<gfx_cs::DynamicText>()->Set(numStrW);
       t.Reset();
+
+      if (dText->IsActive() == false)
+      { 
+        gfx_cs::f_scene_graph::ActivateHierarchy(entityMgr.get(), dText);
+        textSys->ProcessActiveEntities(); // force a refresh of the system to
+                                          // void High Score from showing
+      }
     }
     
     if (tAlign.ElapsedSeconds() > 1.0f)
@@ -325,7 +338,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
       if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
       { dt->SetAlignment(gfx_cs::alignment::k_align_right); }
-      else 
+      else if (dt->GetAlignment() == gfx_cs::alignment::k_align_right)
+      { dt->SetAlignment(gfx_cs::alignment::k_align_left); }
+      else
       { dt->SetAlignment(gfx_cs::alignment::k_align_center); }
 
       tAlign.Reset();
