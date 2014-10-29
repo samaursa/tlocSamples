@@ -74,6 +74,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // system to render this primitive
   gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
+  quadSys.SetEnabledSortingByMaterial(false);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -117,6 +118,8 @@ int TLOC_MAIN(int argc, char *argv[])
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
 
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0));
+
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -141,6 +144,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
+
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.1f));
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
@@ -168,6 +173,8 @@ int TLOC_MAIN(int argc, char *argv[])
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
 
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.2f));
+
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -193,6 +200,8 @@ int TLOC_MAIN(int argc, char *argv[])
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
 
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.3f));
+
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -216,6 +225,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
+
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.4f));
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
@@ -241,6 +252,8 @@ int TLOC_MAIN(int argc, char *argv[])
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
 
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.5f));
+
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -264,6 +277,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
+
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.6f));
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
@@ -289,6 +304,8 @@ int TLOC_MAIN(int argc, char *argv[])
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
 
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.7f));
+
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -312,6 +329,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr q =
       pref_gfx::Quad(entityMgr.get(), compMgr.get()).
       TexCoords(true).Dimensions(rect).Create();
+
+    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.8f));
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_to.get())
