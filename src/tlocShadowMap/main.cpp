@@ -81,7 +81,7 @@ int TLOC_MAIN(int argc, char *argv[])
                 gfx_med::image_u16_r::color_type());
   rttTo->Initialize(rttImg);
 
-  using namespace gfx_gl::p_framebuffer_object;
+  using namespace gfx_gl::p_fbo;
 
   gfx_gl::framebuffer_object_sptr fbo = 
     core_sptr::MakeShared<gfx_gl::FramebufferObject>();
@@ -390,6 +390,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Degree d(0.0f);
 
+  core_time::Timer rotTimer;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -403,10 +404,15 @@ int TLOC_MAIN(int argc, char *argv[])
     camSys.ProcessActiveEntities();
 
     // rotate the crate
-    math_t::Mat3f32 newRot;
-    newRot.MakeRotationY(d);
-    d += 1.0f;
-    crateEnt->GetComponent<math_cs::Transform>()->SetOrientation(newRot);
+    if (rotTimer.ElapsedMilliSeconds() > 16)
+    {
+      math_t::Mat3f32 newRot;
+      newRot.MakeRotationY(d);
+      d += 1.0f;
+      crateEnt->GetComponent<math_cs::Transform>()->SetOrientation(newRot);
+
+      rotTimer.Reset();
+    }
 
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
