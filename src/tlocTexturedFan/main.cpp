@@ -3,7 +3,7 @@
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 using namespace tloc;
 

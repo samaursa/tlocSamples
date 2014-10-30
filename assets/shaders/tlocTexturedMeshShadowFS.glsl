@@ -14,10 +14,10 @@ void main()
 {
   vec3 lightColor = vec3(1, 1, 1);
 
-  float multiplier = dot(v_lightDir, v_norm);
-  multiplier = clamp(multiplier, 0.1, 1.0);
-	o_color = texture2D(s_texture, vec2(v_texCoord[0], 1.0 - v_texCoord[1])).rgb;
-  o_color = o_color * multiplier;
+  float diffMult = dot(v_lightDir, v_norm);
+  diffMult = clamp(diffMult, 0.1, 1.0);
+
+	vec3 pixelColor = texture2D(s_texture, vec2(v_texCoord[0], 1.0 - v_texCoord[1])).rgb;
 
   vec3 positionLtNDC = v_shadowCoord.xyz / v_shadowCoord.w;
   vec3 positionLtScreen = positionLtNDC;
@@ -27,9 +27,11 @@ void main()
 
   float shadowDepth = texture(s_shadowMap, shadowTexCoord).r;
   
-  float vis = 1.0;
+  float shadowMult = 1.0;
   if( (fragmentDepth - shadowDepth) > - 0.00001)
-  { vis = 0.2; }
+  { shadowMult = 0.5; }
 
-  o_color = o_color * vis;
+  float ambient = 0.1;
+
+  o_color = pixelColor * (ambient + shadowMult * diffMult);
 }

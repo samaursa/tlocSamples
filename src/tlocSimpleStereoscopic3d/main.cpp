@@ -4,7 +4,7 @@
 #include <tlocMath/tloc_math.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 using namespace tloc;
 
@@ -99,7 +99,7 @@ int TLOC_MAIN(int argc, char *argv[])
     rbo = core_sptr::MakeShared<RenderbufferObject>(rboParam);
     rbo->Initialize();
 
-    using namespace gfx_gl::p_framebuffer_object;
+    using namespace gfx_gl::p_fbo;
     framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
     fbo->Attach<target::Framebuffer,
                 attachment::ColorAttachment<0> >(*toLeft);
@@ -155,7 +155,7 @@ int TLOC_MAIN(int argc, char *argv[])
     rbo = core_sptr::MakeShared<RenderbufferObject>(rboParam);
     rbo->Initialize();
 
-    using namespace gfx_gl::p_framebuffer_object;
+    using namespace gfx_gl::p_fbo;
     framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
     if (g_renderDepthToRightViewport)
     { fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*toRight); }

@@ -4,8 +4,13 @@
 in vec3 a_vPos;
 in vec3 a_vNorm;
 in vec2 a_tCoord;
+
 uniform mat4 u_mvp;
+uniform mat4 u_mvMat;
+uniform mat4 u_viewMat;
 uniform mat4 u_modelMat;
+uniform mat3 u_normalMat;
+
 uniform mat4 u_lightMVP;
 uniform vec3 u_lightDir;
 
@@ -27,12 +32,9 @@ void main()
   // will transform both just to be 'correct'
   v_norm = a_vNorm;
 
-  mat3 normalMat = mat3(u_modelMat);
-  normalMat = inverse(normalMat);
-  normalMat = transpose(normalMat);
-  v_norm.xyz = normalMat * v_norm;
+  v_norm.xyz = u_normalMat * v_norm;
   v_norm = normalize(v_norm);
 
-  v_lightDir = u_lightDir;
+  v_lightDir = mat3(u_viewMat) * u_lightDir;
   v_lightDir = normalize(v_lightDir);
 }

@@ -4,7 +4,7 @@
 #include <tlocInput/tloc_input.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 TLOC_DEFINE_THIS_FILE_NAME();
 
@@ -370,8 +370,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // our uniforms/attributes are always copied - in order to change the
   // material's uniform/attributes we must first get pointers to the
   // uniform/attribute we are looking for
-  //
-  // TODO: Make this into a meta function in the engine
 
   gfx_cs::material_sptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
   TLOC_ASSERT(spriteEntMat->GetShaderOperators().size() == 1,
@@ -380,13 +378,11 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::Material::shader_op_ptr spriteEntMatSo =
     spriteEntMat->GetShaderOperators().front().get();
 
-  gfx_gl::ShaderOperator::uniform_iterator itr =
-    core::find_if(spriteEntMatSo->begin_uniforms(),
-    spriteEntMatSo->end_uniforms(), gfx_gl::algos::shader_operator::compare::UniformName(u_blockColor->GetName()) );
+  gfx_gl::uniform_vptr blockColorPtr = 
+    gfx_gl::f_shader_operator::GetUniform(*spriteEntMatSo, u_blockColor->GetName());
+  TLOC_ASSERT_NOT_NULL(blockColorPtr);
 
-  TLOC_ASSERT(itr != spriteEntMatSo->end_uniforms(), "Could not find the uniform");
-
-  KeyboardCallback kb(spriteEnt, itr->first.get());
+  KeyboardCallback kb(spriteEnt, blockColorPtr);
   keyboard->Register(&kb);
   touchSurface->Register(&kb);
 

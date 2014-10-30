@@ -5,7 +5,7 @@
 #include <tlocMath/tloc_math.inl.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 #include <tlocCore/smart_ptr/tloc_smart_ptr.inl.h>
 #include <tlocCore/containers/tlocArray.inl.h>
