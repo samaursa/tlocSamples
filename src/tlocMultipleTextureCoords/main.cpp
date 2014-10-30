@@ -4,7 +4,7 @@
 #include <tlocInput/tloc_input.h>
 #include <tlocPrefab/tloc_prefab.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 TLOC_DEFINE_THIS_FILE_NAME();
 

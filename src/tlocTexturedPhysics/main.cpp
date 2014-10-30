@@ -16,7 +16,7 @@
 #include <tlocPrefab/tloc_prefab.h>
 #include <tlocPrefab/tloc_prefab.inl.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 using namespace tloc;
 

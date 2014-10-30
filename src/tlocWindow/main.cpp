@@ -1,7 +1,7 @@
 #include <tlocCore/tloc_core.h>
 #include <tlocGraphics/tloc_graphics.h>
 
-#include <samplesAssetsPath.h>
+#include <gameAssetsPath.h>
 
 using namespace tloc;
 
