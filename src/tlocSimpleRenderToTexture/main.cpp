@@ -82,12 +82,24 @@ int TLOC_MAIN(int argc, char *argv[])
   // For rendering to a texture we need a texture object and a render buffer
   // to render the depth
   gfx_gl::texture_object_vso rttTo;
-  gfx_med::Image rttImg;
-  rttImg.Create
-    (core_ds::MakeTuple(g_rttResX, g_rttResY),
-     gfx_med::Image::color_type::COLOR_WHITE);
+  {
+    gfx_med::Image rttImg;
+    rttImg.Create
+      (core_ds::MakeTuple(g_rttResX, g_rttResY),
+       gfx_med::Image::color_type::COLOR_WHITE);
 
-  rttTo->Initialize(rttImg);
+    rttTo->Initialize(rttImg);
+  }
+
+  gfx_gl::texture_object_vso rttTo2;
+  {
+    gfx_med::Image rttImg;
+    rttImg.Create
+      (core_ds::MakeTuple(g_rttResX, g_rttResY),
+       gfx_med::Image::color_type::COLOR_WHITE);
+
+    rttTo2->Initialize(rttImg);
+  }
 
   using namespace gfx_gl::p_fbo;
   gfx_gl::framebuffer_object_sptr fbo =
@@ -95,6 +107,9 @@ int TLOC_MAIN(int argc, char *argv[])
   
   fbo->Attach<target::DrawFramebuffer,
               attachment::ColorAttachment<0> >(*rttTo);
+
+  fbo->Attach<target::DrawFramebuffer,
+              attachment::ColorAttachment<1> >(*rttTo2);
 
   using namespace gfx_rend::p_renderer;
   gfx_rend::Renderer::Params p;
@@ -140,7 +155,7 @@ int TLOC_MAIN(int argc, char *argv[])
 #endif
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
+    core_str::String shaderPathFS("/shaders/tlocOneTextureMultipleOutsFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
@@ -170,6 +185,9 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso u_rttTo;
   u_rttTo->SetName("s_texture").SetValueAs(rttTo.get());
 
+  gfx_gl::uniform_vso u_rttTo2;
+  u_rttTo2->SetName("s_texture").SetValueAs(rttTo2.get());
+
   gfx_gl::uniform_vso  u_blur;
   u_blur->SetName("u_blur").SetValueAs(5);
 
@@ -182,6 +200,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 
+  // the circle that will be rendered to textures
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::entity_vptr q = pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
     .Sides(64).Circle(circ).Create();
@@ -191,17 +210,36 @@ int TLOC_MAIN(int argc, char *argv[])
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
 
-  math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f), 
-                         math_t::Rectf32_c::height(1.5f));
-  core_cs::entity_vptr fullScreenQuad =
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.6f), 
+                         math_t::Rectf32_c::height(0.6f));
+
+  // the first quad with the circle diffuse render
+  core_cs::entity_vptr diffuseQuad =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
     .Dimensions(rect).Create();
+  diffuseQuad->GetComponent<math_cs::Transform>()
+    ->SetPosition(math_t::Vec3f32(-0.5f, 0, 0));
 
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
-    .Add(fullScreenQuad,
+    .Add(diffuseQuad,
+         core_io::Path(shaderPathVS),
+         core_io::Path(shaderPathBlurFS));
+
+  // the second quad rendering the circle using texcoords
+  core_cs::entity_vptr texQuad =
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(rect).Create();
+  texQuad->GetComponent<math_cs::Transform>()
+    ->SetPosition(math_t::Vec3f32(0.5f, 0, 0));
+
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    .AssetsPath(GetAssetsPath())
+    .AddUniform(u_rttTo2.get()).AddUniform(u_blur.get())
+    .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
+    .Add(texQuad,
          core_io::Path(shaderPathVS),
          core_io::Path(shaderPathBlurFS));
 
