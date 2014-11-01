@@ -85,9 +85,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShaderCustomColor.glsl");
 #elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShaderCustomColor_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
@@ -108,8 +108,18 @@ int TLOC_MAIN(int argc, char *argv[])
       .Dimensions(rect)
       .Create();
 
-    pref_gfx::Material(entityMgr.get(), compMgr.get()).
-      Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
+    gfx_gl::attributeVBO_vso a_color;
+    core_conts::Array<math_t::Vec4f32> colors;
+    colors.push_back(gfx_t::Color::COLOR_WHITE.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
+    colors.push_back(gfx_t::Color::COLOR_MAGENTA.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
+    colors.push_back(gfx_t::Color::COLOR_GREEN.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
+    colors.push_back(gfx_t::Color::COLOR_RED.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
+    a_color->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, gfx_gl::p_vbo::usage::StaticDraw>(colors)
+           .AddName("a_color");
+    q->GetComponent<gfx_cs::Quad>()->GetShaderOperator()->AddAttributeVBO(*a_color);
+
+    pref_gfx::Material(entityMgr.get(), compMgr.get())
+      .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
              core_io::Path(GetAssetsPath() + shaderPathFS));
   }
 

@@ -310,10 +310,7 @@ struct glProgram
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
 
-      gl::shader_operator_vso so;
-      so->AddUniform(*uniform);
-
-      m_henryMat->AddShaderOperator(*so);
+      m_henryMat->AddUniform(*uniform);
     }
 
     {
@@ -330,10 +327,7 @@ struct glProgram
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);
 
-      gl::shader_operator_vso so;
-      so->AddUniform(*uniform);
-
-      m_crateMat->AddShaderOperator(*so);
+      m_crateMat->AddUniform(*uniform);
     }
 
     // Create internal materials

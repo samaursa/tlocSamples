@@ -372,15 +372,14 @@ int TLOC_MAIN(int argc, char *argv[])
   // uniform/attribute we are looking for
 
   gfx_cs::material_sptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
-  TLOC_ASSERT(spriteEntMat->GetShaderOperators().size() == 1,
+  TLOC_ASSERT(spriteEntMat->size_uniforms() == 2,
     "Unexpected number of shader operators");
 
-  gfx_cs::Material::shader_op_ptr spriteEntMatSo =
-    spriteEntMat->GetShaderOperators().front().get();
-
-  gfx_gl::uniform_vptr blockColorPtr = 
-    gfx_gl::f_shader_operator::GetUniform(*spriteEntMatSo, u_blockColor->GetName());
-  TLOC_ASSERT_NOT_NULL(blockColorPtr);
+  auto uniformItr = spriteEntMat->begin_uniforms();
+  ++uniformItr; // block color is the second uniform
+  gfx_gl::uniform_vptr blockColorPtr = uniformItr->first.get();
+  TLOC_ASSERT(blockColorPtr->GetName().compare("u_blockColor") == 0, 
+              "Wrong uniform.");
 
   KeyboardCallback kb(spriteEnt, blockColorPtr);
   keyboard->Register(&kb);
