@@ -5,6 +5,8 @@ attribute mediump vec3 a_vPos;
 attribute lowp vec3 a_vNorm;
 attribute lowp vec2 a_tCoord;
 uniform lowp mat4 u_mvp;
+uniform lowp mat4 u_viewMat;
+uniform lowp mat3 u_normalMat;
 uniform lowp vec3 u_lightDir;
 
 varying lowp vec2 v_texCoord;
@@ -17,23 +19,13 @@ void main()
 
   v_texCoord = a_tCoord;
 
-  // need this matrix for later calculations
-  lowp mat3 mvpRot;
-  mvpRot[0] = u_mvp[0].xyz;
-  mvpRot[1] = u_mvp[1].xyz;
-  mvpRot[2] = u_mvp[2].xyz;
-
   // We need the light to be stationary. We can achieve
   // this by either not transforming the normals or 
   // transforming the light as well as the normals. We
   // will transform both just to be 'correct'
   v_norm = a_vNorm;
+  v_norm = u_normalMat * v_norm;
  
-  v_norm.xyz = mvpRot * v_norm;
-  v_norm = normalize(v_norm);
-
-  v_lightDir = u_lightDir;
-  v_lightDir = normalize(v_lightDir);
-
-  v_lightDir = mvpRot * v_lightDir;
+  v_lightDir = normalize(u_lightDir);
+  v_lightDir = mat3(u_viewMat) * v_lightDir;
 }
