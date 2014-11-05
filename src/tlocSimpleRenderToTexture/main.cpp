@@ -91,6 +91,7 @@ int TLOC_MAIN(int argc, char *argv[])
     rttTo->Initialize(rttImg);
   }
 
+#if defined (TLOC_OS_WIN)
   gfx_gl::texture_object_vso rttTo2;
   {
     gfx_med::Image rttImg;
@@ -100,6 +101,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     rttTo2->Initialize(rttImg);
   }
+#endif
 
   using namespace gfx_gl::p_fbo;
   gfx_gl::framebuffer_object_sptr fbo =
@@ -108,8 +110,10 @@ int TLOC_MAIN(int argc, char *argv[])
   fbo->Attach<target::DrawFramebuffer,
               attachment::ColorAttachment<0> >(*rttTo);
 
+#if defined (TLOC_OS_WIN)
   fbo->Attach<target::DrawFramebuffer,
               attachment::ColorAttachment<1> >(*rttTo2);
+#endif
 
   using namespace gfx_rend::p_renderer;
   gfx_rend::Renderer::Params p;
@@ -185,8 +189,10 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso u_rttTo;
   u_rttTo->SetName("s_texture").SetValueAs(rttTo.get());
 
+#if defined (TLOC_OS_WIN)
   gfx_gl::uniform_vso u_rttTo2;
   u_rttTo2->SetName("s_texture").SetValueAs(rttTo2.get());
+#endif
 
   gfx_gl::uniform_vso  u_blur;
   u_blur->SetName("u_blur").SetValueAs(5);
@@ -210,7 +216,8 @@ int TLOC_MAIN(int argc, char *argv[])
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
 
-  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.6f), 
+#if defined (TLOC_OS_WIN)
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.6f),
                          math_t::Rectf32_c::height(0.6f));
 
   // the first quad with the circle diffuse render
@@ -242,6 +249,24 @@ int TLOC_MAIN(int argc, char *argv[])
     .Add(texQuad,
          core_io::Path(shaderPathVS),
          core_io::Path(shaderPathBlurFS));
+
+#elif defined (TLOC_OS_IPHONE)
+  math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f),
+                         math_t::Rectf32_c::height(1.5f));
+
+  // the first quad with the circle diffuse render
+  core_cs::entity_vptr fullScreenQuad =
+    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(rect).Create();
+
+  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+    .AssetsPath(GetAssetsPath())
+    .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
+    .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
+    .Add(fullScreenQuad,
+         core_io::Path(shaderPathVS),
+         core_io::Path(shaderPathBlurFS));
+#endif
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once

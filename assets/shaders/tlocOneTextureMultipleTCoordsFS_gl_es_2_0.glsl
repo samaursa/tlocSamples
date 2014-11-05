@@ -13,7 +13,9 @@ void main()
 
   lowp vec4 tex2Col = texture2D(s_texture, vec2(v_texCoord2[0], 1.0 - v_texCoord2[1]));
  
-  if (tex2Col.rgb == vec3(1.0, 1.0, 1.0))
+  if (tex2Col.r > 0.0 && 
+      tex2Col.g > 0.0 &&
+      tex2Col.b > 0.0)
   {
     lowp vec4 currCol = gl_FragColor;
 
@@ -34,7 +36,7 @@ void main()
 
     currCol = clamp(currCol, 0.0, 1.0);
 
-    gl_FragColor = currCol;
+    gl_FragColor = (currCol * (vec4(1.0, 1.0, 1.0, 1.0) - tex2Col)) + (currCol * tex2Col);
   }
 
 }
