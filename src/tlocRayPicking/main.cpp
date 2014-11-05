@@ -153,7 +153,7 @@ struct glProgram
     // width of the window inclusive.
 #if defined (TLOC_OS_WIN)
     f32 maxHeightInput = (f32)m_win.GetHeight();
-    f32 maxWidthInput = (f32)m_win.GetHeight();
+    f32 maxWidthInput = (f32)m_win.GetWidth();
 #elif defined (TLOC_OS_IPHONE)
     f32 maxWidthInput = (f32)m_win.GetWidth() + 1.0f;
     f32 maxHeightInput = (f32)m_win.GetHeight() + 1.0f;
