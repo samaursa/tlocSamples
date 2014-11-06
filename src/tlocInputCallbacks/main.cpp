@@ -261,14 +261,27 @@ int TLOC_MAIN(int, char**)
     inputMgr->CreateHID<input_hid::MouseB>();
   input_hid::touch_surface_b_vptr touchSurface =
     inputMgr->CreateHID<input_hid::TouchSurfaceB>();
-  input_hid::joystick_b_vptr      joystick = 
-    inputMgr->CreateHID<input_hid::JoystickB>();
+
+  core_conts::ArrayFixed<input_hid::joystick_b_vptr, 4> joysticks;
+
+  for (tl_int i = 0; i < 4; ++i)
+  {
+    auto joystick = inputMgr->CreateHID<input_hid::JoystickB>();
+    if (joystick)
+    { joysticks.push_back(joystick); }
+    else
+    { break; }
+  }
+
+  if (joysticks.size() == 0)
+  { TLOC_LOG_CORE_WARN() << "No joysticks detected"; }
+  else
+  { TLOC_LOG_CORE_DEBUG() << joysticks.size() << " joysticks detected"; }
 
   // Check pointers
   TLOC_LOG_CORE_WARN_IF(keyboard == nullptr) << "No keyboard detected";
   TLOC_LOG_CORE_WARN_IF(mouse == nullptr) << "No mouse detected";
   TLOC_LOG_CORE_WARN_IF(touchSurface == nullptr) << "No touchSurface detected";
-  TLOC_LOG_CORE_WARN_IF(joystick == nullptr) << "No joystick detected";
 
   //------------------------------------------------------------------------
   // Creating Keyboard and mouse callbacks and registering them with their
@@ -287,8 +300,11 @@ int TLOC_MAIN(int, char**)
   { touchSurface->Register(&touchCallback); }
 
   JoystickCallback  joystickCallback;
-  if (joystick)
-  { joystick->Register(&joystickCallback); }
+  core::for_each_all(joysticks, [&joystickCallback]
+                     (input_hid::joystick_b_vptr& joyPtr) 
+  {
+    joyPtr->Register(&joystickCallback);
+  });
 
   //------------------------------------------------------------------------
   // In order to update at a pre-defined time interval, a timer must be created
