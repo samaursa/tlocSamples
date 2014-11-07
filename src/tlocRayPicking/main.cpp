@@ -148,15 +148,25 @@ struct glProgram
     typedef math_utils::scale_f32_f32::range_large range_large;
     using namespace core::component_system;
 
+    // NOTE: The input range is normally 0, to the height or width of the window
+    // exclusive. However on iOS the input range is from 0 to the height or
+    // width of the window inclusive.
+#if defined (TLOC_OS_WIN)
+    f32 maxHeightInput = (f32)m_win.GetHeight();
+    f32 maxWidthInput = (f32)m_win.GetWidth();
+#elif defined (TLOC_OS_IPHONE)
+    f32 maxWidthInput = (f32)m_win.GetWidth() + 1.0f;
+    f32 maxHeightInput = (f32)m_win.GetHeight() + 1.0f;
+#endif
+
     range_small smallR(-1.0f, 1.1f);
-    range_large largeRX(0.0f, (f32)m_win.GetWidth());
-    range_large largeRY(0.0f, (f32)m_win.GetHeight());
+    range_large largeRX(0.0f, maxWidthInput);
+    range_large largeRY(0.0f, maxHeightInput);
     scale_f32_f32 scx(smallR, largeRX);
     scale_f32_f32 scy(smallR, largeRY);
 
     math_t::Vec3f32 xyz(scx.ScaleDown((f32)(absX) ),
-                        scy.ScaleDown((f32)(m_win.GetHeight() -
-                                            absY - 1 )),
+                        scy.ScaleDown((f32)(maxHeightInput - absY - 1 )),
                         -1.0f);
 
     math_t::Ray3f ray =
