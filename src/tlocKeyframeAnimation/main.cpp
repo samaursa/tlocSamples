@@ -151,7 +151,7 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
+  win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
     gfx_win::WindowSettings("Keyframe Animation") );
 
   //------------------------------------------------------------------------

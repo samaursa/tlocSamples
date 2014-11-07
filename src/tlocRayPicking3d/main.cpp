@@ -85,13 +85,13 @@ public:
     using namespace core::component_system;
 
     range_small smallR(-1.0f, 1.1f);
-    range_large largeRX(0.0f, 1024.0f);
-    range_large largeRY(0.0f, 768.0f);
+    range_large largeRX(0.0f, 800.0f);
+    range_large largeRY(0.0f, 600.0f);
     scale_f32_f32 scx(smallR, largeRX);
     scale_f32_f32 scy(smallR, largeRY);
 
     math_t::Vec3f32 xyz(scx.ScaleDown((f32)(absX) ),
-      scy.ScaleDown((f32)(768.0f - absY - 1 )), -1.0f);
+      scy.ScaleDown((f32)(600.0f - absY - 1 )), -1.0f);
     math_t::Ray3f ray =
       m_camera->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
 
@@ -145,7 +145,7 @@ int TLOC_MAIN(int argc, char *argv[])
   WindowCallback  winCallback;
 
   win.Register(&winCallback);
-  win.Create( gfx_win::Window::graphics_mode::Properties(1024, 768),
+  win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
     gfx_win::WindowSettings("Raypicking 3D") );
 
   //------------------------------------------------------------------------

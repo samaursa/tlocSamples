@@ -265,7 +265,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // test to see if deactivation works - we should never see the "High Score" 
   // text being displayed
-  gfx_cs::f_scene_graph::DeactivateHierarchy(entityMgr.get(), dText);
+  gfx_cs::f_scene_graph::DeactivateHierarchy( dText);
 
   // -----------------------------------------------------------------------
   // create a camera
@@ -325,9 +325,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
       if (dText->IsActive() == false)
       { 
-        gfx_cs::f_scene_graph::ActivateHierarchy(entityMgr.get(), dText);
+        gfx_cs::f_scene_graph::ActivateHierarchy(dText);
         textSys->ProcessActiveEntities(); // force a refresh of the system to
-                                          // void High Score from showing
+                                          // avoid High Score from showing
       }
     }
     

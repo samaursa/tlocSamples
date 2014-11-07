@@ -68,7 +68,7 @@ struct glProgram
   void Initialize()
   {
     // trying to match iPad retina display ratio (not resolution)
-    m_win.Create(graphics_mode::Properties(1024, 768),
+    m_win.Create(graphics_mode::Properties(800, 600),
                  gfx_win::WindowSettings("Raypicking 2D"));
 
     ParamList<core_t::Any> params;
