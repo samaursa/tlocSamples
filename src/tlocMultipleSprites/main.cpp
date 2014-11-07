@@ -204,7 +204,7 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_rend::Renderer::Params p(renderer->GetParams());
     p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
       .SetBlendFunction<blend_function::SourceAlpha,
-      blend_function::OneMinusSourceAlpha>()
+                        blend_function::OneMinusSourceAlpha>()
       .Enable<enable_disable::Blend>()
       .AddClearBit<clear::ColorBufferBit>();
 

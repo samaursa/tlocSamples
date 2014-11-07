@@ -53,17 +53,17 @@ public:
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnButtonPress(const tl_size , 
-                  const input_hid::MouseEvent&, 
-                  const input_hid::MouseEvent::button_code_type )
+    OnMouseButtonPress(const tl_size , 
+                       const input_hid::MouseEvent&, 
+                       const input_hid::MouseEvent::button_code_type )
   { return core_dispatch::f_event::Continue(); }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnButtonRelease(const tl_size , 
-                    const input_hid::MouseEvent&, 
-                    const input_hid::MouseEvent::button_code_type )
+    OnMouseButtonRelease(const tl_size , 
+                         const input_hid::MouseEvent&, 
+                         const input_hid::MouseEvent::button_code_type )
   { return core_dispatch::f_event::Continue(); }
 
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

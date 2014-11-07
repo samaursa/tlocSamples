@@ -113,9 +113,6 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
 
-  gfx_gl::uniform_vso  u_to2;
-  u_to2->SetName("s_texture").SetValueAs(*to);
-
   //------------------------------------------------------------------------
   // The prefab library has some prefabricated entities for us
 

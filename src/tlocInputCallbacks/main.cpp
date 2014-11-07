@@ -79,9 +79,9 @@ public:
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnButtonPress(const tl_size a_caller, 
-                  const input_hid::MouseEvent& a_event, 
-                  const input_hid::MouseEvent::button_code_type)
+    OnMouseButtonPress(const tl_size a_caller, 
+                       const input_hid::MouseEvent& a_event, 
+                       const input_hid::MouseEvent::button_code_type)
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %i pushed a button. Button state is: %i", 
@@ -93,9 +93,9 @@ public:
   // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnButtonRelease(const tl_size a_caller, 
-                    const input_hid::MouseEvent& a_event, 
-                    const input_hid::MouseEvent::button_code_type)
+    OnMouseButtonRelease(const tl_size a_caller, 
+                         const input_hid::MouseEvent& a_event, 
+                         const input_hid::MouseEvent::button_code_type)
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %i released a button. Button state is %i", 
@@ -170,9 +170,9 @@ class JoystickCallback
 {
 public:
   core_dispatch::Event 
-    OnButtonPress(const tl_size a_caller, 
-                  const input_hid::JoystickEvent& , 
-                  tl_int a_buttonIndex) const
+    OnJoystickButtonPress(const tl_size a_caller, 
+                          const input_hid::JoystickEvent& , 
+                          tl_int a_buttonIndex) const
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %lu joystick button(%i) press", a_caller, a_buttonIndex);
@@ -181,9 +181,9 @@ public:
   }
 
   core_dispatch::Event 
-    OnButtonRelease(const tl_size a_caller,
-                    const input_hid::JoystickEvent& , 
-                    tl_int a_buttonIndex) const
+    OnJoystickButtonRelease(const tl_size a_caller,
+                            const input_hid::JoystickEvent& , 
+                            tl_int a_buttonIndex) const
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %lu joystick button(%i) release", a_caller, a_buttonIndex);
@@ -192,10 +192,11 @@ public:
   }
 
   core_dispatch::Event 
-    OnAxisChange(const tl_size a_caller,
-                 const input_hid::JoystickEvent& , 
-                 tl_int a_axisIndex, 
-                 input_hid::JoystickEvent::axis_type a_axis) const
+    OnJoystickAxisChange(const tl_size a_caller,
+                         const input_hid::JoystickEvent& , 
+                         tl_int a_axisIndex, 
+                         input_hid::JoystickEvent::axis_type a_axis,
+                         input_hid::JoystickEvent::axis_type_norm) const
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %lu joystick axis(%i) change: %i, %i, %i", 
@@ -205,10 +206,10 @@ public:
   }
 
   core_dispatch::Event 
-    OnSliderChange(const tl_size a_caller, 
-                   const input_hid::JoystickEvent& , 
-                   tl_int a_sliderIndex, 
-                   input_hid::JoystickEvent::slider_type a_slider) const
+    OnJoystickSliderChange(const tl_size a_caller, 
+                           const input_hid::JoystickEvent& , 
+                           tl_int a_sliderIndex, 
+                           input_hid::JoystickEvent::slider_type a_slider) const
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %lu joystick slider(%i) change: %i, %i", 
@@ -218,10 +219,10 @@ public:
   }
 
   core_dispatch::Event 
-    OnPOVChange(const tl_size a_caller, 
-                const input_hid::JoystickEvent& , 
-                tl_int a_povIndex, 
-                input_hid::JoystickEvent::pov_type a_pov) const
+    OnJoystickPOVChange(const tl_size a_caller, 
+                        const input_hid::JoystickEvent& , 
+                        tl_int a_povIndex, 
+                        input_hid::JoystickEvent::pov_type a_pov) const
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %lu joystick pov(%i) change: %s", 
