@@ -401,6 +401,7 @@ struct glProgram
 
         // Since all systems use one renderer, we need to do this only once
         m_renderer->ApplyRenderSettings();
+        m_entityMgr->Update();
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
         quadSys.ProcessActiveEntities();

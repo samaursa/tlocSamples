@@ -285,6 +285,7 @@ int TLOC_MAIN(int, char**)
       inputMgr->Update();
 
       renderer->ApplyRenderSettings();
+      ecs.Update();
       ecs.Process(0.016f);
 
       g_win.SwapBuffers();
