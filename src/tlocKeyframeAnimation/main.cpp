@@ -474,13 +474,8 @@ int TLOC_MAIN(int argc, char *argv[])
   }
 
   // -----------------------------------------------------------------------
-  // cleanup
-
-  g_tformAnimComp.reset();
-
-  // -----------------------------------------------------------------------
   // Exiting
-  TLOC_LOG_CORE_INFO() << "Existing normally from sample";
+  TLOC_LOG_CORE_INFO() << "Exiting normally from sample";
 
   return 0;
 

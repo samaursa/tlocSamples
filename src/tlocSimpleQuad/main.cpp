@@ -108,15 +108,43 @@ int TLOC_MAIN(int argc, char *argv[])
       .Dimensions(rect)
       .Create();
 
-    gfx_gl::attributeVBO_vso a_color;
-    core_conts::Array<math_t::Vec4f32> colors;
-    colors.push_back(gfx_t::Color::COLOR_WHITE.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
-    colors.push_back(gfx_t::Color::COLOR_MAGENTA.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
-    colors.push_back(gfx_t::Color::COLOR_GREEN.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
-    colors.push_back(gfx_t::Color::COLOR_RED.GetAs<gfx_t::p_color::format::RGBA, math_t::Vec4f32>());
-    a_color->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, gfx_gl::p_vbo::usage::StaticDraw>(colors)
-           .AddName("a_color");
-    q->GetComponent<gfx_cs::Quad>()->GetShaderOperator()->AddAttributeVBO(*a_color);
+    {
+      gfx_gl::attributeVBO_vso a_color;
+      core_conts::Array<math_t::Mat4f32> colors;
+      {
+        auto colMat = math_t::Mat4f::IDENTITY;
+        colMat.SetCol(0, math_t::Vec4f(1, 0, 0, 0));
+        colMat.SetCol(1, math_t::Vec4f(1, 1, 0, 0));
+        colMat.SetCol(2, math_t::Vec4f(0, 1, 1, 0));
+        colMat.SetCol(3, math_t::Vec4f(0, 0, 1, 0));
+
+        colors.push_back(colMat);
+        colors.push_back(colMat);
+        colors.push_back(colMat);
+        colors.push_back(colMat);
+      }
+
+      a_color->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
+                          gfx_gl::p_vbo::usage::StaticDraw>(colors)
+                          .AddName("a_color");
+      q->GetComponent<gfx_cs::Quad>()->GetShaderOperator()->AddAttributeVBO(*a_color);
+    }
+
+    {
+      gfx_gl::attributeVBO_vso a_index;
+      core_conts::Array<f32> indexes;
+      {
+        indexes.push_back(0);
+        indexes.push_back(1);
+        indexes.push_back(2);
+        indexes.push_back(3);
+      }
+
+      a_index->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
+                          gfx_gl::p_vbo::usage::StaticDraw>(indexes) 
+                          .AddName("a_index");
+      q->GetComponent<gfx_cs::Quad>()->GetShaderOperator()->AddAttributeVBO(*a_index);
+    }
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
