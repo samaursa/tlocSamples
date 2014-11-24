@@ -96,15 +96,18 @@ public:
       core_str::Format("Caller %lu joystick axis(%i) change: %f, %f, %f", 
       a_caller, a_axisIndex, a_axisNorm[0], a_axisNorm[1], a_axisNorm[2]);
 
+    // flip vertical
+    a_axisNorm[1] *= -1;
+    auto scaledXY = a_axisNorm.ConvertTo<math_t::Vec2f32>() * 0.5f * (f32) g_win.GetWidth();
     if (a_axisIndex == 0)
     { 
       m_axis1->GetComponent<math_cs::Transform>()->
-        SetPosition(math_t::Vec3f32(a_axisNorm) * 0.5f * (f32)g_win.GetWidth()); 
+        SetPosition(math_t::Vec3f32(scaledXY, a_axisNorm[2])); 
     }
     else if (a_axisIndex == 1)
     { 
       m_axis2->GetComponent<math_cs::Transform>()->
-        SetPosition(math_t::Vec3f32(a_axisNorm) * 0.5f * (f32)g_win.GetWidth()); 
+        SetPosition(math_t::Vec3f32(scaledXY, a_axisNorm[2])); 
     }
 
     return core_dispatch::f_event::Continue();
@@ -202,6 +205,10 @@ int TLOC_MAIN(int, char**)
   auto quadSys = ecs.AddSystem<gfx_cs::QuadRenderSystem>();
   quadSys->SetRenderer(g_win.GetRenderer());
 
+  auto dts = ecs.AddSystem<gfx_cs::DebugTransformRenderSystem>();
+  dts->SetScale(15.0f);
+  dts->SetRenderer(g_win.GetRenderer());
+
   ecs.AddSystem<gfx_cs::MaterialSystem>();
 
   gfx_med::ImageLoaderPng png;
@@ -254,11 +261,12 @@ int TLOC_MAIN(int, char**)
   auto camEnt = ecs.CreatePrefab<pref_gfx::Camera>() 
                    .Near(0.1f)
                    .Far(100.0f)
-                   .Position(math_t::Vec3f(0, 0, 1.0f))
+                   .Position(math_t::Vec3f(0, 0, 5.0f))
                    .Perspective(false)
                    .Create(g_win.GetDimensions()); 
 
   quadSys->SetCamera(camEnt);
+  dts->SetCamera(camEnt);
 
   // -----------------------------------------------------------------------
 
