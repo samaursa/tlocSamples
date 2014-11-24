@@ -250,6 +250,8 @@ int TLOC_MAIN(int argc, char *argv[])
     "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
   TLOC_LOG_CORE_DEBUG() << "Press L to LookAt() the crate";
   TLOC_LOG_CORE_DEBUG() << "Press F to focus on the crate";
+  TLOC_LOG_CORE_DEBUG() << "Press E to enable an INVALID uniform";
+  TLOC_LOG_CORE_DEBUG() << "Press D to disable the INVALID uniform";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
@@ -259,12 +261,23 @@ int TLOC_MAIN(int argc, char *argv[])
 
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::l))
     {
-      m_cameraEnt->GetComponent<gfx_cs::Camera>()->LookAt(math_t::Vec3f32(0, 0, 0));
+      auto cam = m_cameraEnt->GetComponent<gfx_cs::Camera>();
+      cam->LookAt(math_t::Vec3f32(0, 0, 0));
     }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::f))
     {
-      m_cameraEnt->GetComponent<gfx_cs::ArcBall>()->SetFocus(math_t::Vec3f32(0, 0, 0));
+      auto arcball = m_cameraEnt->GetComponent<gfx_cs::ArcBall>();
+      arcball->SetFocus(math_t::Vec3f32(0, 0, 0));
     }
+
+    // force shader warnings by enabling a uniform that the shader can't handle
+    // this is mainly to test whether the render system responds to uniforms
+    // being enabled/disabled
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
+    { meshSys.SetEnabledUniformScaleMatrix(true); }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
+    { meshSys.SetEnabledUniformScaleMatrix(false); }
+
 
     inputMgr->Update();
 
