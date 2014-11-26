@@ -212,7 +212,7 @@ struct glProgram
         gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != m_crateMat)
-        { *mat = *m_crateMat;}
+        { *mat = *m_crateMat; }
 
         TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
       }
