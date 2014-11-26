@@ -333,6 +333,9 @@ int TLOC_MAIN(int argc, char *argv[])
     .Add(crateMesh, core_io::Path(GetAssetsPath() + meshShaderPathVS),
                     core_io::Path(GetAssetsPath() + meshShaderPathFS));
 
+  auto crateMat = crateMesh->GetComponent<gfx_cs::Material>();
+  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+
   // -----------------------------------------------------------------------
   // Create the two quads
 
