@@ -146,6 +146,7 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     renderer->ApplyRenderSettings();
+    matSys.ProcessActiveEntities();
     fanSys.ProcessActiveEntities();
 
     win.SwapBuffers();

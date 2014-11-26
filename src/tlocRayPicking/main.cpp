@@ -357,10 +357,10 @@ struct glProgram
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
+      ( *matPoolItr )->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
-                                   (m_fanEnt, *(*matPoolItr)->GetValuePtr()) );
+                                   (m_fanEnt, *( *matPoolItr )->GetValuePtr()));
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
                                    (m_fanEnt, m_henryMat) );
     }

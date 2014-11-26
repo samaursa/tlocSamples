@@ -103,7 +103,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
   gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
-  meshSys.SetEnabledUniformNormalMatrix(true);
   meshSys.SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
@@ -209,6 +208,9 @@ int TLOC_MAIN(int argc, char *argv[])
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
+  auto matPtr = ent->GetComponent<gfx_cs::Material>();
+  matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
@@ -274,9 +276,9 @@ int TLOC_MAIN(int argc, char *argv[])
     // this is mainly to test whether the render system responds to uniforms
     // being enabled/disabled
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
-    { meshSys.SetEnabledUniformScaleMatrix(true); }
+    { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(true); }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
-    { meshSys.SetEnabledUniformScaleMatrix(false); }
+    { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(false); }
 
 
     inputMgr->Update();

@@ -314,6 +314,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   prefMat.Add(ent_2, core_io::Path(GetAssetsPath() + shaderPathVS),
                      core_io::Path(GetAssetsPath() + shaderPathFS));
+  {
+    auto entMat = ent_2->GetComponent<gfx_cs::Material>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+  }
 
   core_cs::entity_vptr ent =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
@@ -322,6 +326,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   prefMat.Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
                    core_io::Path(GetAssetsPath() + shaderPathFS));
+  {
+    auto entMat = ent->GetComponent<gfx_cs::Material>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+  }
 
   gfx_cs::scene_node_sptr parentNode = ent->GetComponent<gfx_cs::SceneNode>();
 

@@ -1,15 +1,14 @@
 #version 330 core
 
 // Input vertex data, different for all executions of this shader.
-in vec3 a_vPos;
-in vec3 a_vNorm;
-in vec2 a_tCoord;
+in vec3 a_vertPos;
+in vec3 a_vertNorm;
+in vec2 a_vertTexCoord0;
 
 uniform mat4 u_mvp;
-uniform mat4 u_mvMat;
-uniform mat4 u_viewMat;
-uniform mat4 u_modelMat;
-uniform mat3 u_normalMat;
+uniform mat4 u_view;
+uniform mat4 u_model;
+uniform mat3 u_normal;
 
 uniform mat4 u_lightMVP;
 uniform vec3 u_lightDir;
@@ -21,20 +20,20 @@ out vec4 v_shadowCoord;
 
 void main()
 { 
-  gl_Position = u_mvp * vec4(a_vPos, 1);
-  v_shadowCoord = u_lightMVP * u_modelMat * vec4(a_vPos, 1);
+  gl_Position = u_mvp * vec4(a_vertPos, 1);
+  v_shadowCoord = u_lightMVP * u_model * vec4(a_vertPos, 1);
 
-  v_texCoord = a_tCoord;
+  v_texCoord = a_vertTexCoord0;
 
   // We need the light to be stationary. We can achieve
   // this by either not transforming the normals or 
   // transforming the light as well as the normals. We
   // will transform both just to be 'correct'
-  v_norm = a_vNorm;
+  v_norm = a_vertNorm;
 
-  v_norm.xyz = u_normalMat * v_norm;
+  v_norm.xyz = u_normal * v_norm;
   v_norm = normalize(v_norm);
 
-  v_lightDir = mat3(u_viewMat) * u_lightDir;
+  v_lightDir = mat3(u_view) * u_lightDir;
   v_lightDir = normalize(v_lightDir);
 }
