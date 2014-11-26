@@ -391,6 +391,9 @@ int TLOC_MAIN(int argc, char *argv[])
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
+  auto entMat = ent->GetComponent<gfx_cs::Material>();
+  entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 

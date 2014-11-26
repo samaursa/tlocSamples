@@ -212,7 +212,7 @@ struct glProgram
         gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
 
         if (mat != m_crateMat)
-        { *mat = *m_crateMat;}
+        { *mat = *m_crateMat; }
 
         TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
       }
@@ -357,10 +357,10 @@ struct glProgram
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
       gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
-      (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
+      ( *matPoolItr )->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
-                                   (m_fanEnt, *(*matPoolItr)->GetValuePtr()) );
+                                   (m_fanEnt, *( *matPoolItr )->GetValuePtr()));
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
                                    (m_fanEnt, m_henryMat) );
     }

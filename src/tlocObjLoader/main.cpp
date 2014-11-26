@@ -8,6 +8,25 @@
 
 using namespace tloc;
 
+namespace {
+
+  // -----------------------------------------------------------------------
+  // We need a material to attach to our entity (which we have not yet created).
+
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+#endif
+
+};
+
 class WindowCallback
 {
 public:
@@ -88,55 +107,26 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(mouse);
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  // See explanation in SimpleQuad sample on why it must be created first.
-  core_cs::component_pool_mgr_vso cpoolMgr;
-
-  // -----------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_vso eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  core_cs::ECS ecs;
 
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
-  gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
-  meshSys.SetEnabledUniformNormalMatrix(true);
-  meshSys.SetRenderer(renderer);
+  ecs.AddSystem<gfx_cs::MaterialSystem>();
+  ecs.AddSystem<gfx_cs::CameraSystem>();
+  ecs.AddSystem<gfx_cs::ArcBallSystem>();
+  auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
 
-  // -----------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
-
-  // -----------------------------------------------------------------------
-  // The camera's view transformations are calculated by the camera system
-  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
-  gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
-  input_cs::ArcBallControlSystem arcBallControlSystem(eventMgr.get(), entityMgr.get());
+  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // Transformation debug rendering
 
-  gfx_cs::DebugTransformRenderSystem dtrSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::DebugTransformRenderSystem dtrSys(ecs.GetEventManager(), 
+                                            ecs.GetEntityManager());
   dtrSys.SetScale(1.0f);
   dtrSys.SetRenderer(linesRenderer);
-
-  // -----------------------------------------------------------------------
-  // We need a material to attach to our entity (which we have not yet created).
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // Load the required resources
@@ -194,26 +184,46 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::entity_vptr ent =
-    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  TL_NESTED_FUNC_BEGIN(CreateMesh) 
+    core_cs::entity_vptr 
+    CreateMesh( core_cs::ECS& a_ecs,
+               const gfx_med::ObjLoader::vert_cont_type& a_vertices,
+               const gfx_gl::texture_object_vptr& a_to)
 
-  gfx_gl::uniform_vso  u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
+  {
+    core_cs::entity_vptr ent =
+      a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
 
-  gfx_gl::uniform_vso  u_lightDir;
-  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
+    gfx_gl::uniform_vso  u_to;
+    u_to->SetName("s_texture").SetValueAs(*a_to);
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
-    .AddUniform(u_to.get())
-    .AddUniform(u_lightDir.get())
-    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-              core_io::Path(GetAssetsPath() + shaderPathFS));
+    gfx_gl::uniform_vso  u_lightDir;
+    u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
+
+    a_ecs.CreatePrefab<pref_gfx::Material>()
+      .AddUniform(u_to.get())
+      .AddUniform(u_lightDir.get())
+      .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+                core_io::Path(GetAssetsPath() + shaderPathFS));
+
+    auto matPtr = ent->GetComponent<gfx_cs::Material>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+
+    return ent;
+  }
+  TL_NESTED_FUNC_END();
+
+  core_cs::entity_ptr_array meshes;
+  {
+    auto newMesh = TL_NESTED_CALL(CreateMesh)(ecs, vertices, to.get());
+    meshes.push_back(newMesh);
+  }
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
   core_cs::entity_vptr m_cameraEnt =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    ecs.CreatePrefab<pref_gfx::Camera>()
     .Perspective(true)
     .Near(1.0f)
     .Far(100.0f)
@@ -221,27 +231,23 @@ int TLOC_MAIN(int argc, char *argv[])
     .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
     .Create(win.GetDimensions());
 
-  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
-  pref_input::ArcBallControl(entityMgr.get(), cpoolMgr.get())
+  ecs.CreatePrefab<pref_gfx::ArcBall>().Add(m_cameraEnt);
+  ecs.CreatePrefab<pref_input::ArcBallControl>()
     .GlobalMultiplier(math_t::Vec2f(0.01f, 0.01f))
     .Add(m_cameraEnt);
 
   dtrSys.SetCamera(m_cameraEnt);
-  meshSys.SetCamera(m_cameraEnt);
+  meshSys->SetCamera(m_cameraEnt);
 
-  keyboard->Register(&arcBallControlSystem);
-  mouse->Register(&arcBallControlSystem);
-  touchSurface->Register(&arcBallControlSystem);
+  keyboard->Register(&*arcBallControlSystem);
+  mouse->Register(&*arcBallControlSystem);
+  touchSurface->Register(&*arcBallControlSystem);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
+  ecs.Initialize();
   dtrSys.Initialize();
-  meshSys.Initialize();
-  matSys.Initialize();
-  camSys.Initialize();
-  arcBallSys.Initialize();
-  arcBallControlSystem.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -270,26 +276,49 @@ int TLOC_MAIN(int argc, char *argv[])
       arcball->SetFocus(math_t::Vec3f32(0, 0, 0));
     }
 
+    // create and destroy the meshes on a keypress
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n1))
+    {
+      auto newMesh = TL_NESTED_CALL(CreateMesh)(ecs, vertices, to.get());
+      meshes.push_back(newMesh);
+
+      auto xPos = core_rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+      auto yPos = core_rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+      auto zPos = core_rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+
+      newMesh->GetComponent<math_cs::Transform>()->
+        SetPosition(math_t::Vec3f32(xPos, yPos, zPos));
+    }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n2))
+    {
+      if (meshes.size() > 0)
+      {
+        ecs.GetEntityManager()->DestroyEntity(meshes.front());
+        meshes.erase(meshes.begin());
+      }
+    }
+
     // force shader warnings by enabling a uniform that the shader can't handle
     // this is mainly to test whether the render system responds to uniforms
     // being enabled/disabled
-    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
-    { meshSys.SetEnabledUniformScaleMatrix(true); }
-    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
-    { meshSys.SetEnabledUniformScaleMatrix(false); }
-
+    if (meshes.size() > 0)
+    {
+      auto matPtr = meshes[0]->GetComponent<gfx_cs::Material>();
+      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
+      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(true); }
+      if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
+      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(false); }
+    }
 
     inputMgr->Update();
 
-    arcBallControlSystem.ProcessActiveEntities();
-    arcBallSys.ProcessActiveEntities();
-    camSys.ProcessActiveEntities();
-
     renderer->ApplyRenderSettings();
-    meshSys.ProcessActiveEntities();
+    ecs.Process(0.016f);
 
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
+
+    ecs.Update();
 
     win.SwapBuffers();
   }

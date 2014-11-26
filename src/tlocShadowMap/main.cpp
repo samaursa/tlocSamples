@@ -365,12 +365,22 @@ int TLOC_MAIN(int argc, char *argv[])
   meshMat.Add(crateEnt, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
                    core_io::Path(GetAssetsPath() + shaderPathMeshFS));
 
+  auto crateMat = crateEnt->GetComponent<gfx_cs::Material>();
+  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelMatrix>(true);
+  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>(true);
+  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>(true);
+
   // change the texture to grayscale - over-riding does not change the previously
   // applied material because the uniforms are copied
   u_to->SetValueAs(*to);
 
   meshMat.Add(floorMesh, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
                          core_io::Path(GetAssetsPath() + shaderPathMeshFS));
+
+  auto floorMat = floorMesh->GetComponent<gfx_cs::Material>();
+  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelMatrix>(true);
+  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>(true);
+  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>(true);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
@@ -416,14 +426,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
-    meshSys.SetEnabledUniformModelMatrix(false);
     meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
 
     // render the scene normally
     renderer->ApplyRenderSettings();
-    meshSys.SetEnabledUniformModelMatrix(true);
     meshSys.SetCamera(m_cameraEnt);
     meshSys.SetRenderer(renderer);
     meshSys.ProcessActiveEntities();
