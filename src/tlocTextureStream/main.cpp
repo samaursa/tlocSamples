@@ -17,6 +17,23 @@ namespace {
   const tl_int g_imgRows = 100;
   const tl_int g_imgCols = 100;
 
+  // We need a material to attach to our entity (which we have not yet created).
+  // NOTE: The quad render system expects a few shader variables to be declared
+  //       and used by the shader (i.e. not compiled out). See the listed
+  //       vertex and fragment shaders for more info.
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
 };
 
 class WindowCallback
@@ -85,23 +102,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
-
-  // We need a material to attach to our entity (which we have not yet created).
-  // NOTE: The quad render system expects a few shader variables to be declared
-  //       and used by the shader (i.e. not compiled out). See the listed
-  //       vertex and fragment shaders for more info.
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // add noise

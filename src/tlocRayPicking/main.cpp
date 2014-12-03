@@ -57,6 +57,7 @@ struct glProgram
 
   glProgram()
     : m_mouseVisible(true)
+    , m_mouseConfined(false)
     , m_endGame(false)
     , m_keyPresses(key_count)
     , m_entityMgr( MakeArgs(m_eventMgr.get()) )
@@ -248,7 +249,7 @@ struct glProgram
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
 
       file.Open();
-      core_str::String code;
+      core_io::FileContents code;
       file.GetContents(code);
       a_mat->SetVertexSource(code);
     }
@@ -263,7 +264,7 @@ struct glProgram
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
       file.Open();
 
-      core_str::String code;
+      core_io::FileContents code;
       file.GetContents(code);
       a_mat->SetFragmentSource(code);
     }
@@ -399,6 +400,7 @@ struct glProgram
     camSys.Initialize();
 
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
+    TLOC_LOG_CORE_DEBUG() << "R - toggle mouse restrict/confine to window";
 
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
            m_endGame == false)
@@ -499,6 +501,11 @@ struct glProgram
       m_mouseVisible = !m_mouseVisible;
       m_win.SetMouseVisibility(m_mouseVisible);
     }
+    else if (a_event.m_keyCode == input::hid::KeyboardEvent::r)
+    {
+      m_mouseConfined = !m_mouseConfined;
+      m_win.ConfineMouseToWindow(m_mouseConfined);
+    }
 
     return core_dispatch::f_event::Continue();
   }
@@ -568,6 +575,7 @@ struct glProgram
   core_time::Timer32          m_renderFrameTime;
   ent_ptr                     m_cameraEnt;
   bool                        m_mouseVisible;
+  bool                        m_mouseConfined;
   bool                        m_endGame;
 
   ent_ptr                     m_fanEnt;

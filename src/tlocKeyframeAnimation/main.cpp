@@ -11,8 +11,24 @@ TLOC_DEFINE_THIS_FILE_NAME();
 
 using namespace tloc;
 
-anim_cs::transform_animation_vptr g_tformAnimComp = nullptr;
-const tl_size g_fpsInterval = 5;
+namespace {
+
+  anim_cs::transform_animation_vptr g_tformAnimComp = nullptr;
+  const tl_size g_fpsInterval = 5;
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+#endif
+
+};
 
 class WindowCallback
 {
@@ -219,21 +235,6 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
   input_cs::ArcBallControlSystem arcBallControlSys(eventMgr.get(), entityMgr.get());
-
-  // -----------------------------------------------------------------------
-  // We need a material to attach to our entity (which we have not yet created).
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:

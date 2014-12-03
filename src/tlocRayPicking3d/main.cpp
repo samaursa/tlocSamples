@@ -8,8 +8,23 @@
 
 using namespace tloc;
 
+namespace {
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+#endif
+
+};
+
 // -----------------------------------------------------------------------
-//
 
 math_t::Cuboidf32 g_cuboid;
 
@@ -213,21 +228,6 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
   input_cs::ArcBallControlSystem arcBallControlSys(eventMgr.get(), entityMgr.get());
-
-  // -----------------------------------------------------------------------
-  // We need a material to attach to our entity (which we have not yet created).
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // Load the required resources

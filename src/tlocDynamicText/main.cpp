@@ -20,6 +20,18 @@ namespace {
                 L"1234567890!@#$%^&*()_+-=[]" 
                 L"{}\\|;:'\",<.>/?`~\n ";
 
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
 };
 
 class WindowCallback
@@ -123,19 +135,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //       and used by the shader (i.e. not compiled out). See the listed
   //       vertex and fragment shaders for more info.
 
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
-#endif
-
-  core_str::String vsSource, fsSource;
+  core_io::FileContents vsSource, fsSource;
 
   {
     core_io::Path vsPath( (GetAssetsPath() + shaderPathVS) );

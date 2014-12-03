@@ -80,12 +80,12 @@ public:
 
   core_dispatch::Event 
     OnMouseButtonPress(const tl_size a_caller, 
-                       const input_hid::MouseEvent& a_event, 
-                       const input_hid::MouseEvent::button_code_type)
+                       const input_hid::MouseEvent& , 
+                       const input_hid::MouseEvent::button_code_type a_button)
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %i pushed a button. Button state is: %i", 
-                      (tl_int)a_caller, a_event.m_buttonCode);
+                      (tl_int)a_caller, a_button);
 
     return core_dispatch::f_event::Continue();
   }
@@ -94,12 +94,12 @@ public:
 
   core_dispatch::Event 
     OnMouseButtonRelease(const tl_size a_caller, 
-                         const input_hid::MouseEvent& a_event, 
-                         const input_hid::MouseEvent::button_code_type)
+                         const input_hid::MouseEvent& , 
+                         const input_hid::MouseEvent::button_code_type a_button)
   {
     TLOC_LOG_CORE_INFO() << 
       core_str::Format("Caller %i released a button. Button state is %i", 
-                      (tl_int)a_caller, a_event.m_buttonCode);
+                      (tl_int)a_caller, a_button);
 
     return core_dispatch::f_event::Continue();
   }

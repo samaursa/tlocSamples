@@ -32,12 +32,28 @@ using namespace tloc;
     TLOC_LOG_CORE_DEBUG() << #_text_ << ": " << timeInMs << " us";\
   }while(0)
 
-enum
-{
-  key_pause = 0,
-  key_exit,
-  key_cameraPersp,
-  key_count
+namespace {
+
+  enum
+  {
+    key_pause = 0,
+    key_exit,
+    key_cameraPersp,
+    key_count
+  };
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/mvpTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/mvpTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/mvpTextureFS_gl_es_2_0.glsl");
+#endif
+
 };
 
 struct glProgram
@@ -173,18 +189,6 @@ struct glProgram
     // attach the default renderer to both rendering systems
     quadSys.SetRenderer(m_renderer);
     fanSys.SetRenderer(m_renderer);
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/mvpTextureVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/mvpTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/mvpTextureFS_gl_es_2_0.glsl");
-#endif
 
     //------------------------------------------------------------------------
     // Create the uniforms holding the texture objects
