@@ -7,6 +7,24 @@
 
 using namespace tloc;
 
+namespace {
+
+  // We need a material to attach to our entity (which we have not yet created).
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
+};
+
 class WindowCallback
 {
 public:
@@ -68,20 +86,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
-
-  // We need a material to attach to our entity (which we have not yet created).
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // Load the required resources

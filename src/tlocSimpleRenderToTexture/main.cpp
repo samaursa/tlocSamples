@@ -7,8 +7,31 @@
 
 using namespace tloc;
 
-const u32 g_rttResX = 128;
-const u32 g_rttResY = 128;
+namespace {
+
+  const u32 g_rttResX = 128;
+  const u32 g_rttResY = 128;
+
+  // We need a material to attach to our entity (which we have not yet created).
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureMultipleOutsFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS_gl_es_2_0.glsl");
+#endif
+
+}
 
 class WindowCallback
 {
@@ -150,25 +173,6 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
   gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
-
-  // We need a material to attach to our entity (which we have not yet created).
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureMultipleOutsFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathFS("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String shaderPathBlurFS("/shaders/tlocOneTextureBlurFS_gl_es_2_0.glsl");
-#endif
 
   //------------------------------------------------------------------------
   // Add a texture to the material. We need:

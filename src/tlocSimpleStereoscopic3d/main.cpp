@@ -8,11 +8,30 @@
 
 using namespace tloc;
 
-bool          g_renderDepthToRightViewport = false;
-bool          g_fullScreen = false;
-f32           g_convergence = 1.0f;
-f32           g_interaxial = 0.05f;
-gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
+namespace {
+
+  bool          g_renderDepthToRightViewport = false;
+  bool          g_fullScreen = false;
+  f32           g_convergence = 1.0f;
+  f32           g_interaxial = 0.05f;
+  gfx_t::Color  g_clearColor(0.1f, 0.1f, 0.1f, 0.1f);
+
+  // -----------------------------------------------------------------------
+  // We need a material to attach to our entity (which we have not yet created).
+
+#if defined (TLOC_OS_WIN)
+  core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
+#endif
+
+#if defined (TLOC_OS_WIN)
+  core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+#elif defined (TLOC_OS_IPHONE)
+  core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
+#endif
+
+};
 
 
 class WindowCallback
@@ -233,21 +252,6 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
   gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
   input_cs::ArcBallControlSystem arcBallControlSys(eventMgr.get(), entityMgr.get());
-
-  // -----------------------------------------------------------------------
-  // We need a material to attach to our entity (which we have not yet created).
-
-#if defined (TLOC_OS_WIN)
-    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String meshShaderPathVS("/shaders/tlocTexturedMeshVS_gl_es_2_0.glsl");
-#endif
-
-#if defined (TLOC_OS_WIN)
-    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String meshShaderPathFS("/shaders/tlocTexturedMeshFS_gl_es_2_0.glsl");
-#endif
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
