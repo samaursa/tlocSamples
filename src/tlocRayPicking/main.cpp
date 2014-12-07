@@ -59,6 +59,7 @@ struct glProgram
     : m_mouseVisible(true)
     , m_mouseConfined(false)
     , m_endGame(false)
+    , m_outputRayPos(false)
     , m_keyPresses(key_count)
     , m_entityMgr( MakeArgs(m_eventMgr.get()) )
   
@@ -173,10 +174,13 @@ struct glProgram
     math_t::Ray3f ray =
       m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
 
-    TLOC_LOG_DEFAULT_DEBUG() << "Ray: " 
-      << ray.GetOrigin()[0] << ", " 
-      << ray.GetOrigin()[1] << ", " 
-      << ray.GetOrigin()[2];
+    if (m_outputRayPos)
+    {
+      TLOC_LOG_DEFAULT_DEBUG() << "Ray: " 
+        << ray.GetOrigin()[0] << ", " 
+        << ray.GetOrigin()[1] << ", " 
+        << ray.GetOrigin()[2];
+    }
 
     // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
@@ -401,6 +405,7 @@ struct glProgram
 
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
     TLOC_LOG_CORE_DEBUG() << "R - toggle mouse restrict/confine to window";
+    TLOC_LOG_CORE_DEBUG() << "P - print ray position";
 
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
            m_endGame == false)
@@ -451,11 +456,7 @@ struct glProgram
   {
     using namespace input;
 
-    if (a_event.m_keyCode == input::hid::KeyboardEvent::p)
-    {
-      m_keyPresses.Toggle(key_pause);
-    }
-    else if (a_event.m_keyCode == input::hid::KeyboardEvent::q)
+    if (a_event.m_keyCode == input::hid::KeyboardEvent::q)
     {
       m_keyPresses.Toggle(key_exit);
     }
@@ -506,6 +507,8 @@ struct glProgram
       m_mouseConfined = !m_mouseConfined;
       m_win.ConfineMouseToWindow(m_mouseConfined);
     }
+    else if (a_event.m_keyCode == input::hid::KeyboardEvent::p)
+    { m_outputRayPos = !m_outputRayPos; }
 
     return core_dispatch::f_event::Continue();
   }
@@ -577,6 +580,7 @@ struct glProgram
   bool                        m_mouseVisible;
   bool                        m_mouseConfined;
   bool                        m_endGame;
+  bool                        m_outputRayPos;
 
   ent_ptr                     m_fanEnt;
   ent_ptr                     m_mouseFan;
