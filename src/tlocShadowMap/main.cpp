@@ -37,7 +37,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
-    gfx_win::WindowSettings("Object File Loader") );
+    gfx_win::WindowSettings("Shadow Mapping") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform

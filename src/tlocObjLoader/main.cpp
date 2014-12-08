@@ -296,6 +296,8 @@ int TLOC_MAIN(int argc, char *argv[])
         ecs.GetEntityManager()->DestroyEntity(meshes.front());
         meshes.erase(meshes.begin());
       }
+
+      ecs.GetComponentPoolManager()->RecycleAllUnused();
     }
 
     // force shader warnings by enabling a uniform that the shader can't handle
