@@ -57,7 +57,7 @@ tloc_add_definitions_strict()
 # common includes
 include_directories(
   ${TLOC_ENGINE_INSTALL_PATH}/
-  ${TLOC_ENGINE_INSTALL_PATH}/include/
+  ${TLOC_ENGINE_INSTALL_PATH}/../include/
   ${TLOC_DEP_INSTALL_PATH}/include/
   ${TLOC_DEP_INSTALL_PATH}/include/Box2D/
   ${TLOC_DEP_INSTALL_PATH}/include/CATCH/
