@@ -30,3 +30,4 @@ buildx64/**
 samplesAssetsPath.h
 tlocAssetsPath.h
 tlocVersionFilePath.h
+INSTALL
