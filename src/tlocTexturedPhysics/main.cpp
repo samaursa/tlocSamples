@@ -43,13 +43,13 @@ namespace {
   };
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
+  core_str::String shaderPathVS("/shaders/mvpTextureInstanceVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathFS("/shaders/mvpTextureFS.glsl");
+  core_str::String shaderPathFS("/shaders/mvpTextureInstanceFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathFS("/shaders/mvpTextureFS_gl_es_2_0.glsl");
 #endif
@@ -74,7 +74,6 @@ struct glProgram
     : m_endGame(false)
     , m_keyPresses(key_count)
     , m_entityMgr( MakeArgs(m_eventMgr.get()) )
-    , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
 
   { m_win.Register(this); }
 
@@ -173,8 +172,6 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
-
     QuadRenderSystem  quadSys   (m_eventMgr.get(), m_entityMgr.get());
     FanRenderSystem   fanSys    (m_eventMgr.get(), m_entityMgr.get());
     CameraSystem      camSys    (m_eventMgr.get(), m_entityMgr.get());
@@ -182,13 +179,13 @@ struct glProgram
     RigidBodySystem   physicsSys(m_eventMgr.get(), m_entityMgr.get(),
                                  &m_physicsMgr.GetWorld());
 
-    DebugTransformRenderSystem dtrSys(m_eventMgr.get(), m_entityMgr.get());
-    dtrSys.SetScale(2.0f);
-    dtrSys.SetRenderer(m_renderer);
+    //DebugTransformRenderSystem dtrSys(m_eventMgr.get(), m_entityMgr.get());
+    //dtrSys.SetScale(2.0f);
+    //dtrSys.SetRenderer(m_renderer);
 
     // attach the default renderer to both rendering systems
     quadSys.SetRenderer(m_renderer);
-    fanSys.SetRenderer(m_renderer);
+    //fanSys.SetRenderer(m_renderer);
 
     //------------------------------------------------------------------------
     // Create the uniforms holding the texture objects
@@ -245,14 +242,14 @@ struct glProgram
               ->GetComponent<gfx_cs::Material>();
 
     PROFILE_START();
-    const tl_int repeat = 200;
+    const tl_int repeat = 800;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
-      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-100.0f, 100.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 480.0f);
 
-      if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
-      {
+      //if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
+      //{
         // Create a quad ent
         Rectf32_c rect(Rectf32_c::width(3.0f), Rectf32_c::height(3.0f));
         ent_ptr quadEnt =
@@ -270,52 +267,52 @@ struct glProgram
           .Add(quadEnt, rect, pref_phys::RigidBodyShape::density(1.0f));
 
         m_entityMgr->InsertComponent(core_cs::EntityManager::Params(quadEnt, crateMat));
-      }
-      else
-      {
-        // Create a fan ent
-        Circlef32 circle( Circlef32::radius(1.5f) );
-        ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
-          .Sides(30)
-          .Circle(circle)
-          .Create();
+      //}
+      //else
+      //{
+      //  // Create a fan ent
+      //  Circlef32 circle( Circlef32::radius(1.5f) );
+      //  ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+      //    .Sides(30)
+      //    .Circle(circle)
+      //    .Create();
 
-        box2d::rigid_body_def_sptr rbDef =
-          core_sptr::MakeShared<box2d::RigidBodyDef>();
-        rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
-        rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
-        pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
-          .Add(fanEnt, rbDef);
+      //  box2d::rigid_body_def_sptr rbDef =
+      //    core_sptr::MakeShared<box2d::RigidBodyDef>();
+      //  rbDef->SetPosition(box2d::RigidBodyDef::vec_type(posX, posY));
+      //  rbDef->SetType<box2d::p_rigid_body::DynamicBody>();
+      //  pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
+      //    .Add(fanEnt, rbDef);
 
-        box2d::RigidBodyShapeDef rbShape(circle);
-        rbShape.SetRestitution(1.0f);
-        pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
-          .Add(fanEnt, rbShape);
+      //  box2d::RigidBodyShapeDef rbShape(circle);
+      //  rbShape.SetRestitution(1.0f);
+      //  pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
+      //    .Add(fanEnt, rbShape);
 
-        m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
-      }
+      //  m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
+      //}
     }
     PROFILE_END("Generating Quads and Fans");
 
-    {
-      // Create a fan ent
-      Circlef32 circle( Circlef32::radius(5.0f) );
-      ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
-        .Sides(30).Circle(circle).Create();
+    //{
+    //  // Create a fan ent
+    //  Circlef32 circle( Circlef32::radius(5.0f) );
+    //  ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
+    //    .Sides(30).Circle(circle).Create();
 
-      box2d::rigid_body_def_sptr rbDef =
-        core_sptr::MakeShared<box2d::RigidBodyDef>();
-      rbDef->SetType<box2d::p_rigid_body::StaticBody>();
-      rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
-      pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
-        .Add(fanEnt, rbDef);
+    //  box2d::rigid_body_def_sptr rbDef =
+    //    core_sptr::MakeShared<box2d::RigidBodyDef>();
+    //  rbDef->SetType<box2d::p_rigid_body::StaticBody>();
+    //  rbDef->SetPosition(box2d::RigidBodyDef::vec_type(0.0f, -10.f));
+    //  pref_phys::RigidBody(m_entityMgr.get(), m_compPoolMgr.get())
+    //    .Add(fanEnt, rbDef);
 
-      box2d::RigidBodyShapeDef rbCircleShape(circle);
-      pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
-        .Add(fanEnt, rbCircleShape);
+    //  box2d::RigidBodyShapeDef rbCircleShape(circle);
+    //  pref_phys::RigidBodyShape(m_entityMgr.get(), m_compPoolMgr.get())
+    //    .Add(fanEnt, rbCircleShape);
 
-        m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
-    }
+    //    m_entityMgr->InsertComponent(core_cs::EntityManager::Params(fanEnt, henryMat));
+    //}
 
     // -----------------------------------------------------------------------
     // Create the camera from the prefab library
@@ -327,14 +324,14 @@ struct glProgram
       .Position(math_t::Vec3f(0, 0, 1.0f))
       .Create(core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
-    dtrSys.SetCamera(m_cameraEnt);
+    //dtrSys.SetCamera(m_cameraEnt);
     quadSys.SetCamera(m_cameraEnt);
-    fanSys.SetCamera(m_cameraEnt);
+    //fanSys.SetCamera(m_cameraEnt);
 
     // -----------------------------------------------------------------------
     // Initialize all the system
 
-    dtrSys.Initialize();
+    //dtrSys.Initialize();
 
     camSys.Initialize();
     PROFILE_START();
@@ -346,7 +343,7 @@ struct glProgram
     PROFILE_END("Quad System Init");
 
     PROFILE_START();
-    fanSys.Initialize();
+    //fanSys.Initialize();
     PROFILE_END("Fan System Init");
 
     PROFILE_START();
@@ -408,10 +405,13 @@ struct glProgram
         m_entityMgr->Update();
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
-        quadSys.ProcessActiveEntities();
-        fanSys.ProcessActiveEntities();
 
-        dtrSys.ProcessActiveEntities();
+        PROFILE_START();
+        quadSys.ProcessActiveEntities();
+        PROFILE_END("Quad System Process");
+        //fanSys.ProcessActiveEntities();
+
+        //dtrSys.ProcessActiveEntities();
 
         m_win.SwapBuffers();
 
@@ -424,7 +424,7 @@ struct glProgram
         fps /= (m_frameTimeBuff.size() - 1);
         fps = 0.7 * m_frameTimeBuff.back() + fps * 0.3;
 
-        char buff[20];
+        char buff[2000];
         sprintf(buff, "%f", fps);
         m_win.SetTitle(buff);
       }
@@ -542,12 +542,13 @@ struct glProgram
   ent_ptr                           m_cameraEnt;
 
   phys_mgr_type                     m_physicsMgr;
-  gfx_cs::QuadRenderSystem          m_quadSys;
 };
 TLOC_DEF_TYPE(glProgram);
 
 int TLOC_MAIN(int, char* [])
 {
+  core_mem::tracking::DoDisableTracking();
+
   glProgram p;
   p.Initialize();
   p.RunGame();
