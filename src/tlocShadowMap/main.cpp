@@ -429,12 +429,14 @@ int TLOC_MAIN(int argc, char *argv[])
     meshSys.SetCamera(m_lightCamera);
     meshSys.SetRenderer(rttRenderer);
     meshSys.ProcessActiveEntities();
+    rttRenderer->Render();
 
     // render the scene normally
     renderer->ApplyRenderSettings();
     meshSys.SetCamera(m_cameraEnt);
     meshSys.SetRenderer(renderer);
     meshSys.ProcessActiveEntities();
+    renderer->Render();
 
     entityMgr->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
     linesRenderer->ApplyRenderSettings();

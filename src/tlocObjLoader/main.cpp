@@ -207,6 +207,9 @@ int TLOC_MAIN(int argc, char *argv[])
                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelViewProjectionMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>();
     matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
 
     return ent;
@@ -316,6 +319,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     renderer->ApplyRenderSettings();
     ecs.Process(0.016f);
+    renderer->Render();
 
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();

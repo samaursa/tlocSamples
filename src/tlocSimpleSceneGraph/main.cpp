@@ -321,6 +321,10 @@ int TLOC_MAIN(int argc, char *argv[])
   {
     auto entMat = ent_2->GetComponent<gfx_cs::Material>();
     entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelViewProjectionMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
   }
 
   core_cs::entity_vptr ent =
@@ -332,6 +336,11 @@ int TLOC_MAIN(int argc, char *argv[])
                    core_io::Path(GetAssetsPath() + shaderPathFS));
   {
     auto entMat = ent->GetComponent<gfx_cs::Material>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelViewProjectionMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>();
     entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
   }
 
@@ -500,6 +509,8 @@ int TLOC_MAIN(int argc, char *argv[])
       taSys.     ProcessActiveEntities(deltaT);
       sgSys.     ProcessActiveEntities(deltaT);
       meshSys.   ProcessActiveEntities();
+
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

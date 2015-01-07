@@ -308,6 +308,7 @@ int TLOC_MAIN(int, char**)
 
       renderer->ApplyRenderSettings();
       ecs.Process(0.016f);
+      renderer->Render();
 
       linesRenderer->ApplyRenderSettings();
       dtrSys.ProcessActiveEntities();
