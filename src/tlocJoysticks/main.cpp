@@ -14,7 +14,7 @@ namespace {
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_2D.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -202,8 +202,8 @@ int TLOC_MAIN(int, char**)
 
   core_cs::ECS ecs;
   ecs.AddSystem<gfx_cs::CameraSystem>();
-  auto quadSys = ecs.AddSystem<gfx_cs::QuadRenderSystem>();
-  quadSys->SetRenderer(g_win.GetRenderer());
+  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(g_win.GetRenderer());
 
   auto dts = ecs.AddSystem<gfx_cs::DebugTransformRenderSystem>();
   dts->SetScale(15.0f);
@@ -265,7 +265,7 @@ int TLOC_MAIN(int, char**)
                    .Perspective(false)
                    .Create(g_win.GetDimensions()); 
 
-  quadSys->SetCamera(camEnt);
+  meshSys->SetCamera(camEnt);
   dts->SetCamera(camEnt);
 
   // -----------------------------------------------------------------------
@@ -295,6 +295,7 @@ int TLOC_MAIN(int, char**)
       renderer->ApplyRenderSettings();
       ecs.Update();
       ecs.Process(0.016f);
+      renderer->Render();
 
       g_win.SwapBuffers();
     }

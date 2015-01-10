@@ -2,7 +2,7 @@
 
 // Input vertex data, different for all executions of this shader.
 in vec2 a_vertPos;
-in vec2 a_vertTexCoord0;
+in vec2 a_vertTexCoord;
 
 uniform mat4 u_mvp;
 
@@ -12,6 +12,6 @@ void main()
 { 
   gl_Position = u_mvp * vec4(a_vertPos, 0, 1);
   
-  texCoord = a_vertTexCoord0;
+  texCoord = a_vertTexCoord;
 }
 

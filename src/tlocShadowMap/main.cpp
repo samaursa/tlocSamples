@@ -125,49 +125,37 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(mouse);
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  // See explanation in SimpleQuad sample on why it must be created first.
-  core_cs::component_pool_mgr_vso cpoolMgr;
-
   // -----------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_vso eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  // Scene
 
-  // -----------------------------------------------------------------------
-  // To render a mesh, we need a mesh render system - this is a specialized
-  // system to render this primitive
-  gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
-  meshSys.SetRenderer(renderer);
+  core_cs::ECS ecsMainScene;
+  core_cs::ECS ecsRttQuad;
 
-  gfx_cs::QuadRenderSystem quadSys(eventMgr.get(), entityMgr.get());
-  quadSys.SetRenderer(renderer);
+  auto arcBallControlSystem = ecsMainScene.AddSystem<input_cs::ArcBallControlSystem>();
+  ecsMainScene.AddSystem<gfx_cs::ArcBallSystem>();
+  auto camSys = ecsMainScene.AddSystem<gfx_cs::CameraSystem>(true);
+  ecsMainScene.AddSystem<gfx_cs::MaterialSystem>();
 
-  // -----------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
+  auto  meshSys = ecsMainScene.AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(renderer);
 
-  // -----------------------------------------------------------------------
-  // The camera's view transformations are calculated by the camera system
-  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
-  gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
-  input_cs::ArcBallControlSystem arcBallControlSystem(eventMgr.get(), entityMgr.get());
+  ecsRttQuad.AddSystem<gfx_cs::MaterialSystem>();
+  auto  rttMeshSys = ecsRttQuad.AddSystem<gfx_cs::MeshRenderSystem>();
+  rttMeshSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // Transformation debug rendering
 
-  gfx_cs::DebugTransformRenderSystem dtrSys(eventMgr.get(), entityMgr.get());
-  dtrSys.SetScale(1.0f);
-  dtrSys.SetRenderer(linesRenderer);
+  auto dtrSys = ecsMainScene.AddSystem<gfx_cs::DebugTransformRenderSystem>(true);
+  dtrSys->SetScale(1.0f);
+  dtrSys->SetRenderer(linesRenderer);
 
   // -----------------------------------------------------------------------
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS.glsl");
-    core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS.glsl");
+    core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS_2D.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS_gl_es_2_0.glsl");
     core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
@@ -188,7 +176,7 @@ int TLOC_MAIN(int argc, char *argv[])
   Rectf32_c rectDim(Rectf32_c::width(0.5f), Rectf32_c::height(0.5f));
 
   core_cs::entity_vptr rttQuad = 
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    ecsRttQuad.CreatePrefab<pref_gfx::Quad>()
     .Dimensions(rectDim)
     .Create();
 
@@ -200,7 +188,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso u_toRtt;
   u_toRtt->SetName("s_texture").SetValueAs(*rttTo);
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  ecsRttQuad.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_toRtt.get())
     .Add(rttQuad, core_io::Path(GetAssetsPath() + shaderPathQuadVS),
                   core_io::Path(GetAssetsPath() + shaderPathQuadFS));
@@ -209,7 +197,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create a camera from the prefab library - this will be our scene camera
 
   core_cs::entity_vptr m_cameraEnt =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    ecsMainScene.CreatePrefab<pref_gfx::Camera>()
     .Perspective(true)
     .Near(1.0f)
     .Far(100.0f)
@@ -221,7 +209,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create another camera, this will be what the light sees
 
   core_cs::entity_vptr m_lightCamera =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    ecsMainScene.CreatePrefab<pref_gfx::Camera>()
     .Perspective(true)
     .Near(1.0f)
     .Far(100.0f)
@@ -232,22 +220,17 @@ int TLOC_MAIN(int argc, char *argv[])
   m_lightCamera->GetComponent<gfx_cs::Camera>()->
     LookAt(math_t::Vec3f32::ZERO);
 
-  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get()).Add(m_cameraEnt);
-  pref_input::ArcBallControl(entityMgr.get(), cpoolMgr.get())
+  ecsMainScene.CreatePrefab<pref_gfx::ArcBall>().Add(m_cameraEnt);
+  ecsMainScene.CreatePrefab<pref_input::ArcBallControl>()
     .GlobalMultiplier(math_t::Vec2f(0.01f, 0.01f))
     .Add(m_cameraEnt);
 
-  dtrSys.SetCamera(m_cameraEnt);
-  meshSys.SetCamera(m_cameraEnt);
+  dtrSys->SetCamera(m_cameraEnt);
+  meshSys->SetCamera(m_cameraEnt);
 
-  keyboard->Register(&arcBallControlSystem);
-  mouse->Register(&arcBallControlSystem);
-  touchSurface->Register(&arcBallControlSystem);
-
-  // initialize the camera system early and process it once to update all
-  // transformations
-  camSys.Initialize();
-  camSys.ProcessActiveEntities();
+  keyboard->Register(arcBallControlSystem.get());
+  mouse->Register(arcBallControlSystem.get());
+  touchSurface->Register(arcBallControlSystem.get());
 
   // -----------------------------------------------------------------------
   // Load a grayscale texture
@@ -306,6 +289,9 @@ int TLOC_MAIN(int argc, char *argv[])
   // For shadow maps, we need the MVP matrix of the light with a scaling 
   // matrix
 
+  camSys->Initialize();
+  camSys->ProcessActiveEntities();
+
   math_cs::Transform::transform_type lightCamTrans = 
     m_lightCamera->GetComponent<math_cs::Transform>()->GetTransformation();
 
@@ -329,7 +315,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create the mesh and add the material
 
   core_cs::entity_vptr crateEnt =
-    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+    ecsMainScene.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
+
+  crateEnt->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   using math_t::Cuboidf32;
   Cuboidf32 cubSize(Cuboidf32::width(10.0f),
@@ -337,9 +326,12 @@ int TLOC_MAIN(int argc, char *argv[])
                     Cuboidf32::depth(10.0f));
 
   core_cs::entity_vptr floorMesh = 
-    pref_gfx::Cuboid(entityMgr.get(), cpoolMgr.get())
+    ecsMainScene.CreatePrefab<pref_gfx::Cuboid>()
     .Dimensions(cubSize)
     .Create();
+
+  floorMesh->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   floorMesh->GetComponent<math_cs::Transform>()->
     SetPosition(math_t::Vec3f32(0, -2.0f, 0));
@@ -356,7 +348,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_lightMVP;
   u_lightMVP->SetName("u_lightMVP").SetValueAs(lightMVP);
 
-  pref_gfx::Material meshMat(entityMgr.get(), cpoolMgr.get());
+  auto meshMat = ecsMainScene.CreatePrefab<pref_gfx::Material>();
   meshMat.AddUniform(u_to.get())
          .AddUniform(u_lightDir.get())
          .AddUniform(u_toShadowMap.get()) 
@@ -366,9 +358,7 @@ int TLOC_MAIN(int argc, char *argv[])
                    core_io::Path(GetAssetsPath() + shaderPathMeshFS));
 
   auto crateMat = crateEnt->GetComponent<gfx_cs::Material>();
-  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelMatrix>(true);
-  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>(true);
-  crateMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>(true);
+  crateMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>(true);
 
   // change the texture to grayscale - over-riding does not change the previously
   // applied material because the uniforms are copied
@@ -378,19 +368,14 @@ int TLOC_MAIN(int argc, char *argv[])
                          core_io::Path(GetAssetsPath() + shaderPathMeshFS));
 
   auto floorMat = floorMesh->GetComponent<gfx_cs::Material>();
-  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelMatrix>(true);
-  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>(true);
-  floorMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>(true);
+  floorMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>(true);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
-  dtrSys.Initialize();
-  meshSys.Initialize();
-  matSys.Initialize();
-  quadSys.Initialize();
-  arcBallSys.Initialize();
-  arcBallControlSystem.Initialize();
+  ecsMainScene.Initialize();
+  ecsRttQuad.Initialize();
+  dtrSys->Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -409,10 +394,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    arcBallControlSystem.ProcessActiveEntities();
-    arcBallSys.ProcessActiveEntities();
-    camSys.ProcessActiveEntities();
-
     // rotate the crate
     if (rotTimer.ElapsedMilliSeconds() > 16)
     {
@@ -424,27 +405,30 @@ int TLOC_MAIN(int argc, char *argv[])
       rotTimer.Reset();
     }
 
+    camSys->ProcessActiveEntities();
+
     // render to RTT first
     rttRenderer->ApplyRenderSettings();
-    meshSys.SetCamera(m_lightCamera);
-    meshSys.SetRenderer(rttRenderer);
-    meshSys.ProcessActiveEntities();
+    meshSys->SetCamera(m_lightCamera);
+    meshSys->SetRenderer(rttRenderer);
+    ecsMainScene.Process(0.0f);
     rttRenderer->Render();
 
     // render the scene normally
     renderer->ApplyRenderSettings();
-    meshSys.SetCamera(m_cameraEnt);
-    meshSys.SetRenderer(renderer);
-    meshSys.ProcessActiveEntities();
+    meshSys->SetCamera(m_cameraEnt);
+    meshSys->SetRenderer(renderer);
+    ecsMainScene.Process(0.0f);
     renderer->Render();
 
-    entityMgr->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
+    ecsRttQuad.GetEntityManager()->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
     linesRenderer->ApplyRenderSettings();
-    dtrSys.ProcessActiveEntities();
-    entityMgr->ActivateEntity(rttQuad);
+    dtrSys->ProcessActiveEntities();
+    ecsRttQuad.GetEntityManager()->ActivateEntity(rttQuad);
 
     // draw the quad on top layer
-    quadSys.ProcessActiveEntities();
+    ecsRttQuad.Process(0.0f);
+    renderer->Render();
 
     win.SwapBuffers();
   }

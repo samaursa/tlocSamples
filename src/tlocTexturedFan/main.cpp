@@ -12,7 +12,7 @@ namespace {
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_2D.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -80,7 +80,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
   fanSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -123,7 +123,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::entity_vptr ent =
     pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
-    .Sides(64).Circle(circ).Create();
+    .Sides(64).SectorAngle(math_t::Degree(360.0f)).Circle(circ).Create();
 
   // -----------------------------------------------------------------------
   // The prefab library can also create the material for us and attach it
@@ -152,6 +152,7 @@ int TLOC_MAIN(int argc, char *argv[])
     renderer->ApplyRenderSettings();
     matSys.ProcessActiveEntities();
     fanSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

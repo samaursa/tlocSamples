@@ -42,7 +42,6 @@ enum
 
 struct glProgram
 {
-  typedef gfx_cs::Quad                      quad_type;
   typedef gfx_cs::Material                  mat_type;
   typedef core_cs::Entity                   ent_type;
   typedef core_cs::entity_vptr              ent_ptr;
@@ -285,8 +284,7 @@ struct glProgram
     using math::types::Circlef32;
 
     using gfx_cs::CameraSystem;
-    using gfx_cs::QuadRenderSystem;
-    using gfx_cs::FanRenderSystem;
+    using gfx_cs::MeshRenderSystem;
     using gfx_cs::MaterialSystem;
     using phys_cs::RigidBodySystem;
 
@@ -295,8 +293,8 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    FanRenderSystem   fanSys(m_eventMgr.get(), m_entityMgr.get());
-    fanSys.SetRenderer(m_renderer);
+    MeshRenderSystem   meshSys(m_eventMgr.get(), m_entityMgr.get());
+    meshSys.SetRenderer(m_renderer);
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
 
@@ -397,10 +395,10 @@ struct glProgram
       .Position(math_t::Vec3f(posX, posY, 1.0f))
       .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
-    fanSys.SetCamera(m_cameraEnt);
+    meshSys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
-    fanSys.Initialize();
+    meshSys.Initialize();
     camSys.Initialize();
 
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
@@ -440,7 +438,8 @@ struct glProgram
         matSys.ProcessActiveEntities();
 
         m_renderer->ApplyRenderSettings();
-        fanSys.ProcessActiveEntities();
+        meshSys.ProcessActiveEntities();
+        m_renderer->Render();
 
         m_win.SwapBuffers();
       }

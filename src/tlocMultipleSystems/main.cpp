@@ -82,13 +82,13 @@ int TLOC_MAIN(int argc, char *argv[])
   // we can have multiple systems of the same type - to avoid both systems
   // rendering the same quad, we will use selective dispatch
 
-  typedef core_conts::Array<gfx_cs::quad_render_system_sptr> quad_sys_cont;
+  typedef core_conts::Array<gfx_cs::mesh_render_system_sptr> quad_sys_cont;
 
   quad_sys_cont quadRenderSystems;
 
   for (tl_int i = 0; i < g_totalSystems; ++i)
   {
-    quadRenderSystems.push_back(core_sptr::MakeShared<gfx_cs::QuadRenderSystem> 
+    quadRenderSystems.push_back(core_sptr::MakeShared<gfx_cs::MeshRenderSystem> 
                                 (eventMgr.get(), entityMgr.get()));
     quadRenderSystems.back()->SetRenderer(renderer);
   }
@@ -103,7 +103,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
-    core_str::String shaderPathVS("/tlocPassthroughVertexShader.glsl");
+    core_str::String shaderPathVS("/tlocPassthroughVertexShader_2D.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathVS("/tlocPassthroughVertexShader_gl_es_2_0.glsl");
 #endif
@@ -124,8 +124,7 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
                            math_t::Rectf32_c::height(0.5f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get())
-      .TexCoords(false)
+      pref_gfx::QuadNoTexCoords(entityMgr.get(), compMgr.get())
       .Dimensions(rect)
       .DispatchTo((*itr).get())
       .Create();
@@ -182,6 +181,8 @@ int TLOC_MAIN(int argc, char *argv[])
       }
       quadRenderSystems[index]->ProcessActiveEntities();
     }
+
+    renderer->Render();
 
     win.SwapBuffers();
   }

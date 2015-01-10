@@ -207,10 +207,10 @@ int TLOC_MAIN(int argc, char *argv[])
                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_modelViewProjectionMatrix>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_normalMatrix>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
+
+    auto meshPtr = ent->GetComponent<gfx_cs::Mesh>();
+    meshPtr->SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
     return ent;
   }
@@ -310,9 +310,9 @@ int TLOC_MAIN(int argc, char *argv[])
     {
       auto matPtr = meshes[0]->GetComponent<gfx_cs::Material>();
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
-      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(true); }
+      { matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>(true); }
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
-      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(false); }
+      { matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>(false); }
     }
 
     inputMgr->Update();

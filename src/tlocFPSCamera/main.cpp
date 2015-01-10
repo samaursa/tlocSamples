@@ -191,6 +191,8 @@ int TLOC_MAIN(int, char**)
   {
     core_cs::entity_vptr ent =
       a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
+    ent->GetComponent<gfx_cs::Mesh>()->
+      SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -205,7 +207,7 @@ int TLOC_MAIN(int, char**)
                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
     return ent;
   }

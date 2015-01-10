@@ -297,6 +297,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::entity_vptr ent =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  ent->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   anim_t::keyframe_sequence_mat4f32 KFs;
 
@@ -393,7 +395,7 @@ int TLOC_MAIN(int argc, char *argv[])
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
   auto entMat = ent->GetComponent<gfx_cs::Material>();
-  entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+  entMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -471,6 +473,7 @@ int TLOC_MAIN(int argc, char *argv[])
       // Finally, process (render) the mesh
       renderer->ApplyRenderSettings();
       meshSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();
