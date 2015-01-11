@@ -240,7 +240,7 @@ struct glProgram
     henryMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>(false);
 
     PROFILE_START();
-    const tl_int repeat = 800;
+    const tl_int repeat = 300;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-50.0f, 50.0f);

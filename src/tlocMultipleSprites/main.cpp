@@ -245,7 +245,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -263,14 +263,15 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
                          math_t::Rectf32_c::height(winRatio * 0.5f));
   core_cs::entity_vptr spriteEnt =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Sprite(true)
     .Dimensions(rect)
     .Create();
 
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
-    core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
+    core_str::String vsPath("/shaders/tlocOneTextureVS_2D.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String vsPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -384,6 +385,7 @@ int TLOC_MAIN(int argc, char *argv[])
       renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

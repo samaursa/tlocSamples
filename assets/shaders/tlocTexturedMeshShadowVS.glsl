@@ -3,7 +3,7 @@
 // Input vertex data, different for all executions of this shader.
 in vec3 a_vertPos;
 in vec3 a_vertNorm;
-in vec2 a_vertTexCoord;
+in vec2 a_vertTexCoord0;
 uniform mat4 u_model;
 uniform mat3 u_normal;
 
@@ -23,7 +23,7 @@ void main()
   gl_Position = u_vp * u_model * vec4(a_vertPos, 1);
   v_shadowCoord = u_lightMVP * u_model * vec4(a_vertPos, 1);
 
-  v_texCoord = a_vertTexCoord;
+  v_texCoord = a_vertTexCoord0;
 
   // We need the light to be stationary. We can achieve
   // this by either not transforming the normals or 

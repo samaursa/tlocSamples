@@ -130,7 +130,7 @@ int TLOC_MAIN(int argc, char *argv[])
       a_color->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
                           gfx_gl::p_vbo::usage::StaticDraw>(colors)
                           .AddName("a_color");
-      q->GetComponent<gfx_cs::Mesh>()->GetShaderOperator()->AddAttributeVBO(*a_color);
+      q->GetComponent<gfx_cs::Mesh>()->GetUserShaderOperator()->AddAttributeVBO(*a_color);
     }
 
     {
@@ -146,7 +146,7 @@ int TLOC_MAIN(int argc, char *argv[])
       a_index->SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
                           gfx_gl::p_vbo::usage::StaticDraw>(indexes) 
                           .AddName("a_index");
-      q->GetComponent<gfx_cs::Mesh>()->GetShaderOperator()->AddAttributeVBO(*a_index);
+      q->GetComponent<gfx_cs::Mesh>()->GetUserShaderOperator()->AddAttributeVBO(*a_index);
     }
 
     pref_gfx::Material(entityMgr.get(), compMgr.get())

@@ -235,7 +235,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
   //quadSys.SetEnabledUseVBOs(false);
 
@@ -254,9 +254,10 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
                          math_t::Rectf32_c::height(winRatio * 0.5f));
   core_cs::entity_vptr spriteEnt =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
+    pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Sprite(true).Dimensions(rect).Create();
 
-  gfx_cs::texture_coords_sptr tcoord2 = 
+  gfx_cs::texture_coords_sptr tcoord2 =
     core_sptr::MakeShared<gfx_cs::TextureCoords>();
   entityMgr->InsertComponent(core_cs::EntityManager::Params(spriteEnt, tcoord2)
                              .Orphan(true));
@@ -372,7 +373,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // material's uniform/attributes we must first get pointers to the
   // uniform/attribute we are looking for
 
-  gfx_cs::material_sptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
+  auto spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
   TLOC_ASSERT(spriteEntMat->size_uniforms() == 2,
     "Unexpected number of shader operators");
 
@@ -430,6 +431,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
       renderer->ApplyRenderSettings();
       quadSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();
