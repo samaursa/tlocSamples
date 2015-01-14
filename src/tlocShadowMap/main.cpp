@@ -155,7 +155,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
 #if defined (TLOC_OS_WIN)
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS.glsl");
-    core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS_2D.glsl");
+    core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String shaderPathMeshVS("/shaders/tlocTexturedMeshShadowVS_gl_es_2_0.glsl");
     core_str::String shaderPathQuadVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
@@ -245,7 +245,7 @@ int TLOC_MAIN(int argc, char *argv[])
     { TLOC_ASSERT_FALSE("Image did not load!"); }
 
     // gl::Uniform supports quite a few types, including a TextureObject
-    crateTextureTo->Initialize(png.GetImage());
+    crateTextureTo->Initialize(*png.GetImage());
   }
 
   gfx_gl::texture_object_vso to;

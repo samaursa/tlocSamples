@@ -12,7 +12,7 @@ namespace {
   // We need a material to attach to our entity (which we have not yet created).
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_2D.glsl");
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -99,7 +99,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // reserving a texture unit for a particular texture object ensures
   // that the texture object always occupies the same texture unit.

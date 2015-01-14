@@ -252,7 +252,7 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   gfx_gl::texture_object_vso crateTo;
-  crateTo->Initialize(png.GetImage());
+  crateTo->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_crateTo;
   u_crateTo->SetName("s_texture").SetValueAs(*crateTo);
@@ -260,7 +260,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
 
 #if defined (TLOC_OS_WIN)
-  core_str::String quadShaderVS("/shaders/tlocOneTextureVS_2D.glsl");
+  core_str::String quadShaderVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String quadShaderVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -344,7 +344,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ecsRtt.CreatePrefab<pref_gfx::Material>()
       .AddUniform(u_to.get())
       .Add(leftQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
-                        core_io::Path(GetAssetsPath() + quadShaderFS));
+                        core_io::Path(GetAssetsPath() + quadShaderFS)).Ignore();
   }
 
   core_cs::entity_vptr rightQuadEnt =
@@ -362,7 +362,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ecsRtt.CreatePrefab<pref_gfx::Material>()
       .AddUniform(u_to.get())
       .Add(rightQuadEnt, core_io::Path(GetAssetsPath() + quadShaderVS),
-                         core_io::Path(GetAssetsPath() + quadShaderFS));
+                         core_io::Path(GetAssetsPath() + quadShaderFS)).Ignore();
   }
 
   // -----------------------------------------------------------------------

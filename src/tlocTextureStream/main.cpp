@@ -23,7 +23,7 @@ namespace {
   //       vertex and fragment shaders for more info.
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/tlocOneTextureVS_2D.glsl");
+  core_str::String shaderPathVS("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif

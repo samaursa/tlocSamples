@@ -318,7 +318,7 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
-      m_texObjHenry->Initialize(image.GetImage());
+      m_texObjHenry->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
@@ -335,7 +335,7 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
-      m_texObjCrate->Initialize(image.GetImage());
+      m_texObjCrate->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
       uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);

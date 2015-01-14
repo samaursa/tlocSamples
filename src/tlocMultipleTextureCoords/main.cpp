@@ -288,7 +288,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
@@ -320,7 +320,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   spriteData.GetContents(sspContents);
-  ssp.Init(sspContents, png.GetImage().GetDimensions());
+  ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   const char* spriteNames [] =
   {
@@ -403,7 +403,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_CORE_DEBUG() << 
     core_str::Format("Image size: %lu, %lu", 
-                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+                     png.GetImage()->GetWidth(), png.GetImage()->GetHeight());
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Right Arrow - goto next animation sequence";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Left Arrow  - goto previous animation sequence";

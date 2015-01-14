@@ -240,7 +240,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // We need a material to attach to our entity (which we have not yet created).
 #if defined (TLOC_OS_WIN)
-    core_str::String vsPath("/shaders/tlocOneTextureVS_2D.glsl");
+    core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
     core_str::String vsPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
@@ -259,7 +259,7 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  GetTextureObjectPtr()->Initialize(png.GetImage());
+  GetTextureObjectPtr()->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*GetTextureObjectPtr());
@@ -285,7 +285,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String                    sspContents;
 
   file.GetContents(sspContents);
-  ssp.Init(sspContents, png.GetImage().GetDimensions());
+  ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
     .Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
@@ -308,7 +308,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       ssp.GetDimensions()[0], ssp.GetDimensions()[1]); 
   TLOC_LOG_CORE_DEBUG() << 
     core_str::Format("Image size: %li, %li",
-                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+                     png.GetImage()->GetWidth(), png.GetImage()->GetHeight());
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";

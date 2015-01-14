@@ -138,7 +138,7 @@ int TLOC_MAIN(int, char**)
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:

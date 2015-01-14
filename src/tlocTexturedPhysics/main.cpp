@@ -43,7 +43,7 @@ namespace {
   };
 
 #if defined (TLOC_OS_WIN)
-  core_str::String shaderPathVS("/shaders/mvpTextureVS_2D.glsl");
+  core_str::String shaderPathVS("/shaders/mvpTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
   core_str::String shaderPathVS("/shaders/mvpTextureVS_gl_es_2_0.glsl");
 #endif
@@ -199,7 +199,7 @@ struct glProgram
           if (png.Load(path) != ErrorSuccess)
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
-        crateTo->Initialize(png.GetImage());
+        crateTo->Initialize(*png.GetImage());
       }
       u_crateTo->SetName("shaderTexture").SetValueAs(*crateTo);
     }
@@ -218,7 +218,7 @@ struct glProgram
           if (png.Load(path) != ErrorSuccess)
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
-        to->Initialize(png.GetImage());
+        to->Initialize(*png.GetImage());
       }
       u_henryTo->SetName("shaderTexture").SetValueAs(*to);
     }
