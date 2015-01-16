@@ -51,10 +51,6 @@ set(SOLUTION_PATH ${CMAKE_SOURCE_DIR} CACHE PATH "Root folder for this project. 
 set(SOLUTION_INSTALL_PATH ${CMAKE_SOURCE_DIR}/INSTALL CACHE PATH "Install directory for the binaries")
 set(SOLUTION_ASSETS_PATH ${CMAKE_SOURCE_DIR}/assets CACHE PATH "You can specify your custom assets path here. NOTE: In Distribution build, the assets from this folder are copied to be relative to the binary files.")
 
-if(TLOC_PLATFORM_IOS)
-  set(SOLUTION_IOS_PLIST_PATH "" CACHE PATH "If you have your own custom plist, specify here. If blank, 2LoC will generate one for you.")
-endif()
-
 #------------------------------------------------------------------------------
 # Common configuration file that sets up platform and compiler specific details
 tloc_check_paths(${TLOC_DEP_INSTALL_PATH})
@@ -62,6 +58,13 @@ set(TLOC_COMMON_CMAKE_PATH "${TLOC_DEP_INSTALL_PATH}/tlocCommon.cmake")
 include(${TLOC_COMMON_CMAKE_PATH})
 
 tloc_get_leaf_folder_name(${CMAKE_BINARY_DIR} SOLUTION_BUILD_FOLDER_NAME)
+
+#------------------------------------------------------------------------------
+# Platform specific CACHE Variables
+
+if(TLOC_PLATFORM_IOS)
+  set(SOLUTION_IOS_PLIST_PATH "" CACHE FILEPATH "If you have your own custom plist, specify here. If blank, 2LoC will generate one for you.")
+endif()
 
 #--------------------------------------------------------------------------
 # User adjustable variables
