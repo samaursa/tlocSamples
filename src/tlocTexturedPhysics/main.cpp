@@ -441,9 +441,8 @@ struct glProgram
         fps /= (m_frameTimeBuff.size() - 1);
         fps = 0.7 * m_frameTimeBuff.back() + fps * 0.3;
 
-        char buff[2000];
-        sprintf(buff, "%f", fps);
-        m_win.SetTitle(buff);
+        m_win.SetTitle(core_str::Format("Draw Calls: %d, FPS: %.2f", 
+          m_renderer->GetNumDrawCalls(), fps));
       }
 
       m_frameTimeBuff.pop_back();

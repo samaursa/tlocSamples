@@ -79,8 +79,13 @@ int TLOC_MAIN(int argc, char *argv[])
           .Disable<enable_disable::DepthTest>() 
           .AddClearBit<clear::DepthBufferBit>();
 
-  gfx_rend::renderer_sptr linesRenderer = 
-    core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
+  auto linesRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
+
+  gfx_rend::Renderer::Params pNoFill(renderer->GetParams());
+  pNoFill.Disable<enable_disable::DepthTest>() 
+         .PolygonMode<polygon_mode::Line>();
+
+  auto bbRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoFill);
 
   renderer->SetParams(p);
 
@@ -116,6 +121,10 @@ int TLOC_MAIN(int argc, char *argv[])
   ecs.AddSystem<gfx_cs::CameraSystem>();
   ecs.AddSystem<gfx_cs::ArcBallSystem>();
   auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
+
+  ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
+  auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
+  bbRenderSys->SetRenderer(bbRenderer);
 
   auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
   meshSys->SetRenderer(renderer);
@@ -192,7 +201,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
+      a_ecs.CreatePrefab<pref_gfx::Mesh>().BoundingBox(false).Create(a_vertices);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -241,6 +250,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   dtrSys.SetCamera(m_cameraEnt);
   meshSys->SetCamera(m_cameraEnt);
+  bbRenderSys->SetCamera(m_cameraEnt);
 
   keyboard->Register(&*arcBallControlSystem);
   mouse->Register(&*arcBallControlSystem);
@@ -317,12 +327,16 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    ecs.Process();
+
     renderer->ApplyRenderSettings();
-    ecs.Process(0.016f);
     renderer->Render();
 
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
+
+    bbRenderer->ApplyRenderSettings();
+    bbRenderer->Render();
 
     ecs.Update();
 
