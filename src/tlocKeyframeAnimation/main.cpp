@@ -435,7 +435,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   auto siItr = core::find_if(mainScene.GetSystemsProcessor()->begin_systems(), 
                              mainScene.GetSystemsProcessor()->end_systems(),
-                             core_cs::algos::system_processor::compare::System(meshSys));
+                             core_cs::algos::systems_processor::compare::System(meshSys));
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -452,7 +452,7 @@ int TLOC_MAIN(int argc, char *argv[])
       mainScene.Process(deltaT);
       renderer->Render();
 
-      if (siItr->m_updatedSinceLastFrame)
+      if (siItr->GetIsUpdatedSinceLastFrame())
       { win.SwapBuffers(); }
       t.Reset();
     }

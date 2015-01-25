@@ -133,7 +133,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   auto arcBallControlSystem = ecsMainScene.AddSystem<input_cs::ArcBallControlSystem>();
   ecsMainScene.AddSystem<gfx_cs::ArcBallSystem>();
-  auto camSys = ecsMainScene.AddSystem<gfx_cs::CameraSystem>(true);
+  auto camSys = ecsMainScene.AddSystem<gfx_cs::CameraSystem>(1.0 / 60.0, true);
   ecsMainScene.AddSystem<gfx_cs::MaterialSystem>();
 
   auto  meshSys = ecsMainScene.AddSystem<gfx_cs::MeshRenderSystem>();
@@ -146,7 +146,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Transformation debug rendering
 
-  auto dtrSys = ecsMainScene.AddSystem<gfx_cs::DebugTransformRenderSystem>(true);
+  auto dtrSys = ecsMainScene.AddSystem<gfx_cs::DebugTransformRenderSystem>(1.0 / 60.0, true);
   dtrSys->SetScale(1.0f);
   dtrSys->SetRenderer(linesRenderer);
 
@@ -408,17 +408,19 @@ int TLOC_MAIN(int argc, char *argv[])
     camSys->ProcessActiveEntities();
 
     // render to RTT first
-    rttRenderer->ApplyRenderSettings();
     meshSys->SetCamera(m_lightCamera);
     meshSys->SetRenderer(rttRenderer);
-    ecsMainScene.Process(0.0f);
+    ecsMainScene.Process();
+
+    rttRenderer->ApplyRenderSettings();
     rttRenderer->Render();
 
     // render the scene normally
-    renderer->ApplyRenderSettings();
     meshSys->SetCamera(m_cameraEnt);
     meshSys->SetRenderer(renderer);
-    ecsMainScene.Process(0.0f);
+    ecsMainScene.Process();
+
+    renderer->ApplyRenderSettings();
     renderer->Render();
 
     ecsRttQuad.GetEntityManager()->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
@@ -427,7 +429,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ecsRttQuad.GetEntityManager()->ActivateEntity(rttQuad);
 
     // draw the quad on top layer
-    ecsRttQuad.Process(0.0f);
+    ecsRttQuad.Process();
     renderer->Render();
 
     win.SwapBuffers();
