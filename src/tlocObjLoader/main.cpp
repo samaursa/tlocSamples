@@ -76,13 +76,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_rend::Renderer::Params pNoDepth(renderer->GetParams());
   pNoDepth.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-          .Disable<enable_disable::DepthTest>() 
-          .AddClearBit<clear::DepthBufferBit>();
+          .Disable<enable_disable::DepthTest>();
 
   auto linesRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
 
   gfx_rend::Renderer::Params pNoFill(renderer->GetParams());
-  pNoFill.Disable<enable_disable::DepthTest>() 
+  pNoFill.Enable<enable_disable::DepthTest>() 
          .PolygonMode<polygon_mode::Line>();
 
   auto bbRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoFill);
@@ -201,7 +200,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().BoundingBox(false).Create(a_vertices);
+      a_ecs.CreatePrefab<pref_gfx::Mesh>().BoundingBox(true).Create(a_vertices);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -271,6 +270,7 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << "Press F to focus on the crate";
   TLOC_LOG_CORE_DEBUG() << "Press E to enable an INVALID uniform";
   TLOC_LOG_CORE_DEBUG() << "Press D to disable the INVALID uniform";
+  TLOC_LOG_CORE_DEBUG() << "Press B to disable bounding box rendering";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
@@ -327,6 +327,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    ecs.Update();
     ecs.Process();
 
     renderer->ApplyRenderSettings();
@@ -335,10 +336,11 @@ int TLOC_MAIN(int argc, char *argv[])
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
 
-    bbRenderer->ApplyRenderSettings();
-    bbRenderer->Render();
-
-    ecs.Update();
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::b) == false)
+    {
+      bbRenderer->ApplyRenderSettings();
+      bbRenderer->Render();
+    }
 
     win.SwapBuffers();
   }

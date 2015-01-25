@@ -207,34 +207,18 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(mouse);
 
   // -----------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  core_cs::component_pool_mgr_vso cpoolMgr;
 
-  // -----------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_vso  eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  core_cs::ECS mainScene;
 
-  // -----------------------------------------------------------------------
-  // To render a mesh, we need a mesh render system - this is a specialized
-  // system to render this primitive
-  gfx_cs::MeshRenderSystem  meshSys(eventMgr.get(), entityMgr.get());
-  meshSys.SetRenderer(renderer);
 
-  // -----------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
+  auto arcBallControlSys = mainScene.AddSystem<input_cs::ArcBallControlSystem>();
+  mainScene.AddSystem<gfx_cs::ArcBallSystem>();
+  mainScene.AddSystem<gfx_cs::CameraSystem>();
 
-  // -----------------------------------------------------------------------
-  // One of the keyframe animation systems
-  anim_cs::TransformAnimationSystem taSys(eventMgr.get(), entityMgr.get());
-
-  // -----------------------------------------------------------------------
-  // The camera's view transformations are calculated by the camera system
-  gfx_cs::CameraSystem      camSys(eventMgr.get(), entityMgr.get());
-  gfx_cs::ArcBallSystem     arcBallSys(eventMgr.get(), entityMgr.get());
-  input_cs::ArcBallControlSystem arcBallControlSys(eventMgr.get(), entityMgr.get());
+  mainScene.AddSystem<gfx_cs::MaterialSystem>();
+  mainScene.AddSystem<anim_cs::TransformAnimationSystem>();
+  auto meshSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -295,8 +279,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::entity_vptr ent =
-    pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  auto ent = mainScene.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
   ent->GetComponent<gfx_cs::Mesh>()->
     SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
@@ -340,7 +323,7 @@ int TLOC_MAIN(int argc, char *argv[])
     KFs.AddKeyframe(kf);
   }
 
-  pref_anim::TransformAnimation ta(entityMgr.get(), cpoolMgr.get());
+  auto ta = mainScene.CreatePrefab<pref_anim::TransformAnimation>();
   ta.Fps(60).Loop(true).StartingFrame(0).Add(ent, KFs);
 
   anim_t::keyframe_sequence_mat4f32 KFs_2;
@@ -388,7 +371,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create and add a material to ent
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  mainScene.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_to.get())
     .AddUniform(u_lightDir.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -401,23 +384,24 @@ int TLOC_MAIN(int argc, char *argv[])
   // Create a camera from the prefab library
 
   core_cs::entity_vptr m_cameraEnt =
-    pref_gfx::Camera(entityMgr.get(), cpoolMgr.get())
+    mainScene.CreatePrefab<pref_gfx::Camera>()
     .Near(1.0f)
     .Far(100.0f)
     .VerticalFOV(math_t::Degree(60.0f))
     .Position(math_t::Vec3f(5.0f, 5.0f, 10.0f))
     .Create(win.GetDimensions());
 
-  pref_gfx::ArcBall(entityMgr.get(), cpoolMgr.get())
+  mainScene.CreatePrefab<pref_gfx::ArcBall>()
     .Focus(math_t::Vec3f32(5.0f, 0.0f, 0.0f)).Add(m_cameraEnt);
-  pref_input::ArcBallControl(entityMgr.get(), cpoolMgr.get())
+
+  mainScene.CreatePrefab<pref_input::ArcBallControl>()
     .GlobalMultiplier(math_t::Vec2f(0.01f, 0.01f))
     .Add(m_cameraEnt);
 
-  meshSys.SetCamera(m_cameraEnt);
+  meshSys->SetCamera(m_cameraEnt);
 
-  keyboard->Register(&arcBallControlSys);
-  mouse->Register(&arcBallControlSys);
+  keyboard->Register(arcBallControlSys.get());
+  mouse->Register(arcBallControlSys.get());
 
   InputCallbacks ic;
   keyboard->Register(&ic);
@@ -425,12 +409,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
-  meshSys.Initialize();
-  matSys.Initialize();
-  taSys.Initialize();
-  camSys.Initialize();
-  arcBallSys.Initialize();
-  arcBallControlSys.Initialize();
+  mainScene.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -453,29 +432,28 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_time::Timer64 t;
 
-  // Very important to enable depth testing
+
+  auto siItr = core::find_if(mainScene.GetSystemsProcessor()->begin_systems(), 
+                             mainScene.GetSystemsProcessor()->end_systems(),
+                             core_cs::algos::system_processor::compare::System(meshSys));
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
-    inputMgr->Update();
-    arcBallControlSys.ProcessActiveEntities();
-    arcBallSys.ProcessActiveEntities();
-
     f64 deltaT = t.ElapsedSeconds();
 
-    if (deltaT > 1.0f/60.0f)
+    if (deltaT > 1.0f/30.0f)
     {
-      camSys.ProcessActiveEntities();
-      taSys.ProcessActiveEntities(deltaT);
-      // Finally, process (render) the mesh
+      inputMgr->Update();
+
       renderer->ApplyRenderSettings();
-      meshSys.ProcessActiveEntities();
+      mainScene.Process(deltaT);
       renderer->Render();
 
-      win.SwapBuffers();
+      if (siItr->m_updatedSinceLastFrame)
+      { win.SwapBuffers(); }
       t.Reset();
     }
   }
