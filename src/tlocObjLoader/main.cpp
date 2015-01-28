@@ -122,6 +122,9 @@ int TLOC_MAIN(int argc, char *argv[])
   ecs.AddSystem<gfx_cs::ArcBallSystem>();
   auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
 
+  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>();
+  raypickSys->SetWindowDimensions(win.GetDimensions());
+
   ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
   auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
   bbRenderSys->SetRenderer(bbRenderer);
@@ -201,7 +204,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().BoundingBox(true).Create(a_vertices);
+      a_ecs.CreatePrefab<pref_gfx::Mesh>().Raypick(true).Create(a_vertices);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -251,9 +254,11 @@ int TLOC_MAIN(int argc, char *argv[])
   dtrSys.SetCamera(m_cameraEnt);
   meshSys->SetCamera(m_cameraEnt);
   bbRenderSys->SetCamera(m_cameraEnt);
+  raypickSys->SetCamera(m_cameraEnt);
 
   keyboard->Register(&*arcBallControlSystem);
   mouse->Register(&*arcBallControlSystem);
+  mouse->Register(&*raypickSys);
   touchSurface->Register(&*arcBallControlSystem);
 
   // -----------------------------------------------------------------------
