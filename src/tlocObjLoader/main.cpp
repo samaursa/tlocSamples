@@ -47,12 +47,26 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
+class RaypickCallback
+{
+public:
+  core_dispatch::Event 
+    OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_pickedEnt;
+
+    return core_dispatch::f_event::Continue();
+  }
+};
+TLOC_DEF_TYPE(RaypickCallback);
+
 int TLOC_MAIN(int argc, char *argv[])
 {
   TLOC_UNUSED_2(argc, argv);
 
   gfx_win::Window win;
   WindowCallback  winCallback;
+  RaypickCallback rayCallback;
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
@@ -124,6 +138,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>();
   raypickSys->SetWindowDimensions(win.GetDimensions());
+  raypickSys->Register(&rayCallback);
 
   ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
   auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
