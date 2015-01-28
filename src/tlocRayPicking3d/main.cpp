@@ -86,8 +86,8 @@ public:
   core_dispatch::Event 
     OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
-    CheckCollisionWithRay((f32)a_event.m_X.m_abs().Get(),
-                          (f32)a_event.m_Y.m_abs().Get());
+    CheckCollisionWithRay((f32)a_event.m_X.m_abs,
+                          (f32)a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }

@@ -344,9 +344,7 @@ struct glProgram
     }
 
     // Create internal materials
-    gfx_cs::material_pool_vptr matPool =
-      m_compPoolMgr->CreateNewPool<gfx_cs::Material>();
-
+    auto matPool = m_compPoolMgr->CreateNewPool<gfx_cs::Material>();
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
@@ -359,7 +357,7 @@ struct glProgram
       m_fanEnt->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      auto matPoolItr = matPool->GetNext();
       ( *matPoolItr )->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
@@ -374,7 +372,7 @@ struct glProgram
       m_mouseFan = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
-      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      auto matPoolItr = matPool->GetNext();
       (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_crateMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
@@ -422,8 +420,8 @@ struct glProgram
       m_currentTouches = m_touchSurface->GetCurrentTouches();
       if (m_currentTouches.size() != 0)
       {
-        f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs();
-        f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs();
+        f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs;
+        f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs;
 
         MoveMouseAndCheckCollision(xAbs, yAbs);
       }
@@ -545,8 +543,8 @@ struct glProgram
   core_dispatch::Event 
     OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
-    MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs().Get(),
-                               (f32)a_event.m_Y.m_abs().Get());
+    MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs,
+                               (f32)a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }

@@ -220,9 +220,9 @@ int TLOC_MAIN(int , char *[])
         input_hid::MouseEvent mouseState = mouse->GetState();
 
         tl_float xScaled = core_utils::CastNumber<tl_float>
-        (mouseState.m_X.m_abs().Value());
+        (mouseState.m_X.m_abs);
         tl_float yScaled = core_utils::CastNumber<tl_float>
-        (mouseState.m_Y.m_abs().Value());
+        (mouseState.m_Y.m_abs);
 
         xScaled /= core_utils::CastNumber<tl_float>(winWidth);
         yScaled /= core_utils::CastNumber<tl_float>(winHeight);
@@ -240,8 +240,8 @@ int TLOC_MAIN(int , char *[])
 
       if (currentTouches.size() == 1)
       {
-        tl_float xScaled = currentTouches[0].m_X.m_abs();
-        tl_float yScaled = currentTouches[0].m_Y.m_abs();
+        tl_float xScaled = currentTouches[0].m_X.m_abs;
+        tl_float yScaled = currentTouches[0].m_Y.m_abs;
 
         xScaled /= core_utils::CastNumber<tl_float>(winWidth);
         yScaled /= core_utils::CastNumber<tl_float>(winHeight);

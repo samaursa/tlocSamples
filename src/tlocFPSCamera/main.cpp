@@ -292,8 +292,8 @@ int TLOC_MAIN(int, char**)
         { quit = true; }
 
         auto mouseState = mouse->GetState();
-        f32 absX = (f32)mouseState.m_X.m_rel();
-        f32 absY = (f32)mouseState.m_Y.m_rel();
+        f32 absX = (f32)mouseState.m_X.m_rel;
+        f32 absY = (f32)mouseState.m_Y.m_rel;
 
         pitch += absY * 0.1f;
         yaw += absX * 0.1f;

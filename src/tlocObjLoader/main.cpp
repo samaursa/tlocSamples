@@ -81,8 +81,9 @@ int TLOC_MAIN(int argc, char *argv[])
   auto linesRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
 
   gfx_rend::Renderer::Params pNoFill(renderer->GetParams());
-  pNoFill.Enable<enable_disable::DepthTest>() 
-         .PolygonMode<polygon_mode::Line>();
+  pNoFill.Disable<enable_disable::DepthTest>() 
+         .SetPointSize(3.0f)
+         .PolygonMode<polygon_mode::Point>();
 
   auto bbRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoFill);
 
