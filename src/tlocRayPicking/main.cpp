@@ -142,7 +142,7 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void MoveMouseAndCheckCollision(f32 absX, f32 absY)
+  void MoveMouse(f32 absX, f32 absY)
   {
     using math_utils::scale_f32_f32;
     typedef math_utils::scale_f32_f32::range_small range_small;
@@ -173,15 +173,6 @@ struct glProgram
     math_t::Ray3f ray =
       m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
 
-    if (m_outputRayPos)
-    {
-      TLOC_LOG_DEFAULT_DEBUG() << "Ray: " 
-        << ray.GetOrigin()[0] << ", " 
-        << ray.GetOrigin()[1] << ", " 
-        << ray.GetOrigin()[2];
-    }
-
-    // Transform with inverse of camera
     math_cs::Transformf32 camTrans =
       *m_cameraEnt->GetComponent<math_cs::Transformf32>();
     math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
@@ -192,50 +183,6 @@ struct glProgram
     m_mouseFan->GetComponent<math_cs::Transform>()->
       SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
                                   ray.GetOrigin()[1], 0.0f) );
-
-    // Now start transform the ray from world to fan entity co-ordinates for
-    // the intersection test
-
-    ray = ray * m_fanEnt->GetComponent<math_cs::Transform>()->Invert().GetTransformation();
-
-    math_t::Vec2f rayPos2f = ray.GetOrigin().ConvertTo<math_t::Vec2f32>();
-    math_t::Vec2f rayDir2f = ray.GetDirection().ConvertTo<math_t::Vec2f32>();
-
-    math_t::Ray2f ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),
-                         math_t::Ray2f::direction(rayDir2f) );
-
-    static tl_int intersectionCounter = 0;
-    static tl_int nonIntersectionCounter = 0;
-
-    if (m_fanEnt->GetComponent<gfx_cs::Fan>()->GetEllipseRef().Intersects(ray2))
-    {
-      nonIntersectionCounter = 0;
-      ++intersectionCounter;
-      if (intersectionCounter == 1)
-      {
-        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
-
-        if (mat != m_crateMat)
-        { *mat = *m_crateMat; }
-
-        TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
-      }
-    }
-    else
-    {
-      intersectionCounter = 0;
-      ++nonIntersectionCounter;
-
-      if (nonIntersectionCounter == 1)
-      {
-        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
-
-        if (mat != m_henryMat)
-        { *mat = *m_henryMat; }
-
-        TLOC_LOG_CORE_INFO() << "NOT intersecting with circle!";
-      }
-    }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -286,6 +233,7 @@ struct glProgram
     using gfx_cs::CameraSystem;
     using gfx_cs::MeshRenderSystem;
     using gfx_cs::MaterialSystem;
+    using gfx_cs::RaypickSystem;
     using phys_cs::RigidBodySystem;
 
     using core::component_system::ComponentPoolManager;
@@ -297,6 +245,10 @@ struct glProgram
     meshSys.SetRenderer(m_renderer);
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
+    RaypickSystem     raySys(m_eventMgr.get(), m_entityMgr.get());
+    raySys.SetWindowDimensions(m_win.GetDimensions());
+    raySys.Register(this);
+    m_mouse->Register(&raySys);
 
     m_henryMat = core_sptr::MakeShared<gfx_cs::Material>();
     m_crateMat = core_sptr::MakeShared<gfx_cs::Material>();
@@ -349,7 +301,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       m_fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
-        Sides(12).Circle(circle).Create();
+        Sides(12).Raypick(true).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -394,10 +346,12 @@ struct glProgram
       .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
     meshSys.SetCamera(m_cameraEnt);
+    raySys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
     meshSys.Initialize();
     camSys.Initialize();
+    raySys.Initialize();
 
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
     TLOC_LOG_CORE_DEBUG() << "R - toggle mouse restrict/confine to window";
@@ -423,7 +377,7 @@ struct glProgram
         f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs;
         f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs;
 
-        MoveMouseAndCheckCollision(xAbs, yAbs);
+        MoveMouse(xAbs, yAbs);
       }
       m_inputMgrImm->Reset();
 
@@ -434,6 +388,7 @@ struct glProgram
 
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
+        raySys.ProcessActiveEntities();
 
         m_renderer->ApplyRenderSettings();
         meshSys.ProcessActiveEntities();
@@ -442,6 +397,8 @@ struct glProgram
         m_win.SwapBuffers();
       }
     }
+
+    m_mouse->UnRegister(&raySys);
 
     TLOC_LOG_CORE_INFO() << "Exiting normally";
   }
@@ -521,43 +478,83 @@ struct glProgram
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnMouseButtonPress(const tl_size , 
-                       const input_hid::MouseEvent& , 
-                       const input_hid::MouseEvent::button_code_type)
-  {
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnMouseButtonRelease(const tl_size , 
-                         const input_hid::MouseEvent& , 
-                         const input_hid::MouseEvent::button_code_type)
-  {
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
-  {
-    MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs,
-                               (f32)a_event.m_Y.m_abs);
-
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
     OnWindowEvent(const event_type& a_event)
   {
     using namespace gfx_win;
 
     if (a_event.m_type == WindowEvent::close)
     { m_endGame = true; }
+
+    return core_dispatch::f_event::Continue();
+  }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseButtonPress(const tl_size,
+    const input_hid::MouseEvent&,
+    const input_hid::MouseEvent::button_code_type)
+  {
+    return core_dispatch::f_event::Continue();
+  }
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseButtonRelease(const tl_size,
+    const input_hid::MouseEvent&,
+    const input_hid::MouseEvent::button_code_type)
+  {
+    return core_dispatch::f_event::Continue();
+  }
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseMove(const tl_size, const input_hid::MouseEvent& a_event)
+  {
+    MoveMouse((f32) a_event.m_X.m_abs, (f32) a_event.m_Y.m_abs);
+    return core_dispatch::f_event::Continue();
+  }
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    const auto& ray = a_event.m_rayInWorldSpace;
+
+    // Set the mouse pointer
+    m_mouseFan->GetComponent<math_cs::Transform>()->
+      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
+                                  ray.GetOrigin()[1], 0.0f) );
+
+    if (a_event.m_ent == m_fanEnt)
+    {
+      gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+      if (mat != m_crateMat)
+      { *mat = *m_crateMat; }
+
+      TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
+    }
+    
+    return core_dispatch::f_event::Continue();
+  }
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnRayUnpickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    if (a_event.m_ent == m_fanEnt)
+    {
+      gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+      if (mat != m_henryMat)
+      { *mat = *m_henryMat; }
+
+      TLOC_LOG_CORE_INFO() << "NOT intersecting with circle!";
+    }
 
     return core_dispatch::f_event::Continue();
   }

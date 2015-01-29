@@ -53,7 +53,15 @@ public:
   core_dispatch::Event 
     OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
   {
-    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_pickedEnt;
+    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+
+    return core_dispatch::f_event::Continue();
+  }
+
+  core_dispatch::Event 
+    OnRayUnpickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    TLOC_LOG_DEFAULT_DEBUG() << "Unpicked Entity: " << *a_event.m_ent;
 
     return core_dispatch::f_event::Continue();
   }
@@ -136,7 +144,7 @@ int TLOC_MAIN(int argc, char *argv[])
   ecs.AddSystem<gfx_cs::ArcBallSystem>();
   auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
 
-  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>();
+  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/5.0f);
   raypickSys->SetWindowDimensions(win.GetDimensions());
   raypickSys->Register(&rayCallback);
 
@@ -220,6 +228,7 @@ int TLOC_MAIN(int argc, char *argv[])
   {
     core_cs::entity_vptr ent =
       a_ecs.CreatePrefab<pref_gfx::Mesh>().Raypick(true).Create(a_vertices);
+    ent->GetComponent<gfx_cs::Raypick>()->SetDistanceChecked(false);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
