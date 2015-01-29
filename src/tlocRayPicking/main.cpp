@@ -99,9 +99,19 @@ struct glProgram
     using namespace gfx_rend::p_renderer;
     m_renderer = m_win.GetRenderer();
     {
-      gfx_rend::Renderer::Params p(m_renderer->GetParams());
+      auto p = m_renderer->GetParams();
       p.AddClearBit<clear::ColorBufferBit>();
       m_renderer->SetParams(p);
+    }
+
+    m_noFillRenderer;
+    {
+      auto p = gfx_rend::Renderer::Params();
+      p.SetFBO(m_renderer->GetParams().GetFBO());
+      p.PolygonMode<polygon_mode::Line>()
+       .Disable<enable_disable::DepthTest>();
+
+      m_noFillRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(p);
     }
   }
 
@@ -230,11 +240,8 @@ struct glProgram
     using math::types::Rectf32_c;
     using math::types::Circlef32;
 
-    using gfx_cs::CameraSystem;
-    using gfx_cs::MeshRenderSystem;
-    using gfx_cs::MaterialSystem;
-    using gfx_cs::RaypickSystem;
-    using phys_cs::RigidBodySystem;
+    using namespace gfx_cs;
+    using namespace phys_cs;
 
     using core::component_system::ComponentPoolManager;
     using core_str::String;
@@ -243,8 +250,12 @@ struct glProgram
     // Systems and Entity Preparation
     MeshRenderSystem   meshSys(m_eventMgr.get(), m_entityMgr.get());
     meshSys.SetRenderer(m_renderer);
+    BoundingBoxRenderSystem bbRenderSys(m_eventMgr.get(), m_entityMgr.get());
+    bbRenderSys.SetRenderer(m_noFillRenderer);
+    
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
+    BoundingBoxSystem bbSys(m_eventMgr.get(), m_entityMgr.get());
     RaypickSystem     raySys(m_eventMgr.get(), m_entityMgr.get());
     raySys.SetWindowDimensions(m_win.GetDimensions());
     raySys.Register(this);
@@ -346,10 +357,13 @@ struct glProgram
       .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
     meshSys.SetCamera(m_cameraEnt);
+    bbRenderSys.SetCamera(m_cameraEnt);
     raySys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
+    bbSys.Initialize();
     meshSys.Initialize();
+    bbRenderSys.Initialize();
     camSys.Initialize();
     raySys.Initialize();
 
@@ -388,11 +402,17 @@ struct glProgram
 
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
+        bbSys.ProcessActiveEntities();
         raySys.ProcessActiveEntities();
 
-        m_renderer->ApplyRenderSettings();
         meshSys.ProcessActiveEntities();
+        bbRenderSys.ProcessActiveEntities();
+
+        m_renderer->ApplyRenderSettings();
         m_renderer->Render();
+
+        m_noFillRenderer->ApplyRenderSettings();
+        m_noFillRenderer->Render();
 
         m_win.SwapBuffers();
       }
@@ -567,6 +587,7 @@ struct glProgram
   gfx_win::Window         m_win;
 
   gfx_rend::renderer_sptr     m_renderer;
+  gfx_rend::renderer_sptr     m_noFillRenderer;
   core_time::Timer32          m_timer;
   core_time::Timer32          m_frameTimer;
   core_time::Timer32          m_renderFrameTime;
