@@ -180,14 +180,7 @@ struct glProgram
                         scy.ScaleDown((f32)(maxHeightInput - absY - 1 )),
                         -1.0f);
 
-    math_t::Ray3f ray =
-      m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
-
-    math_cs::Transformf32 camTrans =
-      *m_cameraEnt->GetComponent<math_cs::Transformf32>();
-    math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
-
-    ray = ray * camTransMatInv;
+    auto ray = gfx_cs::f_camera::GetRayInWorldSpace(*m_cameraEnt, xyz);
 
     // Set the mouse pointer
     m_mouseFan->GetComponent<math_cs::Transform>()->
