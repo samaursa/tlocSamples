@@ -250,7 +250,8 @@ struct glProgram
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
     BoundingBoxSystem bbSys(m_eventMgr.get(), m_entityMgr.get());
     RaypickSystem     raySys(m_eventMgr.get(), m_entityMgr.get());
-    raySys.SetWindowDimensions(m_win.GetDimensions());
+    raySys.SetWindowDimensions(m_win.GetDimensions())
+          .SetContinuousRaypick(true);
     raySys.Register(this);
     m_mouse->Register(&raySys);
 
