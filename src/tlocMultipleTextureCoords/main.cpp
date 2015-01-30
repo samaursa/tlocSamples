@@ -235,7 +235,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
   //quadSys.SetEnabledUseVBOs(false);
 
@@ -254,9 +254,10 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
                          math_t::Rectf32_c::height(winRatio * 0.5f));
   core_cs::entity_vptr spriteEnt =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
+    pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Sprite(true).Dimensions(rect).Create();
 
-  gfx_cs::texture_coords_sptr tcoord2 = 
+  gfx_cs::texture_coords_sptr tcoord2 =
     core_sptr::MakeShared<gfx_cs::TextureCoords>();
   entityMgr->InsertComponent(core_cs::EntityManager::Params(spriteEnt, tcoord2)
                              .Orphan(true));
@@ -287,7 +288,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
@@ -319,7 +320,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::SpriteLoader_TexturePacker ssp;
   core_str::String sspContents;
   spriteData.GetContents(sspContents);
-  ssp.Init(sspContents, png.GetImage().GetDimensions());
+  ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   const char* spriteNames [] =
   {
@@ -372,7 +373,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // material's uniform/attributes we must first get pointers to the
   // uniform/attribute we are looking for
 
-  gfx_cs::material_sptr spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
+  auto spriteEntMat = spriteEnt->GetComponent<gfx_cs::Material>();
   TLOC_ASSERT(spriteEntMat->size_uniforms() == 2,
     "Unexpected number of shader operators");
 
@@ -402,7 +403,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_CORE_DEBUG() << 
     core_str::Format("Image size: %lu, %lu", 
-                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+                     png.GetImage()->GetWidth(), png.GetImage()->GetHeight());
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Right Arrow - goto next animation sequence";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "Left Arrow  - goto previous animation sequence";
@@ -430,6 +431,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
       renderer->ApplyRenderSettings();
       quadSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

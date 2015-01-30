@@ -1,5 +1,3 @@
-#include <tlocCore/tlocNoOpt.h>
-
 #include <tlocCore/tloc_core.h>
 #include <tlocCore/tloc_core.inl.h>
 #include <tlocGraphics/tloc_graphics.h>
@@ -103,7 +101,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -166,8 +164,8 @@ int TLOC_MAIN(int argc, char *argv[])
                                math_t::Rectf32_c::height(2.0f));
         
         core_cs::entity_vptr q =
-          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-          TexCoords(true).Dimensions(rect).Create();
+          pref_gfx::Quad(entityMgr.get(), compMgr.get())
+          .Dimensions(rect).Create();
 
         pref_gfx::Material(entityMgr.get(), compMgr.get())
           .AddUniform(u_to.get())
@@ -180,8 +178,8 @@ int TLOC_MAIN(int argc, char *argv[])
                                math_t::Rectf32_c::height((f32)win.GetHeight()));
         
         core_cs::entity_vptr q =
-          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-          TexCoords(true).Dimensions(rect).Create();
+          pref_gfx::Quad(entityMgr.get(), compMgr.get())
+          .Dimensions(rect).Create();
 
         pref_gfx::Material(entityMgr.get(), compMgr.get())
           .AddUniform(u_to.get())
@@ -424,6 +422,7 @@ int TLOC_MAIN(int argc, char *argv[])
     sgSys.ProcessActiveEntities();
     quadSys.ProcessActiveEntities();
     textSys.ProcessActiveEntities();
+    renderer->Render();
 
     if (timer.ElapsedSeconds() > 1.0f && !textAligned)
     {

@@ -70,7 +70,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -99,8 +99,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
     math_t::Rectf32_c::height(0.5f));
-  core_cs::entity_vptr q = pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
-    .TexCoords(false).Dimensions(rect).Create();
+  core_cs::entity_vptr q = pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Dimensions(rect).Create();
 
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
@@ -172,6 +172,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     renderer->ApplyRenderSettings();
     quadSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

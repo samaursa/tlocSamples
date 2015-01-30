@@ -245,7 +245,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -263,7 +263,8 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.5f),
                          math_t::Rectf32_c::height(winRatio * 0.5f));
   core_cs::entity_vptr spriteEnt =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+    pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Sprite(true)
     .Dimensions(rect)
     .Create();
 
@@ -293,7 +294,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(to.get());
@@ -322,7 +323,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::SpriteLoader_SpriteSheetPacker ssp;
   core_str::String sspContents;
   spriteData.GetContents(sspContents);
-  ssp.Init(sspContents, png.GetImage().GetDimensions());
+  ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get()).
     Loop(true).Fps(24).
@@ -356,7 +357,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       ssp.GetDimensions()[0], ssp.GetDimensions()[1]); 
   TLOC_LOG_CORE_DEBUG() << 
     core_str::Format("Image size: %li, %li",
-                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+                     png.GetImage()->GetWidth(), png.GetImage()->GetHeight());
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";
@@ -384,6 +385,7 @@ int TLOC_MAIN(int argc, char *argv[])
       renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

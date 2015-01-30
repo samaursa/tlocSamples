@@ -86,8 +86,8 @@ public:
   core_dispatch::Event 
     OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
   {
-    CheckCollisionWithRay((f32)a_event.m_X.m_abs().Get(),
-                          (f32)a_event.m_Y.m_abs().Get());
+    CheckCollisionWithRay((f32)a_event.m_X.m_abs,
+                          (f32)a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }
@@ -241,7 +241,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -274,6 +274,7 @@ int TLOC_MAIN(int argc, char *argv[])
     .Create();
   ent->GetComponent<math_cs::Transform>()->
     SetPosition(math_t::Vec3f32(posX, posY, posZ));
+  ent->GetComponent<gfx_cs::Mesh>()->SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*to);
@@ -288,7 +289,7 @@ int TLOC_MAIN(int argc, char *argv[])
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
   auto entMat = ent->GetComponent<gfx_cs::Material>();
-  entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+  entMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -345,6 +346,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     renderer->ApplyRenderSettings();
     meshSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

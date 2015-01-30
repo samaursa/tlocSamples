@@ -47,12 +47,34 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
+class RaypickCallback
+{
+public:
+  core_dispatch::Event 
+    OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+
+    return core_dispatch::f_event::Continue();
+  }
+
+  core_dispatch::Event 
+    OnRayUnpickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    TLOC_LOG_DEFAULT_DEBUG() << "Unpicked Entity: " << *a_event.m_ent;
+
+    return core_dispatch::f_event::Continue();
+  }
+};
+TLOC_DEF_TYPE(RaypickCallback);
+
 int TLOC_MAIN(int argc, char *argv[])
 {
   TLOC_UNUSED_2(argc, argv);
 
   gfx_win::Window win;
   WindowCallback  winCallback;
+  RaypickCallback rayCallback;
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
@@ -76,11 +98,16 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_rend::Renderer::Params pNoDepth(renderer->GetParams());
   pNoDepth.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-          .Disable<enable_disable::DepthTest>() 
-          .AddClearBit<clear::DepthBufferBit>();
+          .Disable<enable_disable::DepthTest>();
 
-  gfx_rend::renderer_sptr linesRenderer = 
-    core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
+  auto linesRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
+
+  gfx_rend::Renderer::Params pNoFill(renderer->GetParams());
+  pNoFill.Disable<enable_disable::DepthTest>() 
+         .SetPointSize(3.0f)
+         .PolygonMode<polygon_mode::Point>();
+
+  auto bbRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(pNoFill);
 
   renderer->SetParams(p);
 
@@ -117,6 +144,14 @@ int TLOC_MAIN(int argc, char *argv[])
   ecs.AddSystem<gfx_cs::ArcBallSystem>();
   auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
 
+  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/5.0f);
+  raypickSys->SetWindowDimensions(win.GetDimensions());
+  raypickSys->Register(&rayCallback);
+
+  ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
+  auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
+  bbRenderSys->SetRenderer(bbRenderer);
+
   auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
   meshSys->SetRenderer(renderer);
 
@@ -140,7 +175,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -192,7 +227,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   {
     core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
+      a_ecs.CreatePrefab<pref_gfx::Mesh>().Raypick(true).Create(a_vertices);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -207,7 +242,10 @@ int TLOC_MAIN(int argc, char *argv[])
                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
+
+    auto meshPtr = ent->GetComponent<gfx_cs::Mesh>();
+    meshPtr->SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
     return ent;
   }
@@ -238,9 +276,12 @@ int TLOC_MAIN(int argc, char *argv[])
 
   dtrSys.SetCamera(m_cameraEnt);
   meshSys->SetCamera(m_cameraEnt);
+  bbRenderSys->SetCamera(m_cameraEnt);
+  raypickSys->SetCamera(m_cameraEnt);
 
   keyboard->Register(&*arcBallControlSystem);
   mouse->Register(&*arcBallControlSystem);
+  mouse->Register(&*raypickSys);
   touchSurface->Register(&*arcBallControlSystem);
 
   // -----------------------------------------------------------------------
@@ -258,6 +299,7 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << "Press F to focus on the crate";
   TLOC_LOG_CORE_DEBUG() << "Press E to enable an INVALID uniform";
   TLOC_LOG_CORE_DEBUG() << "Press D to disable the INVALID uniform";
+  TLOC_LOG_CORE_DEBUG() << "Press B to disable bounding box rendering";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
@@ -307,20 +349,27 @@ int TLOC_MAIN(int argc, char *argv[])
     {
       auto matPtr = meshes[0]->GetComponent<gfx_cs::Material>();
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
-      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(true); }
+      { matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>(true); }
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
-      { matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_scaleMatrix>(false); }
+      { matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>(false); }
     }
 
     inputMgr->Update();
 
+    ecs.Update();
+    ecs.Process();
+
     renderer->ApplyRenderSettings();
-    ecs.Process(0.016f);
+    renderer->Render();
 
     linesRenderer->ApplyRenderSettings();
     dtrSys.ProcessActiveEntities();
 
-    ecs.Update();
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::b) == false)
+    {
+      bbRenderer->ApplyRenderSettings();
+      bbRenderer->Render();
+    }
 
     win.SwapBuffers();
   }

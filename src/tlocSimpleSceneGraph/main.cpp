@@ -219,7 +219,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   //------------------------------------------------------------------------
   // A component pool manager manages all the components in a particular
@@ -313,6 +313,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // the parent child hierarchies are made
   core_cs::entity_vptr ent_2 =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  ent_2->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   pref_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent_2);
 
@@ -320,11 +322,13 @@ int TLOC_MAIN(int argc, char *argv[])
                      core_io::Path(GetAssetsPath() + shaderPathFS));
   {
     auto entMat = ent_2->GetComponent<gfx_cs::Material>();
-    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
   }
 
   core_cs::entity_vptr ent =
     pref_gfx::Mesh(entityMgr.get(), cpoolMgr.get()).Create(vertices);
+  ent->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   pref_gfx::SceneNode(entityMgr.get(), cpoolMgr.get()).Add(ent);
 
@@ -332,7 +336,7 @@ int TLOC_MAIN(int argc, char *argv[])
                    core_io::Path(GetAssetsPath() + shaderPathFS));
   {
     auto entMat = ent->GetComponent<gfx_cs::Material>();
-    entMat->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    entMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
   }
 
   gfx_cs::scene_node_sptr parentNode = ent->GetComponent<gfx_cs::SceneNode>();
@@ -500,6 +504,8 @@ int TLOC_MAIN(int argc, char *argv[])
       taSys.     ProcessActiveEntities(deltaT);
       sgSys.     ProcessActiveEntities(deltaT);
       meshSys.   ProcessActiveEntities();
+
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

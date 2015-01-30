@@ -111,13 +111,13 @@ public:
   {
     TLOC_LOG_CORE_INFO() <<
       core_str::Format("Caller %i moved the mouse by %i %i %i ", (tl_int)a_caller, 
-                       a_event.m_X.m_rel(), 
-                       a_event.m_Y.m_rel(), 
-                       a_event.m_Z.m_rel())
+                       a_event.m_X.m_rel, 
+                       a_event.m_Y.m_rel, 
+                       a_event.m_Z.m_rel)
                        <<
-      core_str::Format(" to %i %i %i", a_event.m_X.m_abs().Value(), 
-                       a_event.m_Y.m_abs().Value(), 
-                       a_event.m_Z.m_abs().Value());
+      core_str::Format(" to %i %i %i", a_event.m_X.m_abs, 
+                       a_event.m_Y.m_abs, 
+                       a_event.m_Z.m_abs);
 
     return core_dispatch::f_event::Continue();
   }
@@ -135,7 +135,7 @@ public:
       core_str::Format("Caller %i surface touch #%li at %f %f", 
                       (tl_int)a_caller, 
                       a_event.m_touchHandle, 
-                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+                      a_event.m_X.m_abs, a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }
@@ -147,7 +147,7 @@ public:
       core_str::Format("Caller %i surface touch release #%li at %f %f", 
                       (tl_int)a_caller, 
                       a_event.m_touchHandle, 
-                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+                      a_event.m_X.m_abs, a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }
@@ -159,7 +159,7 @@ public:
       core_str::Format("Caller %i surface touch move #%li at %f %f", 
                       (tl_int)a_caller, 
                       a_event.m_touchHandle, 
-                      a_event.m_X.m_abs(), a_event.m_Y.m_abs());
+                      a_event.m_X.m_abs, a_event.m_Y.m_abs);
 
     return core_dispatch::f_event::Continue();
   }

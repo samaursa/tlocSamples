@@ -93,7 +93,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
   quadSys.SetEnabledSortingByMaterial(false);
 
@@ -119,8 +119,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.5f),
                            math_t::Rectf32_c::height(1.5f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0));
 
@@ -146,8 +146,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.4f),
                            math_t::Rectf32_c::height(1.4f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.1f));
 
@@ -174,8 +174,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.3f),
                            math_t::Rectf32_c::height(1.3f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.2f));
 
@@ -201,8 +201,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.2f),
                            math_t::Rectf32_c::height(1.2f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.3f));
 
@@ -227,8 +227,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.1f),
                            math_t::Rectf32_c::height(1.1f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.4f));
 
@@ -253,8 +253,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.0f),
                            math_t::Rectf32_c::height(1.0f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.5f));
 
@@ -279,8 +279,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.9f),
                            math_t::Rectf32_c::height(0.9f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.6f));
 
@@ -305,8 +305,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.8f),
                            math_t::Rectf32_c::height(0.8f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.7f));
 
@@ -331,8 +331,8 @@ int TLOC_MAIN(int argc, char *argv[])
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.7f),
                            math_t::Rectf32_c::height(0.7f));
     core_cs::entity_vptr q =
-      pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-      TexCoords(true).Dimensions(rect).Create();
+      pref_gfx::Quad(entityMgr.get(), compMgr.get())
+      .Dimensions(rect).Create();
 
     q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(0, 0, 0.8f));
 
@@ -359,6 +359,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     renderer->ApplyRenderSettings();
     quadSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

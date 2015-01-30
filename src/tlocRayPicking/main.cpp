@@ -42,7 +42,6 @@ enum
 
 struct glProgram
 {
-  typedef gfx_cs::Quad                      quad_type;
   typedef gfx_cs::Material                  mat_type;
   typedef core_cs::Entity                   ent_type;
   typedef core_cs::entity_vptr              ent_ptr;
@@ -100,9 +99,19 @@ struct glProgram
     using namespace gfx_rend::p_renderer;
     m_renderer = m_win.GetRenderer();
     {
-      gfx_rend::Renderer::Params p(m_renderer->GetParams());
+      auto p = m_renderer->GetParams();
       p.AddClearBit<clear::ColorBufferBit>();
       m_renderer->SetParams(p);
+    }
+
+    m_noFillRenderer;
+    {
+      auto p = gfx_rend::Renderer::Params();
+      p.SetFBO(m_renderer->GetParams().GetFBO());
+      p.PolygonMode<polygon_mode::Line>()
+       .Disable<enable_disable::DepthTest>();
+
+      m_noFillRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(p);
     }
   }
 
@@ -143,7 +152,7 @@ struct glProgram
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-  void MoveMouseAndCheckCollision(f32 absX, f32 absY)
+  void MoveMouse(f32 absX, f32 absY)
   {
     using math_utils::scale_f32_f32;
     typedef math_utils::scale_f32_f32::range_small range_small;
@@ -171,72 +180,12 @@ struct glProgram
                         scy.ScaleDown((f32)(maxHeightInput - absY - 1 )),
                         -1.0f);
 
-    math_t::Ray3f ray =
-      m_cameraEnt->GetComponent<gfx_cs::Camera>()->GetFrustumRef().GetRay(xyz);
-
-    if (m_outputRayPos)
-    {
-      TLOC_LOG_DEFAULT_DEBUG() << "Ray: " 
-        << ray.GetOrigin()[0] << ", " 
-        << ray.GetOrigin()[1] << ", " 
-        << ray.GetOrigin()[2];
-    }
-
-    // Transform with inverse of camera
-    math_cs::Transformf32 camTrans =
-      *m_cameraEnt->GetComponent<math_cs::Transformf32>();
-    math_t::Mat4f32 camTransMatInv = camTrans.GetTransformation();
-
-    ray = ray * camTransMatInv;
+    auto ray = gfx_cs::f_camera::GetRayInWorldSpace(*m_cameraEnt, xyz);
 
     // Set the mouse pointer
     m_mouseFan->GetComponent<math_cs::Transform>()->
       SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
                                   ray.GetOrigin()[1], 0.0f) );
-
-    // Now start transform the ray from world to fan entity co-ordinates for
-    // the intersection test
-
-    ray = ray * m_fanEnt->GetComponent<math_cs::Transform>()->Invert().GetTransformation();
-
-    math_t::Vec2f rayPos2f = ray.GetOrigin().ConvertTo<math_t::Vec2f32>();
-    math_t::Vec2f rayDir2f = ray.GetDirection().ConvertTo<math_t::Vec2f32>();
-
-    math_t::Ray2f ray2 = math_t::Ray2f(math_t::Ray2f::origin(rayPos2f),
-                         math_t::Ray2f::direction(rayDir2f) );
-
-    static tl_int intersectionCounter = 0;
-    static tl_int nonIntersectionCounter = 0;
-
-    if (m_fanEnt->GetComponent<gfx_cs::Fan>()->GetEllipseRef().Intersects(ray2))
-    {
-      nonIntersectionCounter = 0;
-      ++intersectionCounter;
-      if (intersectionCounter == 1)
-      {
-        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
-
-        if (mat != m_crateMat)
-        { *mat = *m_crateMat; }
-
-        TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
-      }
-    }
-    else
-    {
-      intersectionCounter = 0;
-      ++nonIntersectionCounter;
-
-      if (nonIntersectionCounter == 1)
-      {
-        gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
-
-        if (mat != m_henryMat)
-        { *mat = *m_henryMat; }
-
-        TLOC_LOG_CORE_INFO() << "NOT intersecting with circle!";
-      }
-    }
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -245,9 +194,9 @@ struct glProgram
   {
     {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureVS.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
@@ -260,9 +209,9 @@ struct glProgram
 
     {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureFS.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
@@ -284,21 +233,26 @@ struct glProgram
     using math::types::Rectf32_c;
     using math::types::Circlef32;
 
-    using gfx_cs::CameraSystem;
-    using gfx_cs::QuadRenderSystem;
-    using gfx_cs::FanRenderSystem;
-    using gfx_cs::MaterialSystem;
-    using phys_cs::RigidBodySystem;
+    using namespace gfx_cs;
+    using namespace phys_cs;
 
     using core::component_system::ComponentPoolManager;
     using core_str::String;
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    FanRenderSystem   fanSys(m_eventMgr.get(), m_entityMgr.get());
-    fanSys.SetRenderer(m_renderer);
+    MeshRenderSystem   meshSys(m_eventMgr.get(), m_entityMgr.get());
+    meshSys.SetRenderer(m_renderer);
+    BoundingBoxRenderSystem bbRenderSys(m_eventMgr.get(), m_entityMgr.get());
+    bbRenderSys.SetRenderer(m_noFillRenderer);
+    
     CameraSystem      camSys(m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys(m_eventMgr.get(), m_entityMgr.get());
+    BoundingBoxSystem bbSys(m_eventMgr.get(), m_entityMgr.get());
+    RaypickSystem     raySys(m_eventMgr.get(), m_entityMgr.get());
+    raySys.SetWindowDimensions(m_win.GetDimensions());
+    raySys.Register(this);
+    m_mouse->Register(&raySys);
 
     m_henryMat = core_sptr::MakeShared<gfx_cs::Material>();
     m_crateMat = core_sptr::MakeShared<gfx_cs::Material>();
@@ -320,10 +274,10 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
-      m_texObjHenry->Initialize(image.GetImage());
+      m_texObjHenry->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
-      uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
+      uniform->SetName("s_texture").SetValueAs(*m_texObjHenry);
 
       m_henryMat->AddUniform(*uniform);
     }
@@ -337,23 +291,21 @@ struct glProgram
       if (image.Load(path) != ErrorSuccess)
       { TLOC_ASSERT_FALSE("Image did not load"); }
 
-      m_texObjCrate->Initialize(image.GetImage());
+      m_texObjCrate->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
-      uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);
+      uniform->SetName("s_texture").SetValueAs(*m_texObjCrate);
 
       m_crateMat->AddUniform(*uniform);
     }
 
     // Create internal materials
-    gfx_cs::material_pool_vptr matPool =
-      m_compPoolMgr->CreateNewPool<gfx_cs::Material>();
-
+    auto matPool = m_compPoolMgr->CreateNewPool<gfx_cs::Material>();
     {
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       m_fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
-        Sides(12).Circle(circle).Create();
+        Sides(12).Raypick(true).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -361,7 +313,7 @@ struct glProgram
       m_fanEnt->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f(posX, posY, 0));
 
-      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      auto matPoolItr = matPool->GetNext();
       ( *matPoolItr )->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_henryMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
@@ -376,7 +328,7 @@ struct glProgram
       m_mouseFan = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(12).Circle(circle).Create();
 
-      gfx_cs::material_pool::iterator matPoolItr = matPool->GetNext();
+      auto matPoolItr = matPool->GetNext();
       (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_crateMat));
 
       m_entityMgr->InsertComponent(core_cs::EntityManager::Params
@@ -397,11 +349,16 @@ struct glProgram
       .Position(math_t::Vec3f(posX, posY, 1.0f))
       .Create( core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
-    fanSys.SetCamera(m_cameraEnt);
+    meshSys.SetCamera(m_cameraEnt);
+    bbRenderSys.SetCamera(m_cameraEnt);
+    raySys.SetCamera(m_cameraEnt);
 
     matSys.Initialize();
-    fanSys.Initialize();
+    bbSys.Initialize();
+    meshSys.Initialize();
+    bbRenderSys.Initialize();
     camSys.Initialize();
+    raySys.Initialize();
 
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
     TLOC_LOG_CORE_DEBUG() << "R - toggle mouse restrict/confine to window";
@@ -424,10 +381,10 @@ struct glProgram
       m_currentTouches = m_touchSurface->GetCurrentTouches();
       if (m_currentTouches.size() != 0)
       {
-        f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs();
-        f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs();
+        f32 xAbs = (f32)m_currentTouches[0].m_X.m_abs;
+        f32 yAbs = (f32)m_currentTouches[0].m_Y.m_abs;
 
-        MoveMouseAndCheckCollision(xAbs, yAbs);
+        MoveMouse(xAbs, yAbs);
       }
       m_inputMgrImm->Reset();
 
@@ -438,13 +395,23 @@ struct glProgram
 
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
+        bbSys.ProcessActiveEntities();
+        raySys.ProcessActiveEntities();
+
+        meshSys.ProcessActiveEntities();
+        bbRenderSys.ProcessActiveEntities();
 
         m_renderer->ApplyRenderSettings();
-        fanSys.ProcessActiveEntities();
+        m_renderer->Render();
+
+        m_noFillRenderer->ApplyRenderSettings();
+        m_noFillRenderer->Render();
 
         m_win.SwapBuffers();
       }
     }
+
+    m_mouse->UnRegister(&raySys);
 
     TLOC_LOG_CORE_INFO() << "Exiting normally";
   }
@@ -524,43 +491,83 @@ struct glProgram
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
   core_dispatch::Event 
-    OnMouseButtonPress(const tl_size , 
-                       const input_hid::MouseEvent& , 
-                       const input_hid::MouseEvent::button_code_type)
-  {
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnMouseButtonRelease(const tl_size , 
-                         const input_hid::MouseEvent& , 
-                         const input_hid::MouseEvent::button_code_type)
-  {
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
-    OnMouseMove(const tl_size , const input_hid::MouseEvent& a_event)
-  {
-    MoveMouseAndCheckCollision((f32)a_event.m_X.m_abs().Get(),
-                               (f32)a_event.m_Y.m_abs().Get());
-
-    return core_dispatch::f_event::Continue();
-  }
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-  core_dispatch::Event 
     OnWindowEvent(const event_type& a_event)
   {
     using namespace gfx_win;
 
     if (a_event.m_type == WindowEvent::close)
     { m_endGame = true; }
+
+    return core_dispatch::f_event::Continue();
+  }
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseButtonPress(const tl_size,
+    const input_hid::MouseEvent&,
+    const input_hid::MouseEvent::button_code_type)
+  {
+    return core_dispatch::f_event::Continue();
+  }
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseButtonRelease(const tl_size,
+    const input_hid::MouseEvent&,
+    const input_hid::MouseEvent::button_code_type)
+  {
+    return core_dispatch::f_event::Continue();
+  }
+
+  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnMouseMove(const tl_size, const input_hid::MouseEvent& a_event)
+  {
+    MoveMouse((f32) a_event.m_X.m_abs, (f32) a_event.m_Y.m_abs);
+    return core_dispatch::f_event::Continue();
+  }
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    const auto& ray = a_event.m_rayInWorldSpace;
+
+    // Set the mouse pointer
+    m_mouseFan->GetComponent<math_cs::Transform>()->
+      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
+                                  ray.GetOrigin()[1], 0.0f) );
+
+    if (a_event.m_ent == m_fanEnt)
+    {
+      gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+      if (mat != m_crateMat)
+      { *mat = *m_crateMat; }
+
+      TLOC_LOG_CORE_INFO() << "Intersecting with circle!";
+    }
+    
+    return core_dispatch::f_event::Continue();
+  }
+
+  // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  core_dispatch::Event
+    OnRayUnpickEvent(const gfx_cs::RaypickEvent& a_event)
+  {
+    if (a_event.m_ent == m_fanEnt)
+    {
+      gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
+
+      if (mat != m_henryMat)
+      { *mat = *m_henryMat; }
+
+      TLOC_LOG_CORE_INFO() << "NOT intersecting with circle!";
+    }
 
     return core_dispatch::f_event::Continue();
   }
@@ -573,6 +580,7 @@ struct glProgram
   gfx_win::Window         m_win;
 
   gfx_rend::renderer_sptr     m_renderer;
+  gfx_rend::renderer_sptr     m_noFillRenderer;
   core_time::Timer32          m_timer;
   core_time::Timer32          m_frameTimer;
   core_time::Timer32          m_renderFrameTime;

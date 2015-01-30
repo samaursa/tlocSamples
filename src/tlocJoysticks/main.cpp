@@ -202,8 +202,8 @@ int TLOC_MAIN(int, char**)
 
   core_cs::ECS ecs;
   ecs.AddSystem<gfx_cs::CameraSystem>();
-  auto quadSys = ecs.AddSystem<gfx_cs::QuadRenderSystem>();
-  quadSys->SetRenderer(g_win.GetRenderer());
+  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(g_win.GetRenderer());
 
   auto dts = ecs.AddSystem<gfx_cs::DebugTransformRenderSystem>();
   dts->SetScale(15.0f);
@@ -220,7 +220,7 @@ int TLOC_MAIN(int, char**)
 
   gfx_gl::texture_object_vso to;
   {
-    to->Initialize(png.GetImage());
+    to->Initialize(*png.GetImage());
   }
 
   gfx_gl::uniform_vso u_to;
@@ -265,7 +265,7 @@ int TLOC_MAIN(int, char**)
                    .Perspective(false)
                    .Create(g_win.GetDimensions()); 
 
-  quadSys->SetCamera(camEnt);
+  meshSys->SetCamera(camEnt);
   dts->SetCamera(camEnt);
 
   // -----------------------------------------------------------------------
@@ -294,7 +294,8 @@ int TLOC_MAIN(int, char**)
 
       renderer->ApplyRenderSettings();
       ecs.Update();
-      ecs.Process(0.016f);
+      ecs.Process();
+      renderer->Render();
 
       g_win.SwapBuffers();
     }

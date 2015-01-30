@@ -138,7 +138,7 @@ int TLOC_MAIN(int, char**)
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -191,6 +191,8 @@ int TLOC_MAIN(int, char**)
   {
     core_cs::entity_vptr ent =
       a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
+    ent->GetComponent<gfx_cs::Mesh>()->
+      SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);
@@ -205,7 +207,7 @@ int TLOC_MAIN(int, char**)
                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::Uniforms::k_viewMatrix>();
+    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
     return ent;
   }
@@ -290,8 +292,8 @@ int TLOC_MAIN(int, char**)
         { quit = true; }
 
         auto mouseState = mouse->GetState();
-        f32 absX = (f32)mouseState.m_X.m_rel();
-        f32 absY = (f32)mouseState.m_Y.m_rel();
+        f32 absX = (f32)mouseState.m_X.m_rel;
+        f32 absY = (f32)mouseState.m_Y.m_rel;
 
         pitch += absY * 0.1f;
         yaw += absX * 0.1f;
@@ -306,13 +308,14 @@ int TLOC_MAIN(int, char**)
         camTrans->SetOrientation(finalRot);
       }
 
+      ecs.Update();
+      ecs.Process();
+
       renderer->ApplyRenderSettings();
-      ecs.Process(0.016f);
+      renderer->Render();
 
       linesRenderer->ApplyRenderSettings();
       dtrSys.ProcessActiveEntities();
-
-      ecs.Update();
 
       win.SwapBuffers();
       inputMgr->Reset();

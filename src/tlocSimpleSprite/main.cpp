@@ -218,7 +218,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
   // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
   quadSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -235,7 +235,8 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.0f),
                          math_t::Rectf32_c::height(1.0f));
   core_cs::entity_vptr spriteEnt =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get()).Dimensions(rect).Create();
+    pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
+    .Sprite(true).Dimensions(rect).Create();
 
   // We need a material to attach to our entity (which we have not yet created).
 #if defined (TLOC_OS_WIN)
@@ -258,7 +259,7 @@ int TLOC_MAIN(int argc, char *argv[])
   { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
-  GetTextureObjectPtr()->Initialize(png.GetImage());
+  GetTextureObjectPtr()->Initialize(*png.GetImage());
 
   gfx_gl::uniform_vso  u_to;
   u_to->SetName("s_texture").SetValueAs(*GetTextureObjectPtr());
@@ -284,7 +285,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_str::String                    sspContents;
 
   file.GetContents(sspContents);
-  ssp.Init(sspContents, png.GetImage().GetDimensions());
+  ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
     .Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
@@ -307,7 +308,7 @@ int TLOC_MAIN(int argc, char *argv[])
                       ssp.GetDimensions()[0], ssp.GetDimensions()[1]); 
   TLOC_LOG_CORE_DEBUG() << 
     core_str::Format("Image size: %li, %li",
-                     png.GetImage().GetWidth(), png.GetImage().GetHeight());
+                     png.GetImage()->GetWidth(), png.GetImage()->GetHeight());
 
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "P - to toggle pause";
   TLOC_LOG_CORE_DEBUG_NO_FILENAME() << "L - to toggle looping";
@@ -338,6 +339,7 @@ int TLOC_MAIN(int argc, char *argv[])
       renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
+      renderer->Render();
 
       win.SwapBuffers();
       t.Reset();

@@ -56,8 +56,10 @@ class KeyboardCallback
 {
 public:
   KeyboardCallback(core_cs::entity_vptr a_spriteEnt, 
+                   core_cs::ecs_vptr a_ecs,
                    gfx_med::const_font_vptr a_font)
     : m_spriteEnt(a_spriteEnt)
+    , m_ecs(a_ecs)
     , m_font(a_font)
   { }
 
@@ -81,7 +83,6 @@ public:
         gfx_med::Font::const_glyph_metrics_iterator 
           itr = m_font->GetGlyphMetric(keyChar);
 
-        gfx_cs::quad_sptr quad = m_spriteEnt->GetComponent<gfx_cs::Quad>();
         math_cs::transform_f32_sptr trans = m_spriteEnt->GetComponent<math_cs::Transformf32>();
 
         math_t::Rectf32_bl rect(math_t::Rectf32_bl::width((f32)itr->m_dim[0] * 0.01f),
@@ -91,7 +92,10 @@ public:
                                            (f32)itr->m_horizontalBearing[1] * 0.01f - rect.GetHeight(),
                                            0));
 
-        quad->SetRectangle(rect);
+        auto spriteMesh = m_spriteEnt->GetComponent<gfx_cs::Mesh>();
+
+        *spriteMesh = *m_ecs->CreatePrefab<pref_gfx::QuadNoTexCoords>()
+          .Dimensions(rect).Construct();
 
         ta->SetFrame(i);
         break;
@@ -109,6 +113,7 @@ public:
 
 private:
   core_cs::entity_vptr                  m_spriteEnt;
+  core_cs::ecs_vptr                     m_ecs;
   gfx_med::const_font_vptr              m_font;
 
 };
@@ -158,36 +163,12 @@ int TLOC_MAIN(int argc, char *argv[])
   // Check pointers
   TLOC_ASSERT_NOT_NULL(keyboard);
 
-  //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  //
-  // NOTES:
-  // It MUST be destroyed AFTER the EntityManager(s) that use its components.
-  // This is because upon destruction of EntityManagers, all entities are
-  // destroyed which trigger events for removal of all their components. If
-  // the components are destroyed, the smart pointers will not let us dereference
-  // them and will trigger an assertion.
-  core_cs::component_pool_mgr_vso compMgr;
+  core_cs::ecs_vso textECS;
 
-  //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_vso  eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
-
-  //------------------------------------------------------------------------
-  // To render a quad, we need a quad render system - this is a specialized
-  // system to render this primitive
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
-  quadSys.SetRenderer(renderer);
-
-  //------------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
-
-  //------------------------------------------------------------------------
-  // TextureAnimation system to animate sprites
-  gfx_cs::TextureAnimatorSystem taSys(eventMgr.get(), entityMgr.get());
+  textECS->AddSystem<gfx_cs::MaterialSystem>();
+  textECS->AddSystem<gfx_cs::TextureAnimatorSystem>();
+  auto  meshSys = textECS->AddSystem<gfx_cs::MeshRenderSystem>();
+  meshSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // A thin rectangle signifying the baseline
@@ -209,11 +190,10 @@ int TLOC_MAIN(int argc, char *argv[])
         math_t::Rectf32_c rect(math_t::Rectf32_c::width(1.0f),
                                math_t::Rectf32_c::height(0.01f));
         
-        core_cs::entity_vptr q =
-          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-          TexCoords(true).Dimensions(rect).Create();
+        core_cs::entity_vptr q = textECS->CreatePrefab<pref_gfx::Quad>()
+          .Dimensions(rect).Create();
 
-        pref_gfx::Material(entityMgr.get(), compMgr.get())
+        textECS->CreatePrefab<pref_gfx::Material>()
           .AddUniform(u_to.get())
           .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
                   core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -223,11 +203,10 @@ int TLOC_MAIN(int argc, char *argv[])
         math_t::Rectf32_c rect(math_t::Rectf32_c::width(0.01f),
                                math_t::Rectf32_c::height(1.0f));
         
-        core_cs::entity_vptr q =
-          pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-          TexCoords(true).Dimensions(rect).Create();
+        core_cs::entity_vptr q = textECS->CreatePrefab<pref_gfx::Quad>()
+          .Dimensions(rect).Create();
 
-        pref_gfx::Material(entityMgr.get(), compMgr.get())
+        textECS->CreatePrefab<pref_gfx::Material>()
           .AddUniform(u_to.get())
           .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
                   core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -279,10 +258,10 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Rectf32_bl rect(math_t::Rectf32_bl::width(0.25f),
                          math_t::Rectf32_bl::height(0.25f));
   core_cs::entity_vptr q =
-    pref_gfx::Quad(entityMgr.get(), compMgr.get()).
-                   TexCoords(true).Dimensions(rect).Create();
+    textECS->CreatePrefab<pref_gfx::QuadNoTexCoords>()
+    .Sprite(true).Dimensions(rect).Create();
 
-  pref_gfx::Material(entityMgr.get(), compMgr.get())
+  textECS->CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_to.get())
     .Add(q, core_io::Path(GetAssetsPath() + shaderPathVS),
             core_io::Path(GetAssetsPath() + shaderPathFS));
@@ -292,18 +271,16 @@ int TLOC_MAIN(int argc, char *argv[])
 
   using gfx_med::algos::compare::sprite_info::MakeName;
 
-  pref_gfx::SpriteAnimation(entityMgr.get(), compMgr.get())
+  textECS->CreatePrefab<pref_gfx::SpriteAnimation>()
     .Paused(true).Add(q, fontSs->begin(), fontSs->end() );
 
-  KeyboardCallback kb(q, f.get());
+  KeyboardCallback kb(q, textECS.get(), f.get());
   keyboard->Register(&kb);
 
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  quadSys.Initialize();
-  matSys.Initialize();
-  taSys.Initialize();
+  textECS->Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -315,9 +292,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    textECS->Process();
+
     renderer->ApplyRenderSettings();
-    taSys.ProcessActiveEntities(1);
-    quadSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

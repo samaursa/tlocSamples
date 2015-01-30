@@ -96,7 +96,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
   // to render to texture to a quad we need a renderer with the correct
@@ -161,14 +161,16 @@ int TLOC_MAIN(int argc, char *argv[])
 
   //------------------------------------------------------------------------
   // To render the texture we need a quad
-  gfx_cs::QuadRenderSystem  quadSys(eventMgr.get(), entityMgr.get());
-  quadSys.SetRenderer(renderer);
+  auto  quadSys = 
+    core_sptr::MakeShared<gfx_cs::MeshRenderSystem>(eventMgr.get(), entityMgr.get());
+  quadSys->SetRenderer(renderer);
 
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
-  fanSys.SetRenderer(rttRenderer);
+  auto   fanSys =
+    core_sptr::MakeShared<gfx_cs::MeshRenderSystem>(eventMgr.get(), entityMgr.get());
+  fanSys->SetRenderer(rttRenderer);
 
   //------------------------------------------------------------------------
   // We cannot render anything without materials and its system
@@ -213,7 +215,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // the circle that will be rendered to textures
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::entity_vptr q = pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
-    .Sides(64).Circle(circ).Create();
+    .Sides(64).Circle(circ).DispatchTo(fanSys.get()).Create();
 
   pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
     .AddUniform(u_to.get())
@@ -227,7 +229,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // the first quad with the circle diffuse render
   core_cs::entity_vptr diffuseQuad =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
-    .Dimensions(rect).Create();
+    .Dimensions(rect).DispatchTo(quadSys.get()).Create();
+
   diffuseQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(-0.5f, 0, 0));
 
@@ -242,7 +245,8 @@ int TLOC_MAIN(int argc, char *argv[])
   // the second quad rendering the circle using texcoords
   core_cs::entity_vptr texQuad =
     pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
-    .Dimensions(rect).Create();
+    .Dimensions(rect).DispatchTo(quadSys.get()).Create();
+
   texQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(0.5f, 0, 0));
 
@@ -275,8 +279,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  fanSys.Initialize();
-  quadSys.Initialize();
+  fanSys->Initialize();
+  quadSys->Initialize();
   matSys.Initialize();
 
   //------------------------------------------------------------------------
@@ -288,13 +292,15 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     // render the fan, which will be rendered to a texture
-    fanSys.GetRenderer()->ApplyRenderSettings();
-    fanSys.ProcessActiveEntities();
+    fanSys->GetRenderer()->ApplyRenderSettings();
+    fanSys->ProcessActiveEntities();
+    fanSys->GetRenderer()->Render();
 
     // render the quad, which will be rendered to the front buffer with the
     // default renderer
-    quadSys.GetRenderer()->ApplyRenderSettings();
-    quadSys.ProcessActiveEntities();
+    quadSys->GetRenderer()->ApplyRenderSettings();
+    quadSys->ProcessActiveEntities();
+    quadSys->GetRenderer()->Render();
 
     win.SwapBuffers();
   }

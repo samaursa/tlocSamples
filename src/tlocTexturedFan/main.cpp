@@ -80,7 +80,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // To render a fan, we need a fan render system - this is a specialized
   // system to render this primitive
-  gfx_cs::FanRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
+  gfx_cs::MeshRenderSystem   fanSys(eventMgr.get(), entityMgr.get());
   fanSys.SetRenderer(renderer);
 
   //------------------------------------------------------------------------
@@ -99,7 +99,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(png.GetImage());
+  to->Initialize(*png.GetImage());
 
   // reserving a texture unit for a particular texture object ensures
   // that the texture object always occupies the same texture unit.
@@ -123,7 +123,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
   core_cs::entity_vptr ent =
     pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
-    .Sides(64).Circle(circ).Create();
+    .Sides(64).SectorAngle(math_t::Degree(360.0f)).Circle(circ).Create();
 
   // -----------------------------------------------------------------------
   // The prefab library can also create the material for us and attach it
@@ -152,6 +152,7 @@ int TLOC_MAIN(int argc, char *argv[])
     renderer->ApplyRenderSettings();
     matSys.ProcessActiveEntities();
     fanSys.ProcessActiveEntities();
+    renderer->Render();
 
     win.SwapBuffers();
   }

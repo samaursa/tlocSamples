@@ -28,7 +28,7 @@ using namespace tloc;
 #endif
 #define PROFILE_END(_text_)\
   do{\
-    s32 timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
+    auto timeInMs = core_utils::CastNumber<s32>(m_timer.ElapsedMicroSeconds());\
     TLOC_LOG_CORE_DEBUG() << #_text_ << ": " << timeInMs << " us";\
   }while(0)
 
@@ -74,7 +74,6 @@ struct glProgram
     : m_endGame(false)
     , m_keyPresses(key_count)
     , m_entityMgr( MakeArgs(m_eventMgr.get()) )
-    , m_quadSys(m_eventMgr.get(), m_entityMgr.get())
 
   { m_win.Register(this); }
 
@@ -163,9 +162,8 @@ struct glProgram
     using math::types::Circlef32;
 
     using gfx_cs::CameraSystem;
-    using gfx_cs::QuadRenderSystem;
-    using gfx_cs::FanRenderSystem;
     using gfx_cs::MaterialSystem;
+    using gfx_cs::MeshRenderSystem;
     using phys_cs::RigidBodySystem;
     using gfx_cs::DebugTransformRenderSystem;
 
@@ -173,10 +171,7 @@ struct glProgram
 
     //------------------------------------------------------------------------
     // Systems and Entity Preparation
-    core_conts::Array<math_t::Vec4f32> g_vertex_color_data_1 = GetQuadColor();
-
-    QuadRenderSystem  quadSys   (m_eventMgr.get(), m_entityMgr.get());
-    FanRenderSystem   fanSys    (m_eventMgr.get(), m_entityMgr.get());
+    MeshRenderSystem  meshSys   (m_eventMgr.get(), m_entityMgr.get());
     CameraSystem      camSys    (m_eventMgr.get(), m_entityMgr.get());
     MaterialSystem    matSys    (m_eventMgr.get(), m_entityMgr.get());
     RigidBodySystem   physicsSys(m_eventMgr.get(), m_entityMgr.get(),
@@ -184,11 +179,9 @@ struct glProgram
 
     DebugTransformRenderSystem dtrSys(m_eventMgr.get(), m_entityMgr.get());
     dtrSys.SetScale(2.0f);
-    dtrSys.SetRenderer(m_renderer);
 
     // attach the default renderer to both rendering systems
-    quadSys.SetRenderer(m_renderer);
-    fanSys.SetRenderer(m_renderer);
+    meshSys.SetRenderer(m_renderer);
 
     //------------------------------------------------------------------------
     // Create the uniforms holding the texture objects
@@ -206,7 +199,7 @@ struct glProgram
           if (png.Load(path) != ErrorSuccess)
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
-        crateTo->Initialize(png.GetImage());
+        crateTo->Initialize(*png.GetImage());
       }
       u_crateTo->SetName("shaderTexture").SetValueAs(*crateTo);
     }
@@ -225,7 +218,7 @@ struct glProgram
           if (png.Load(path) != ErrorSuccess)
           { TLOC_ASSERT_FALSE("Image did not load"); }
         }
-        to->Initialize(png.GetImage());
+        to->Initialize(*png.GetImage());
       }
       u_henryTo->SetName("shaderTexture").SetValueAs(*to);
     }
@@ -236,6 +229,7 @@ struct glProgram
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
+    crateMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>(false);
 
     gfx_cs::material_sptr henryMat =
       pref_gfx::Material(m_entityMgr.get(), m_compPoolMgr.get())
@@ -243,21 +237,25 @@ struct glProgram
       .Create(core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS))
               ->GetComponent<gfx_cs::Material>();
+    henryMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>(false);
 
     PROFILE_START();
-    const tl_int repeat = 200;
+    const tl_int repeat = 300;
     for (tl_int i = repeat + 1; i > 0; --i)
     {
-      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
+      tl_float posX = rng::g_defaultRNG.GetRandomFloat(-50.0f, 50.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(20.0f, 480.0f);
 
       if (rng::g_defaultRNG.GetRandomInteger(0, 2) == 1)
       {
-        // Create a quad ent
+        //Create a quad ent
         Rectf32_c rect(Rectf32_c::width(3.0f), Rectf32_c::height(3.0f));
         ent_ptr quadEnt =
           pref_gfx::Quad(m_entityMgr.get(), m_compPoolMgr.get())
           .Dimensions(rect).Create();
+        quadEnt->GetComponent<gfx_cs::Mesh>()->
+          SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelViewProjectionMatrix>()
+          .SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
 
         box2d::rigid_body_def_sptr rbDef =
           core_sptr::MakeShared<box2d::RigidBodyDef>();
@@ -279,6 +277,10 @@ struct glProgram
           .Sides(30)
           .Circle(circle)
           .Create();
+
+        fanEnt->GetComponent<gfx_cs::Mesh>()->
+          SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelViewProjectionMatrix>()
+          .SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
 
         box2d::rigid_body_def_sptr rbDef =
           core_sptr::MakeShared<box2d::RigidBodyDef>();
@@ -302,6 +304,10 @@ struct glProgram
       Circlef32 circle( Circlef32::radius(5.0f) );
       ent_ptr fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
         .Sides(30).Circle(circle).Create();
+
+      fanEnt->GetComponent<gfx_cs::Mesh>()->
+        SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelViewProjectionMatrix>()
+        .SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
 
       box2d::rigid_body_def_sptr rbDef =
         core_sptr::MakeShared<box2d::RigidBodyDef>();
@@ -327,9 +333,8 @@ struct glProgram
       .Position(math_t::Vec3f(0, 0, 1.0f))
       .Create(core_ds::Divide<tl_size>(10, m_win.GetDimensions()) );
 
+    meshSys.SetCamera(m_cameraEnt);
     dtrSys.SetCamera(m_cameraEnt);
-    quadSys.SetCamera(m_cameraEnt);
-    fanSys.SetCamera(m_cameraEnt);
 
     // -----------------------------------------------------------------------
     // Initialize all the system
@@ -342,12 +347,8 @@ struct glProgram
     PROFILE_END("Material System Init");
 
     PROFILE_START();
-    quadSys.Initialize();
-    PROFILE_END("Quad System Init");
-
-    PROFILE_START();
-    fanSys.Initialize();
-    PROFILE_END("Fan System Init");
+    meshSys.Initialize();
+    PROFILE_END("Mesh System Init");
 
     PROFILE_START();
     physicsSys.Initialize();
@@ -390,7 +391,8 @@ struct glProgram
         while (m_accumulator > physicsDt)
         {
           if (m_keyPresses.IsMarked(key_pause) == false)
-          { m_physicsMgr.Update((tl_float)physicsDt * 0.001f); }
+          { m_physicsMgr.Update((tl_float) physicsDt * 0.001f); }
+
           m_accumulator -= physicsDt;
         }
       }
@@ -400,20 +402,35 @@ struct glProgram
       {
         m_renderFrameTime.Reset();
 
-        if (m_keyPresses.IsMarked(key_pause) == false)
-        { physicsSys.ProcessActiveEntities(); }
+        auto profile = m_profileTimer.ElapsedSeconds() > 1.0f;
+
+        if (profile) { PROFILE_START(); }
+        {
+          if (m_keyPresses.IsMarked(key_pause) == false)
+          { physicsSys.ProcessActiveEntities(); }
+        }
+        if (profile) { PROFILE_END("Physics System Process"); }
 
         // Since all systems use one renderer, we need to do this only once
         m_renderer->ApplyRenderSettings();
         m_entityMgr->Update();
         camSys.ProcessActiveEntities();
         matSys.ProcessActiveEntities();
-        quadSys.ProcessActiveEntities();
-        fanSys.ProcessActiveEntities();
+
+        if (profile) { PROFILE_START(); }
+        {
+          meshSys.ProcessActiveEntities();
+        }
+        if (profile) { PROFILE_END("Mesh System Process"); }
+
+        m_renderer->Render();
 
         dtrSys.ProcessActiveEntities();
 
         m_win.SwapBuffers();
+
+        if (profile)
+        { m_profileTimer.Reset(); }
 
         // Update FPS
         f64 fps = 0;
@@ -424,9 +441,8 @@ struct glProgram
         fps /= (m_frameTimeBuff.size() - 1);
         fps = 0.7 * m_frameTimeBuff.back() + fps * 0.3;
 
-        char buff[20];
-        sprintf(buff, "%f", fps);
-        m_win.SetTitle(buff);
+        m_win.SetTitle(core_str::Format("Draw Calls: %d, FPS: %.2f", 
+          m_renderer->GetNumDrawCalls(), fps));
       }
 
       m_frameTimeBuff.pop_back();
@@ -528,6 +544,7 @@ struct glProgram
   core_time::Timer32                m_frameTimer;
   core_time::Timer32                m_renderFrameTime;
   core_time::Timer32                m_physFrameTime;
+  core_time::Timer32                m_profileTimer;
 
   tl_int                            m_accumulator;
 
@@ -542,12 +559,13 @@ struct glProgram
   ent_ptr                           m_cameraEnt;
 
   phys_mgr_type                     m_physicsMgr;
-  gfx_cs::QuadRenderSystem          m_quadSys;
 };
 TLOC_DEF_TYPE(glProgram);
 
 int TLOC_MAIN(int, char* [])
 {
+  core_mem::tracking::DoDisableTracking();
+
   glProgram p;
   p.Initialize();
   p.RunGame();
