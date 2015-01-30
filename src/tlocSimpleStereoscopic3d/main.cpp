@@ -435,17 +435,17 @@ int TLOC_MAIN(int argc, char *argv[])
     rttRenderLeft->ApplyRenderSettings();
     meshSys->SetCamera(m_cameraEntLeft);
     meshSys->SetRenderer(rttRenderLeft);
-    ecsMainScene.Process(0.0f);
+    ecsMainScene.Process();
     rttRenderLeft->Render();
 
     rttRenderRight->ApplyRenderSettings();
     meshSys->SetCamera(m_cameraEntRight);
     meshSys->SetRenderer(rttRenderRight);
-    ecsMainScene.Process(0.0f);
+    ecsMainScene.Process();
     rttRenderRight->Render();
 
     renderer->ApplyRenderSettings();
-    ecsRtt.Process(0.0f);
+    ecsRtt.Process();
     renderer->Render();
 
     win.SwapBuffers();

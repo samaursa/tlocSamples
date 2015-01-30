@@ -292,8 +292,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
+    textECS->Process();
+
     renderer->ApplyRenderSettings();
-    textECS->Process(0.0f);
     renderer->Render();
 
     win.SwapBuffers();

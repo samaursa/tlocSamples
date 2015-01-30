@@ -444,12 +444,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
     f64 deltaT = t.ElapsedSeconds();
 
-    if (deltaT > 1.0f/30.0f)
+    if (deltaT > 1.0f/60.0f)
     {
       inputMgr->Update();
 
-      renderer->ApplyRenderSettings();
       mainScene.Process(deltaT);
+
+      renderer->ApplyRenderSettings();
       renderer->Render();
 
       if (siItr->GetIsUpdatedSinceLastFrame())

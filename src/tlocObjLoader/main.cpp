@@ -228,7 +228,6 @@ int TLOC_MAIN(int argc, char *argv[])
   {
     core_cs::entity_vptr ent =
       a_ecs.CreatePrefab<pref_gfx::Mesh>().Raypick(true).Create(a_vertices);
-    ent->GetComponent<gfx_cs::Raypick>()->SetDistanceChecked(false);
 
     gfx_gl::uniform_vso  u_to;
     u_to->SetName("s_texture").SetValueAs(*a_to);

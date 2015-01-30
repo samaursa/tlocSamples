@@ -194,9 +194,9 @@ struct glProgram
   {
     {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureVS.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureVS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureVS_gl_es_2_0.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
@@ -209,9 +209,9 @@ struct glProgram
 
     {
 #if defined (TLOC_OS_WIN)
-      core_str::String shaderPath("/shaders/mvpTextureFS.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureFS.glsl");
 #elif defined (TLOC_OS_IPHONE)
-      core_str::String shaderPath("/shaders/mvpTextureFS_gl_es_2_0.glsl");
+      core_str::String shaderPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
 #endif
       shaderPath = GetAssetsPath() + shaderPath;
       core_io::FileIO_ReadA file( (core_io::Path(shaderPath)) );
@@ -277,7 +277,7 @@ struct glProgram
       m_texObjHenry->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
-      uniform->SetName("shaderTexture").SetValueAs(*m_texObjHenry);
+      uniform->SetName("s_texture").SetValueAs(*m_texObjHenry);
 
       m_henryMat->AddUniform(*uniform);
     }
@@ -294,7 +294,7 @@ struct glProgram
       m_texObjCrate->Initialize(*image.GetImage());
 
       gfx_gl::uniform_vso uniform;
-      uniform->SetName("shaderTexture").SetValueAs(*m_texObjCrate);
+      uniform->SetName("s_texture").SetValueAs(*m_texObjCrate);
 
       m_crateMat->AddUniform(*uniform);
     }
