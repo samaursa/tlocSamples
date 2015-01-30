@@ -294,7 +294,7 @@ int TLOC_MAIN(int, char**)
 
       renderer->ApplyRenderSettings();
       ecs.Update();
-      ecs.Process(0.016f);
+      ecs.Process();
       renderer->Render();
 
       g_win.SwapBuffers();
