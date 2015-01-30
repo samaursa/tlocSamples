@@ -48,6 +48,7 @@ public:
 TLOC_DEF_TYPE(WindowCallback);
 
 class RaypickCallback
+  : public input_hid::KeyboardListener
 {
 public:
   core_dispatch::Event 
@@ -65,6 +66,30 @@ public:
 
     return core_dispatch::f_event::Continue();
   }
+
+  core_dispatch::Event 
+    OnKeyPress(const tl_size, const input_hid::KeyboardEvent& a_event)
+  {
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::n1)
+    { 
+      m_raypickSystem->SetPickingMode(gfx_cs::p_raypick_system::k_on_click);
+      TLOC_LOG_DEFAULT_DEBUG() << "Raypicking Mode: On click";
+    }
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::n2)
+    { 
+      m_raypickSystem->SetPickingMode(gfx_cs::p_raypick_system::k_continuous_on_click);
+      TLOC_LOG_DEFAULT_DEBUG() << "Raypicking Mode: Continuous On Click";
+    }
+    if (a_event.m_keyCode == input_hid::KeyboardEvent::n3)
+    { 
+      m_raypickSystem->SetPickingMode(gfx_cs::p_raypick_system::k_continuous);
+      TLOC_LOG_DEFAULT_DEBUG() << "Raypicking Mode: Continuous";
+    }
+
+    return core_dispatch::f_event::Continue();
+  }
+
+  gfx_cs::raypick_system_vptr   m_raypickSystem;
 };
 TLOC_DEF_TYPE(RaypickCallback);
 
@@ -146,7 +171,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
   auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/5.0f);
   raypickSys->SetWindowDimensions(win.GetDimensions());
+  raypickSys->SetPickingMode(gfx_cs::p_raypick_system::k_on_click);
   raypickSys->Register(&rayCallback);
+  rayCallback.m_raypickSystem = raypickSys;
 
   ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
   auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
@@ -176,13 +203,6 @@ int TLOC_MAIN(int argc, char *argv[])
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
   to->Initialize(*png.GetImage());
-
-  // -----------------------------------------------------------------------
-  // Add a texture to the material. We need:
-  //  * an image
-  //  * a TextureObject (preparing the image for OpenGL)
-  //  * a Uniform (all textures are uniforms in shaders)
-  //  * a ShaderOperator (this is what the material will take)
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -236,10 +256,10 @@ int TLOC_MAIN(int argc, char *argv[])
     u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
     a_ecs.CreatePrefab<pref_gfx::Material>()
-      .AddUniform(u_to.get())
-      .AddUniform(u_lightDir.get())
-      .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-                core_io::Path(GetAssetsPath() + shaderPathFS));
+         .AddUniform(u_to.get())
+         .AddUniform(u_lightDir.get())
+         .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+                   core_io::Path(GetAssetsPath() + shaderPathFS));
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
     matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
@@ -280,6 +300,7 @@ int TLOC_MAIN(int argc, char *argv[])
   raypickSys->SetCamera(m_cameraEnt);
 
   keyboard->Register(&*arcBallControlSystem);
+  keyboard->Register(&rayCallback);
   mouse->Register(&*arcBallControlSystem);
   mouse->Register(&*raypickSys);
   touchSurface->Register(&*arcBallControlSystem);
@@ -300,12 +321,20 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << "Press E to enable an INVALID uniform";
   TLOC_LOG_CORE_DEBUG() << "Press D to disable the INVALID uniform";
   TLOC_LOG_CORE_DEBUG() << "Press B to disable bounding box rendering";
+  TLOC_LOG_CORE_DEBUG() << "Press C to create more crates";
+  TLOC_LOG_CORE_DEBUG() << "Press U to destroy (uncreate) more crates";
+  TLOC_LOG_CORE_DEBUG() << "Press 1 to switch to picking with left click";
+  TLOC_LOG_CORE_DEBUG() << "Press 2 to switch to continuous picking with left click";
+  TLOC_LOG_CORE_DEBUG() << "Press 3 to switch to continuous picking";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
+
+    // -----------------------------------------------------------------------
+    // keyevents
 
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::l))
     {
@@ -319,7 +348,7 @@ int TLOC_MAIN(int argc, char *argv[])
     }
 
     // create and destroy the meshes on a keypress
-    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n1))
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::c))
     {
       auto newMesh = TL_NESTED_CALL(CreateMesh)(ecs, vertices, to.get());
       meshes.push_back(newMesh);
@@ -331,7 +360,7 @@ int TLOC_MAIN(int argc, char *argv[])
       newMesh->GetComponent<math_cs::Transform>()->
         SetPosition(math_t::Vec3f32(xPos, yPos, zPos));
     }
-    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n2))
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::u))
     {
       if (meshes.size() > 0)
       {
@@ -353,6 +382,9 @@ int TLOC_MAIN(int argc, char *argv[])
       if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
       { matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>(false); }
     }
+
+    // -----------------------------------------------------------------------
+    // update code
 
     inputMgr->Update();
 

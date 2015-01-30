@@ -251,7 +251,7 @@ struct glProgram
     BoundingBoxSystem bbSys(m_eventMgr.get(), m_entityMgr.get());
     RaypickSystem     raySys(m_eventMgr.get(), m_entityMgr.get());
     raySys.SetWindowDimensions(m_win.GetDimensions())
-          .SetContinuousRaypick(true);
+          .SetPickingMode(gfx_cs::p_raypick_system::k_continuous);
     raySys.Register(this);
     m_mouse->Register(&raySys);
 
@@ -306,7 +306,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(5.0f) );
       m_fanEnt = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get()).
-        Sides(12).Raypick(true).Circle(circle).Create();
+        Sides(24).Raypick(true).Circle(circle).Create();
 
       tl_float posX = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
       tl_float posY = rng::g_defaultRNG.GetRandomFloat(-10.0f, 10.0f);
@@ -327,7 +327,7 @@ struct glProgram
       // Create a fan ent
       Circlef32 circle( Circlef32::radius(0.5f) );
       m_mouseFan = pref_gfx::Fan(m_entityMgr.get(), m_compPoolMgr.get())
-        .Sides(12).Circle(circle).Create();
+        .Sides(24).Circle(circle).Create();
 
       auto matPoolItr = matPool->GetNext();
       (*matPoolItr)->SetValue(core_sptr::MakeShared<gfx_cs::Material>(*m_crateMat));
@@ -450,7 +450,7 @@ struct glProgram
       else
       {
         m_cameraEnt->GetComponent<math_cs::Transform>()->
-          SetPosition(math_t::Vec3f32(0, 0, 30.0f));
+          SetPosition(math_t::Vec3f32(0, 0, 60.0f));
 
         math_t::AspectRatio ar(math_t::AspectRatio::width( (tl_float)m_win.GetWidth()),
                                math_t::AspectRatio::height( (tl_float)m_win.GetHeight()) );
