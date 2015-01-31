@@ -182,10 +182,11 @@ struct glProgram
 
     auto ray = gfx_cs::f_camera::GetRayInWorldSpace(*m_cameraEnt, xyz);
 
+    math_t::Plane p;
+    auto mouseXYZ = p.GetIntersect(ray);
+
     // Set the mouse pointer
-    m_mouseFan->GetComponent<math_cs::Transform>()->
-      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
-                                  ray.GetOrigin()[1], 0.0f) );
+    m_mouseFan->GetComponent<math_cs::Transform>()-> SetPosition(mouseXYZ);
   }
 
   //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -364,6 +365,7 @@ struct glProgram
     TLOC_LOG_CORE_DEBUG() << "V - toggle mouse cursor visibility";
     TLOC_LOG_CORE_DEBUG() << "R - toggle mouse restrict/confine to window";
     TLOC_LOG_CORE_DEBUG() << "P - print ray position";
+    TLOC_LOG_CORE_DEBUG() << "C - toggle cameras";
 
     while (m_win.IsValid() && m_keyPresses.IsMarked(key_exit) == false &&
            m_endGame == false)
@@ -535,13 +537,6 @@ struct glProgram
   core_dispatch::Event
     OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
   {
-    const auto& ray = a_event.m_rayInWorldSpace;
-
-    // Set the mouse pointer
-    m_mouseFan->GetComponent<math_cs::Transform>()->
-      SetPosition(math_t::Vec3f32(ray.GetOrigin()[0],
-                                  ray.GetOrigin()[1], 0.0f) );
-
     if (a_event.m_ent == m_fanEnt)
     {
       gfx_cs::material_sptr mat = m_fanEnt->GetComponent<gfx_cs::Material>();
