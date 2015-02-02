@@ -1,5 +1,3 @@
-#include <tlocCore/tlocNoOpt.h>
-
 #include <tlocCore/tloc_core.h>
 #include <tlocCore/tloc_core.inl.h>
 #include <tlocGraphics/tloc_graphics.h>
