@@ -283,7 +283,8 @@ int TLOC_MAIN(int argc, char *argv[])
     core_cs::entity_vptr ent =
       pref_gfx::StaticText(entityMgr.get(), compMgr.get())
       .Alignment(gfx_cs::alignment::k_align_center)
-      .Create(L"The quick brown fox jumps over the lazy dog. 1234567890", font1);
+      .HorizontalAlignment(gfx_cs::horizontal_alignment::k_align_middle)
+      .Create(L"-- The quick brown fox jumps over the lazy dog. 1234567890 --", font1);
     pref_gfx::Material(entityMgr.get(), compMgr.get())
       .AddUniform(u_toFont1.get())
       .Add(ent, vsSource, fsSource);
