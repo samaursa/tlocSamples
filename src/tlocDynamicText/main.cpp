@@ -216,7 +216,7 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_med::Font::Params fontParams(fSize);
   fontParams.BgColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
             .PaddingColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 0.0f))
-            .PaddingDim(core_ds::MakeTuple(0, 0));
+            .PaddingDim(core_ds::MakeTuple(20, 20));
 
   f->GenerateGlyphCache(g_symbols.c_str(), fontParams);
 
@@ -243,6 +243,7 @@ int TLOC_MAIN(int argc, char *argv[])
   core_cs::entity_vptr dText = 
     pref_gfx::DynamicText(entityMgr.get(), compMgr.get())
     .Alignment(gfx_cs::alignment::k_align_right)
+    .HorizontalAlignment(gfx_cs::horizontal_alignment::k_align_middle)
     .Create(L"High Score", f);
 
   core_cs::entity_vptr dTextFixed = 
@@ -302,7 +303,7 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << "Text starts disabled (for testing) "
                         << "- re-enabled after 1 second";
 
-  core_time::Timer t, tStartTime, tAlign;
+  core_time::Timer t, tStartTime, tAlign, tHorAlign;
   
   tl_int counter = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
@@ -324,9 +325,34 @@ int TLOC_MAIN(int argc, char *argv[])
       if (dText->IsActive() == false)
       { 
         gfx_cs::f_scene_graph::ActivateHierarchy(dText);
+        camSys.ProcessActiveEntities();
+        sgSys.ProcessActiveEntities();
         textSys->ProcessActiveEntities(); // force a refresh of the system to
                                           // avoid High Score from showing
       }
+    }
+
+    // -----------------------------------------------------------------------
+    // alignment logic
+
+    if (tHorAlign.ElapsedSeconds() > 3.0f)
+    {
+      gfx_cs::dynamic_text_sptr dt = 
+        dText->GetComponent<gfx_cs::DynamicText>(); 
+
+      if (dt->GetHorizontalAlignment() == gfx_cs::horizontal_alignment::k_none)
+      { 
+        TLOC_LOG_DEFAULT_DEBUG() << "Text aligned to MIDDLE horizontally";
+        dt->SetHorizontalAlignment(gfx_cs::horizontal_alignment::k_align_middle);
+      }
+      else 
+      { 
+        TLOC_LOG_DEFAULT_DEBUG() << "Text aligned to NONE horizontally";
+        dt->SetHorizontalAlignment(gfx_cs::horizontal_alignment::k_none);
+      }
+
+      tHorAlign.Reset();
+      tAlign.Reset(); // reduces visual confusion
     }
     
     if (tAlign.ElapsedSeconds() > 1.0f)
@@ -339,16 +365,19 @@ int TLOC_MAIN(int argc, char *argv[])
 
       if (dt->GetAlignment() == gfx_cs::alignment::k_align_center)
       { 
+        TLOC_LOG_DEFAULT_DEBUG() << "Text aligned to RIGHT vertically";
         dt->SetAlignment(gfx_cs::alignment::k_align_right);
         dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
       }
       else if (dt->GetAlignment() == gfx_cs::alignment::k_align_right)
       { 
+        TLOC_LOG_DEFAULT_DEBUG() << "Text aligned to LEFT vertically";
         dt->SetAlignment(gfx_cs::alignment::k_align_left);
         dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
       }
       else
       { 
+        TLOC_LOG_DEFAULT_DEBUG() << "Text aligned to CENTER vertically";
         dt->SetAlignment(gfx_cs::alignment::k_align_center);
         dtFixedTrans->SetPosition(dtFixedTrans->GetPosition().Inverse());
       }
@@ -356,13 +385,14 @@ int TLOC_MAIN(int argc, char *argv[])
       tAlign.Reset();
     }
 
+    // -----------------------------------------------------------------------
+
+    camSys.ProcessActiveEntities();
+    sgSys.ProcessActiveEntities();
+    textSys->ProcessActiveEntities();
+    quadSys.ProcessActiveEntities();
+
     renderer->ApplyRenderSettings();
-    {
-      camSys.ProcessActiveEntities();
-      sgSys.ProcessActiveEntities();
-      quadSys.ProcessActiveEntities();
-      textSys->ProcessActiveEntities();
-    }
     renderer->Render();
 
     dtrSys.ProcessActiveEntities();
