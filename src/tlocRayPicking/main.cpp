@@ -83,7 +83,7 @@ struct glProgram
     m_mouse = m_inputMgr->CreateHID<input::hid::MouseB>();
     m_mouse->Register(this);
 
-    m_touchSurface = m_inputMgrImm->CreateHID<input::hid::TouchSurfaceI>();
+    m_touchSurface = m_inputMgr->CreateHID<input::hid::TouchSurfaceB>();
 
     // -----------------------------------------------------------------------
     // Initialize graphics platform
@@ -255,6 +255,7 @@ struct glProgram
           .SetPickingMode(gfx_cs::p_raypick_system::k_continuous);
     raySys.Register(this);
     m_mouse->Register(&raySys);
+    m_touchSurface->Register(&raySys);
 
     m_henryMat = core_sptr::MakeShared<gfx_cs::Material>();
     m_crateMat = core_sptr::MakeShared<gfx_cs::Material>();
@@ -415,6 +416,7 @@ struct glProgram
     }
 
     m_mouse->UnRegister(&raySys);
+    m_touchSurface->UnRegister(&raySys);
 
     TLOC_LOG_CORE_INFO() << "Exiting normally";
   }
@@ -599,7 +601,7 @@ struct glProgram
 
   input::hid::keyboard_b_vptr       m_keyboard;
   input::hid::mouse_b_vptr          m_mouse;
-  input::hid::touch_surface_i_vptr  m_touchSurface;
+  input::hid::touch_surface_b_vptr  m_touchSurface;
 
   input_hid::TouchSurfaceI::touch_container_type  m_currentTouches;
   core::utils::Checkpoints                        m_keyPresses;

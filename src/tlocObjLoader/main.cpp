@@ -304,6 +304,7 @@ int TLOC_MAIN(int argc, char *argv[])
   mouse->Register(&*arcBallControlSystem);
   mouse->Register(&*raypickSys);
   touchSurface->Register(&*arcBallControlSystem);
+  touchSurface->Register(&*raypickSys);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
