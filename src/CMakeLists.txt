@@ -10,7 +10,7 @@ function(add_apple_plist EXEC_NAME ASSETS_PATH)
     if(SOLUTION_IOS_PLIST_PATH)
       set(PLIST_PATH ${SOLUTION_IOS_PLIST_PATH})
     else()
-      set(PLIST_PATH "${SOLUTION_INSTALL_PATH}/platform/iOS/tlocEngine.plist")
+      set(PLIST_PATH "${TLOC_ENGINE_INSTALL_PATH}/../platform/iOS/tlocEngine.plist")
     endif()
 
     set(EXECUTABLE_NAME "\${EXECUTABLE_NAME}" PARENT_SCOPE)
