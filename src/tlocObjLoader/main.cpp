@@ -54,7 +54,9 @@ public:
   core_dispatch::Event 
     OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
   {
-    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+    a_event.m_ent->GetComponent<math_cs::Transform>()->
+      SetScale(math_t::Vec3f32(1.1f, 1.1f, 1.1f));
 
     return core_dispatch::f_event::Continue();
   }
@@ -63,6 +65,9 @@ public:
     OnRayUnpickEvent(const gfx_cs::RaypickEvent& a_event)
   {
     TLOC_LOG_DEFAULT_DEBUG() << "Unpicked Entity: " << *a_event.m_ent;
+
+    a_event.m_ent->GetComponent<math_cs::Transform>()->
+      SetScale(math_t::Vec3f32(1.0f, 1.0f, 1.0f));
 
     return core_dispatch::f_event::Continue();
   }
@@ -169,7 +174,7 @@ int TLOC_MAIN(int argc, char *argv[])
   ecs.AddSystem<gfx_cs::ArcBallSystem>();
   auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
 
-  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/5.0f);
+  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/15.0f);
   raypickSys->SetWindowDimensions(win.GetDimensions());
   raypickSys->SetPickingMode(gfx_cs::p_raypick_system::k_on_click);
   raypickSys->Register(&rayCallback);
