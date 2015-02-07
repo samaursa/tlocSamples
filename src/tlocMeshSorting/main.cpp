@@ -15,6 +15,9 @@ using namespace tloc;
 
 namespace {
 
+  const float g_randMin = -200.0f;
+  const float g_randMax =  200.0f;
+
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
   //       and used by the shader (i.e. not compiled out). See the listed
@@ -163,15 +166,15 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // transparent quads
 
-  const tl_int quadCount = 100;
+  const tl_int quadCount = 200;
   for (tl_int i = 0; i < quadCount; ++i)
   {
-    auto x = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 200.0f);
-    auto y = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 200.0f);
-    auto z = core_rng::g_defaultRNG.GetRandomFloat(0.0f, 200.0f);
+    auto x = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
+    auto y = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
+    auto z = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
 
-    math_t::Rectf32_c rect(math_t::Rectf32_c::width(10.0f),
-                           math_t::Rectf32_c::height(10.0f));
+    math_t::Rectf32_c rect(math_t::Rectf32_c::width(15.0f),
+                           math_t::Rectf32_c::height(15.0f));
     core_cs::entity_vptr q =
       scene->CreatePrefab<pref_gfx::Quad>()
       .Dimensions(rect)

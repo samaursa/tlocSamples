@@ -252,6 +252,8 @@ int TLOC_MAIN(int argc, char *argv[])
                const gfx_gl::texture_object_vptr& a_to)
 
   {
+    static gfx_cs::material_sptr mat;
+
     core_cs::entity_vptr ent =
       a_ecs.CreatePrefab<pref_gfx::Mesh>().Raypick(true).Create(a_vertices);
 
@@ -261,11 +263,21 @@ int TLOC_MAIN(int argc, char *argv[])
     gfx_gl::uniform_vso  u_lightDir;
     u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
-    a_ecs.CreatePrefab<pref_gfx::Material>()
-         .AddUniform(u_to.get())
-         .AddUniform(u_lightDir.get())
-         .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-                   core_io::Path(GetAssetsPath() + shaderPathFS));
+    if (mat == nullptr)
+    {
+      a_ecs.CreatePrefab<pref_gfx::Material>()
+           .AddUniform(u_to.get())
+           .AddUniform(u_lightDir.get())
+           .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+                     core_io::Path(GetAssetsPath() + shaderPathFS));
+
+      mat = ent->GetComponent<gfx_cs::Material>();
+    }
+    else
+    {
+      a_ecs.GetEntityManager()->
+        InsertComponent(core_cs::EntityManager::Params(ent, mat));
+    }
 
     auto matPtr = ent->GetComponent<gfx_cs::Material>();
     matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
