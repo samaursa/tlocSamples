@@ -54,7 +54,8 @@ public:
   core_dispatch::Event 
     OnRaypickEvent(const gfx_cs::RaypickEvent& a_event)
   {
-    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+    TLOC_LOG_DEFAULT_DEBUG() << "Picked Entity: " << *a_event.m_ent;
+
     a_event.m_ent->GetComponent<math_cs::Transform>()->
       SetScale(math_t::Vec3f32(1.1f, 1.1f, 1.1f));
 
