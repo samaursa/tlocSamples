@@ -15,8 +15,8 @@ using namespace tloc;
 
 namespace {
 
-  const float g_randMin = -200.0f;
-  const float g_randMax =  200.0f;
+  const float g_randMin = -50.0f;
+  const float g_randMax =  50.0f;
 
   // We need a material to attach to our entity (which we have not yet created).
   // NOTE: The quad render system expects a few shader variables to be declared
@@ -113,10 +113,12 @@ int TLOC_MAIN(int argc, char *argv[])
   scene->AddSystem<gfx_cs::ArcBallSystem>();
   scene->AddSystem<gfx_cs::MaterialSystem>();
   scene->AddSystem<gfx_cs::CameraSystem>();
+  scene->AddSystem<gfx_cs::SceneGraphSystem>();
 
   auto quadSys = scene->AddSystem<gfx_cs::MeshRenderSystem>();
   quadSys->SetRenderer(renderer);
-  quadSys->SetEnabledSortingBackToFront(true);
+  quadSys->SetEnabledSortingBackToFront(false);
+  quadSys->SetEnabledSortingFrontToBack(false);
 
   // -----------------------------------------------------------------------
   // camera
@@ -167,19 +169,39 @@ int TLOC_MAIN(int argc, char *argv[])
   // transparent quads
 
   const tl_int quadCount = 200;
+  const tl_int maxNumChildren = 3;
+  tl_int nodeCounter = 0;
+  core_cs::entity_vptr prevEnt;
   for (tl_int i = 0; i < quadCount; ++i)
   {
     auto x = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
     auto y = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
     auto z = core_rng::g_defaultRNG.GetRandomFloat(g_randMin, g_randMax);
 
-    math_t::Rectf32_c rect(math_t::Rectf32_c::width(15.0f),
-                           math_t::Rectf32_c::height(15.0f));
+    math_t::Rectf32_c rect(math_t::Rectf32_c::width(10.0f),
+                           math_t::Rectf32_c::height(10.0f));
     core_cs::entity_vptr q =
       scene->CreatePrefab<pref_gfx::Quad>()
       .Dimensions(rect)
       .Create();
-    q->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(x, y, z));
+
+    const auto pos = math_t::Vec3f32(x, y, z);
+
+    // we're the parent node
+    if (nodeCounter == 0)
+    { scene->CreatePrefab<pref_gfx::SceneNode>().Position(pos).Add(q); }
+    else // we're one of the children
+    {
+      scene->CreatePrefab<pref_gfx::SceneNode>()
+        .Position(pos)
+        .Parent(core_sptr::ToVirtualPtr(q->GetComponent<gfx_cs::SceneNode>()))
+        .Add(q);
+    }
+
+    if (nodeCounter == maxNumChildren)
+    { nodeCounter = 0; }
+
+    prevEnt = q;
 
     scene->InsertComponent(q, matPtr);
   }
@@ -194,6 +216,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   TLOC_LOG_DEFAULT_DEBUG() << "Press [f] to switch to front to back sorting";
   TLOC_LOG_DEFAULT_DEBUG() << "Press [b] to switch to back to front sorting";
+  TLOC_LOG_DEFAULT_DEBUG() << "Press [g] to switch to front to back 2D sorting";
+  TLOC_LOG_DEFAULT_DEBUG() << "Press [n] to switch to back to front 2D sorting";
 
   while (win.IsValid() && !winCallback.m_endProgram)
   {
@@ -205,6 +229,10 @@ int TLOC_MAIN(int argc, char *argv[])
     { quadSys->SetEnabledSortingFrontToBack(true); }
     else if (keyboard->IsKeyDown(input_hid::KeyboardEvent::b))
     { quadSys->SetEnabledSortingBackToFront(true); }
+    else if (keyboard->IsKeyDown(input_hid::KeyboardEvent::g))
+    { quadSys->SetEnabledSortingFrontToBack_2D(true); }
+    else if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n))
+    { quadSys->SetEnabledSortingBackToFront_2D(true); }
 
     inputMgr->Update();
 
