@@ -8,6 +8,13 @@
 
 using namespace tloc;
 
+namespace {
+
+  tl_size g_rttImgWidth   = 1024;
+  tl_size g_rttImgHeight  = 1024;
+
+};
+
 class WindowCallback
 {
 public:
@@ -69,24 +76,38 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Prepare RTT
 
-  gfx_gl::TextureObject::Params rttToParams;
-  rttToParams.InternalFormat<gfx_gl::p_texture_object::internal_format::DepthComponent>();
-  rttToParams.Format<gfx_gl::p_texture_object::format::DepthComponent>();
+  gfx_gl::texture_object_shadow_vso depthTo;
+  {
+    gfx_gl::TextureObject::Params rttToParams;
+    rttToParams.InternalFormat<gfx_gl::p_texture_object::internal_format::DepthComponent>()
+               .Format<gfx_gl::p_texture_object::format::DepthComponent>()
+               .CompareMode<gfx_gl::p_texture_object::compare_mode::RefToTexture>()
+               .CompareFunction<gfx_gl::p_texture_object::compare_function::LessEqual>();
+
+    depthTo->SetParams(rttToParams);
+    gfx_med::image_f32_r rttImg;
+
+    rttImg.Create(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight),
+                  gfx_med::image_f32_r::color_type());
+    depthTo->Initialize(rttImg);
+  }
 
   gfx_gl::texture_object_vso rttTo;
-  rttTo->SetParams(rttToParams);
-  gfx_med::image_u16_r rttImg;
+  {
+    gfx_med::Image rttImg;
 
-  rttImg.Create(core_ds::MakeTuple(1024, 1024),
-                gfx_med::image_u16_r::color_type());
-  rttTo->Initialize(rttImg);
+    rttImg.Create(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight),
+                  gfx_med::Image::color_type());
+    rttTo->Initialize(rttImg);
+  }
 
   using namespace gfx_gl::p_fbo;
 
   gfx_gl::framebuffer_object_sptr fbo = 
     core_sptr::MakeShared<gfx_gl::FramebufferObject>();
 
-  fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*rttTo);
+  fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*depthTo);
+  fbo->Attach<target::DrawFramebuffer, attachment::ColorAttachment<0> >(*rttTo);
 
   using namespace gfx_rend::p_renderer;
   gfx_rend::Renderer::Params pRtt;
@@ -97,7 +118,7 @@ int TLOC_MAIN(int argc, char *argv[])
       .Enable<enable_disable::CullFace>()
       .Cull<cull_face::Front>()
       .SetClearColor(gfx_t::Color::COLOR_WHITE)
-      .SetDimensions(core_ds::MakeTuple(rttImg.GetWidth(), rttImg.GetHeight()));
+      .SetDimensions(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight));
 
   gfx_rend::renderer_sptr rttRenderer = 
     core_sptr::MakeShared<gfx_rend::Renderer>(pRtt);
@@ -134,7 +155,7 @@ int TLOC_MAIN(int argc, char *argv[])
   auto arcBallControlSystem = ecsMainScene.AddSystem<input_cs::ArcBallControlSystem>();
   ecsMainScene.AddSystem<gfx_cs::ArcBallSystem>();
   auto camSys = ecsMainScene.AddSystem<gfx_cs::CameraSystem>(1.0 / 60.0, true);
-  ecsMainScene.AddSystem<gfx_cs::MaterialSystem>();
+  auto matSys = ecsMainScene.AddSystem<gfx_cs::MaterialSystem>();
 
   auto  meshSys = ecsMainScene.AddSystem<gfx_cs::MeshRenderSystem>();
   meshSys->SetRenderer(renderer);
@@ -212,7 +233,7 @@ int TLOC_MAIN(int argc, char *argv[])
     ecsMainScene.CreatePrefab<pref_gfx::Camera>()
     .Perspective(true)
     .Near(1.0f)
-    .Far(100.0f)
+    .Far(20.0f)
     .VerticalFOV(math_t::Degree(60.0f))
     .Position(math_t::Vec3f(4.0f, 4.0f, 4.0f))
     .Create(win.GetDimensions());
@@ -340,7 +361,7 @@ int TLOC_MAIN(int argc, char *argv[])
   u_to->SetName("s_texture").SetValueAs(*crateTextureTo);
 
   gfx_gl::uniform_vso  u_toShadowMap;
-  u_toShadowMap->SetName("s_shadowMap").SetValueAs(*rttTo);
+  u_toShadowMap->SetName("s_shadowMap").SetValueAs(*depthTo);
 
   gfx_gl::uniform_vso  u_lightDir;
   u_lightDir->SetName("u_lightDir").SetValueAs(lightDir);
@@ -348,11 +369,16 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso  u_lightMVP;
   u_lightMVP->SetName("u_lightMVP").SetValueAs(lightMVP);
 
+  gfx_gl::uniform_vso u_imgDim;
+  u_imgDim->SetName("u_imgDim")
+    .SetValueAs(math_t::Vec2f32((f32)g_rttImgWidth, (f32)g_rttImgHeight));
+
   auto meshMat = ecsMainScene.CreatePrefab<pref_gfx::Material>();
   meshMat.AddUniform(u_to.get())
          .AddUniform(u_lightDir.get())
          .AddUniform(u_toShadowMap.get()) 
-         .AddUniform(u_lightMVP.get());
+         .AddUniform(u_lightMVP.get())
+         .AddUniform(u_imgDim.get());
 
   meshMat.Add(crateEnt, core_io::Path(GetAssetsPath() + shaderPathMeshVS), 
                    core_io::Path(GetAssetsPath() + shaderPathMeshFS));
@@ -386,6 +412,7 @@ int TLOC_MAIN(int argc, char *argv[])
   math_t::Degree d(0.0f);
 
   core_time::Timer rotTimer;
+  core_time::Timer matSysTimer;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -404,6 +431,9 @@ int TLOC_MAIN(int argc, char *argv[])
 
       rotTimer.Reset();
     }
+
+    if (matSysTimer.ElapsedSeconds() > 1.0f)
+    { matSys->ReInitialize(); matSysTimer.Reset(); }
 
     camSys->ProcessActiveEntities();
 
