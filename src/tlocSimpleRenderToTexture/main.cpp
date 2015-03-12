@@ -74,12 +74,9 @@ int TLOC_MAIN(int argc, char *argv[])
   using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
   {
-    gfx_rend::Renderer::Params p(renderer->GetParams());
-    p.AddClearBit<clear::ColorBufferBit>()
-     .AddClearBit<clear::DepthBufferBit>()
-     .SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-     .SetDimensions(core_ds::MakeTuple(500, 500));
-    renderer->SetParams(p);
+    renderer->SetParams(GetParamsCommon(renderer->GetParams().GetFBO(), 
+                                        renderer->GetParams().GetDimensions(),
+                                        gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f)) );
   }
 
   // -----------------------------------------------------------------------
@@ -99,82 +96,26 @@ int TLOC_MAIN(int argc, char *argv[])
   to->Initialize(*png.GetImage());
 
   // -----------------------------------------------------------------------
-  // to render to texture to a quad we need a renderer with the correct
-  // Framebuffer. This particular Framebuffer will be rendering to a texture
 
-  // For rendering to a texture we need a texture object and a render buffer
-  // to render the depth
-  gfx_gl::texture_object_vso rttTo;
-  {
-    gfx_med::Image rttImg;
-    rttImg.Create
-      (core_ds::MakeTuple(g_rttResX, g_rttResY),
-       gfx_med::Image::color_type::COLOR_WHITE);
-
-    rttTo->Initialize(rttImg);
-  }
+  gfx::Rtt rtt(core_ds::MakeTuple(g_rttResX, g_rttResY));
+  auto rttTo        = rtt.AddColorAttachment(0);
+  auto rttRenderer  = rtt.GetRenderer();
 
 #if defined (TLOC_OS_WIN)
-  gfx_gl::texture_object_vso rttTo2;
-  {
-    gfx_med::Image rttImg;
-    rttImg.Create
-      (core_ds::MakeTuple(g_rttResX, g_rttResY),
-       gfx_med::Image::color_type::COLOR_WHITE);
-
-    rttTo2->Initialize(rttImg);
-  }
+  auto rttTo2 = rtt.AddColorAttachment(1);
 #endif
 
-  using namespace gfx_gl::p_fbo;
-  gfx_gl::framebuffer_object_sptr fbo =
-    core_sptr::MakeShared<gfx_gl::FramebufferObject>();
-  
-  fbo->Attach<target::DrawFramebuffer,
-              attachment::ColorAttachment<0> >(*rttTo);
-
-#if defined (TLOC_OS_WIN)
-  fbo->Attach<target::DrawFramebuffer,
-              attachment::ColorAttachment<1> >(*rttTo2);
-#endif
-
-  using namespace gfx_rend::p_renderer;
-  gfx_rend::Renderer::Params p;
-  p.SetFBO(fbo);
-  p.AddClearBit<clear::ColorBufferBit>()
-   .AddClearBit<clear::DepthBufferBit>()
-   .SetClearColor(gfx_t::Color(0.0f, 0.0f, 0.0f, 1.0f))
-   .SetDimensions(core_ds::MakeTuple(g_rttResX, g_rttResY));
-  gfx_rend::renderer_sptr rttRenderer =
-    core_sptr::MakeShared<gfx_rend::Renderer>(p);
-
   //------------------------------------------------------------------------
-  // A component pool manager manages all the components in a particular
-  // session/level/section.
-  // See explanation in SimpleQuad sample on why it must be created first.
-  core_cs::component_pool_mgr_vso cpoolMgr;
 
-  //------------------------------------------------------------------------
-  // All systems in the engine require an event manager and an entity manager
-  core_cs::event_manager_vso  eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  core_cs::ECS scene;
 
   //------------------------------------------------------------------------
   // To render the texture we need a quad
-  auto  quadSys = 
-    core_sptr::MakeShared<gfx_cs::MeshRenderSystem>(eventMgr.get(), entityMgr.get());
+  scene.AddSystem<gfx_cs::MaterialSystem>();
+  auto  quadSys = scene.AddSystem<gfx_cs::MeshRenderSystem>(1.0/60.0, true);
+  auto  fanSys = scene.AddSystem<gfx_cs::MeshRenderSystem>(1.0/60.0, true);
   quadSys->SetRenderer(renderer);
-
-  //------------------------------------------------------------------------
-  // To render a fan, we need a fan render system - this is a specialized
-  // system to render this primitive
-  auto   fanSys =
-    core_sptr::MakeShared<gfx_cs::MeshRenderSystem>(eventMgr.get(), entityMgr.get());
   fanSys->SetRenderer(rttRenderer);
-
-  //------------------------------------------------------------------------
-  // We cannot render anything without materials and its system
-  gfx_cs::MaterialSystem    matSys(eventMgr.get(), entityMgr.get());
 
   //------------------------------------------------------------------------
   // Add a texture to the material. We need:
@@ -193,11 +134,11 @@ int TLOC_MAIN(int argc, char *argv[])
   // RTT material
 
   gfx_gl::uniform_vso u_rttTo;
-  u_rttTo->SetName("s_texture").SetValueAs(rttTo.get());
+  u_rttTo->SetName("s_texture").SetValueAs(core_sptr::ToVirtualPtr(rttTo));
 
 #if defined (TLOC_OS_WIN)
   gfx_gl::uniform_vso u_rttTo2;
-  u_rttTo2->SetName("s_texture").SetValueAs(rttTo2.get());
+  u_rttTo2->SetName("s_texture").SetValueAs(core_sptr::ToVirtualPtr(rttTo2));
 #endif
 
   gfx_gl::uniform_vso  u_blur;
@@ -214,10 +155,11 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // the circle that will be rendered to textures
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
-  core_cs::entity_vptr q = pref_gfx::Fan(entityMgr.get(), cpoolMgr.get())
+
+  auto q = scene.CreatePrefab<pref_gfx::Fan>()
     .Sides(64).Circle(circ).DispatchTo(fanSys.get()).Create();
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  scene.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_to.get())
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
@@ -227,14 +169,14 @@ int TLOC_MAIN(int argc, char *argv[])
                          math_t::Rectf32_c::height(0.6f));
 
   // the first quad with the circle diffuse render
-  core_cs::entity_vptr diffuseQuad =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+  auto diffuseQuad =
+    scene.CreatePrefab<pref_gfx::Quad>()
     .Dimensions(rect).DispatchTo(quadSys.get()).Create();
 
   diffuseQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(-0.5f, 0, 0));
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  scene.CreatePrefab<pref_gfx::Material>()
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
@@ -243,14 +185,14 @@ int TLOC_MAIN(int argc, char *argv[])
          core_io::Path(shaderPathBlurFS));
 
   // the second quad rendering the circle using texcoords
-  core_cs::entity_vptr texQuad =
-    pref_gfx::Quad(entityMgr.get(), cpoolMgr.get())
+  auto texQuad =
+    scene.CreatePrefab<pref_gfx::Quad>()
     .Dimensions(rect).DispatchTo(quadSys.get()).Create();
 
   texQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(0.5f, 0, 0));
 
-  pref_gfx::Material(entityMgr.get(), cpoolMgr.get())
+  scene.CreatePrefab<pref_gfx::Material>()
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo2.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
@@ -279,9 +221,9 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  fanSys->Initialize();
+  scene.Initialize();
   quadSys->Initialize();
-  matSys.Initialize();
+  fanSys->Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -292,14 +234,16 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     // render the fan, which will be rendered to a texture
-    fanSys->GetRenderer()->ApplyRenderSettings();
     fanSys->ProcessActiveEntities();
+
+    fanSys->GetRenderer()->ApplyRenderSettings();
     fanSys->GetRenderer()->Render();
 
     // render the quad, which will be rendered to the front buffer with the
     // default renderer
-    quadSys->GetRenderer()->ApplyRenderSettings();
     quadSys->ProcessActiveEntities();
+
+    quadSys->GetRenderer()->ApplyRenderSettings();
     quadSys->GetRenderer()->Render();
 
     win.SwapBuffers();

@@ -53,75 +53,37 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // -----------------------------------------------------------------------
   // Get the default renderer
-  using namespace gfx_rend::p_renderer;
-  gfx_rend::renderer_sptr renderer = win.GetRenderer();
+  auto_cref renderer = win.GetRenderer();
+  {
+    using namespace gfx_rend::p_renderer;
+    auto_cref commonParams = GetParamsCommon
+      (renderer->GetParams().GetFBO(), renderer->GetParams().GetDimensions(), 
+       gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f));
+    renderer->SetParams(commonParams);
+  }
 
-  gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-   .Enable<enable_disable::DepthTest>()
-   .Disable<enable_disable::CullFace>()
-   .AddClearBit<clear::ColorBufferBit>()
-   .AddClearBit<clear::DepthBufferBit>();
-
-  gfx_rend::Renderer::Params pNoDepth(renderer->GetParams());
-  pNoDepth.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-          .Disable<enable_disable::DepthTest>() 
-          .AddClearBit<clear::DepthBufferBit>();
-
-  gfx_rend::renderer_sptr linesRenderer = 
-    core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
-
-  renderer->SetParams(p);
+  gfx_rend::renderer_sptr linesRenderer;
+  {
+    using namespace gfx_rend::p_renderer;
+    auto_cref noDepthParams = GetParamsCommonNoDepthNoColorClear
+      (renderer->GetParams().GetFBO(), renderer->GetParams().GetDimensions());
+    linesRenderer =
+      core_sptr::MakeShared<gfx_rend::Renderer>(noDepthParams);
+  }
 
   // -----------------------------------------------------------------------
   // Prepare RTT
 
-  gfx_gl::texture_object_shadow_vso depthTo;
+  gfx::Rtt  rtt(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight));
+  auto depthTo      = rtt.AddShadowDepthAttachment();
+  auto rttTo        = rtt.AddColorAttachment(0);
+  auto rttRenderer  = rtt.GetRenderer();
   {
-    gfx_gl::TextureObject::Params rttToParams;
-    rttToParams.InternalFormat<gfx_gl::p_texture_object::internal_format::DepthComponent>()
-               .Format<gfx_gl::p_texture_object::format::DepthComponent>()
-               .CompareMode<gfx_gl::p_texture_object::compare_mode::RefToTexture>()
-               .CompareFunction<gfx_gl::p_texture_object::compare_function::LessEqual>();
-
-    depthTo->SetParams(rttToParams);
-    gfx_med::image_f32_r rttImg;
-
-    rttImg.Create(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight),
-                  gfx_med::image_f32_r::color_type());
-    depthTo->Initialize(rttImg);
+    using namespace gfx_rend::p_renderer;
+    auto_cref shadowParams = GetParamsShadow
+      (rttRenderer->GetParams().GetFBO(), rttRenderer->GetParams().GetDimensions());
+    rttRenderer->SetParams(shadowParams);
   }
-
-  gfx_gl::texture_object_vso rttTo;
-  {
-    gfx_med::Image rttImg;
-
-    rttImg.Create(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight),
-                  gfx_med::Image::color_type());
-    rttTo->Initialize(rttImg);
-  }
-
-  using namespace gfx_gl::p_fbo;
-
-  gfx_gl::framebuffer_object_sptr fbo = 
-    core_sptr::MakeShared<gfx_gl::FramebufferObject>();
-
-  fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*depthTo);
-  fbo->Attach<target::DrawFramebuffer, attachment::ColorAttachment<0> >(*rttTo);
-
-  using namespace gfx_rend::p_renderer;
-  gfx_rend::Renderer::Params pRtt;
-  pRtt.SetFBO(fbo);
-  pRtt.AddClearBit<clear::ColorBufferBit>()
-      .AddClearBit<clear::DepthBufferBit>()
-      .Enable<enable_disable::DepthTest>()
-      .Enable<enable_disable::CullFace>()
-      .Cull<cull_face::Front>()
-      .SetClearColor(gfx_t::Color::COLOR_WHITE)
-      .SetDimensions(core_ds::MakeTuple(g_rttImgWidth, g_rttImgHeight));
-
-  gfx_rend::renderer_sptr rttRenderer = 
-    core_sptr::MakeShared<gfx_rend::Renderer>(pRtt);
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
