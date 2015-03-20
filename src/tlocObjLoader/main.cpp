@@ -123,6 +123,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_rend::Renderer::Params p(renderer->GetParams());
   p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .Enable<gfx_rend::p_renderer::enable_disable::CullFace>()
+   .Cull<gfx_rend::p_renderer::cull_face::Back>()
    .Enable<enable_disable::DepthTest>()
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
