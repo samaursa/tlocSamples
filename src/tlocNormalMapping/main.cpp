@@ -29,14 +29,14 @@ namespace {
 
 };
 
-class NormalMapping
+class Demo
   : public tloc::Application
 {
 public:
   typedef tloc::Application                 base_type;
 
 public:
-  NormalMapping()
+  Demo()
     : base_type("Normal Mapping")
   { }
 
@@ -60,14 +60,14 @@ public:
     gfx_gl::uniform_vso u_toDiff;
     {
       auto_cref brickDiffTOPtr = app_res::f_resource::LoadImageAsTextureObject
-        (core_io::Path(core_str::String(GetAssetsPath()) + "/images/brick_diff.jpg"));
+        (core_io::Path(core_str::String(GetAssetsPath()) + "/images/cushion_diff.jpg"));
       u_toDiff->SetName("s_texture").SetValueAs(*brickDiffTOPtr);
     }
 
     gfx_gl::uniform_vso u_toNorm;
     {
       auto_cref brickNormTOPtr = app_res::f_resource::LoadImageAsTextureObject
-      (core_io::Path(core_str::String(GetAssetsPath()) + "/images/brick_norm.jpg"));
+      (core_io::Path(core_str::String(GetAssetsPath()) + "/images/cushion_norm.jpg"));
       u_toNorm->SetName("s_normTexture").SetValueAs(*brickNormTOPtr);
     }
 
@@ -145,7 +145,7 @@ public:
 
 int TLOC_MAIN(int , char *[])
 {
-  NormalMapping np;
+  Demo np;
   np.Initialize(core_ds::MakeTuple(800, 600));
   np.Run();
 
