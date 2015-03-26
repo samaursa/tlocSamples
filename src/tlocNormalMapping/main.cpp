@@ -80,6 +80,19 @@ public:
     math_t::Rectf32_c rect(math_t::Rectf32_c::width(5.0f), 
                            math_t::Rectf32_c::height(5.0f));
     auto ent = GetScene()->CreatePrefab<pref_gfx::Quad>().Dimensions(rect).Create();
+    {
+      // quad TBN matrix is an identity matrix
+      math_t::Mat3f32 tbn; tbn.MakeIdentity();
+      core_conts::Array<math_t::Mat3f32>  tbnArray(4, tbn);
+
+      gfx_gl::attributeVBO_vso  v_tbn;
+      v_tbn->AddName("a_tbn").SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
+        gfx_gl::p_vbo::usage::StaticDraw>(tbnArray);
+
+      ent->GetComponent<gfx_cs::Mesh>()->GetUserShaderOperator()->
+        AddAttributeVBO(*v_tbn);
+    }
+
     GetScene()->CreatePrefab<pref_gfx::Material>()
       .AddUniform(u_toDiff.get())
       .AddUniform(u_toNorm.get())
