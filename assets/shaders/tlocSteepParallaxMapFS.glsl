@@ -10,6 +10,7 @@ uniform sampler2D s_texture;
 uniform sampler2D s_normTexture;
 uniform sampler2D s_dispTexture;
 uniform vec3      u_pScaleBias;
+uniform float     u_numSamples;
 
 vec3 GetNormalFromTexture(in sampler2D a_normTexture, vec2 a_texCoord)
 {
@@ -27,11 +28,35 @@ void main()
 
   if (u_pScaleBias[2] > 0.5)
   {
-    float disp = texture2D(s_dispTexture, texCoord);
-    disp = (disp * u_pScaleBias[0]) + u_pScaleBias[1];
-
     vec3 viewDir = normalize(v_viewDir);
-    newTexCoord = texCoord + (disp * viewDir.xy);
+    float angleFactor = dot(viewDir, vec3(0, 0, 1));
+
+    float n = u_numSamples * (1.0 / angleFactor);
+
+    float step;
+    // prevent divide by 0
+    if (n >= 1.0) { step = 1.0 / n; }
+    else { step = 1.0; }
+
+    float bumpScale = u_pScaleBias;
+  
+    vec2 dt = viewDir.xy * bumpScale / (n * viewDir.z);
+
+    float height = 1.0;
+    vec2 t = texCoord;
+    float disp = texture2D(s_dispTexture, t);
+    disp = (1.0 - disp) + u_pScaleBias[1];
+
+    while (disp < height)
+    {
+      height -= step; t += dt;
+      disp = texture2D(s_dispTexture, t);
+      disp = (1.0 - disp) + u_pScaleBias[1];
+    }
+
+    //disp = (disp * u_pScaleBias[0]) + u_pScaleBias[1];
+    //newTexCoord = t + (disp * viewDir.xy);
+    newTexCoord = t;
   }
 
 	o_color = texture2D(s_texture, newTexCoord);
