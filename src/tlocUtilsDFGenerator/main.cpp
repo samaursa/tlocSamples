@@ -123,8 +123,12 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
 
       if (a_invert) { currCol = gfx_t::Color::COLOR_WHITE - currCol; }
 
-      auto  disToEdge = (tl_float) kernelSize;
-      auto  vecToPixel = math_t::Vec3f32::ZERO;
+      const bool isInColor = currCol[0] >= inColor[0];
+
+      const auto kernelSizef32 = (tl_float)kernelSize;
+      auto  disToEdge = kernelSizef32;
+
+      auto  vecToPixel = isInColor ? math_t::Vec3f32(-kernelSizef32) : math_t::Vec3f32(kernelSizef32);
       bool  disFromInside = false;
 
       for (tl_int kRow = -kernelSize; kRow <= kernelSize; ++kRow)
@@ -156,7 +160,7 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
           }
 
           // if currCol is white (inside of the font color)
-          if (currCol[0] >= inColor[0])
+          if (isInColor)
           {
             disFromInside = true;
 
@@ -184,7 +188,6 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
       }
 
       using namespace math;
-      const auto kernelSizef32 = (tl_float)kernelSize;
 
       auto vec = math_t::Vec4f32(vecToPixel, disToEdge);
       auto sdfColor = gfx_t::f_color::Encode(vec, MakeRangef<f32, p_range::Inclusive>().Get(-kernelSizef32, kernelSizef32));
