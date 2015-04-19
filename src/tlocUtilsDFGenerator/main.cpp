@@ -89,14 +89,15 @@ tl_float widthRatio, tl_float heightRatio)
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 gfx_med::image_sptr
-GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, tl_int a_kernelSize)
+GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, 
+                    tl_int a_kernelSize, bool a_invert = false,
+                    gfx_t::Color a_inCol = gfx_t::Color(240, 240, 240, 255), 
+                    gfx_t::Color a_outCol = gfx_t::Color(0, 0, 0, 255))
 {
   const tl_int kernelSize = a_kernelSize;
 
   auto sdfImg = core_sptr::MakeShared<gfx_med::Image>();
   sdfImg->Create(a_sdfDim, gfx_t::Color::COLOR_BLACK);
-
-  //const auto maxDis = (tl_float)a_charImg->GetWidth();
 
   const auto imgWidth = core_utils::CastNumber<tl_int>(a_charImg->GetWidth());
   const auto imgHeight = core_utils::CastNumber<tl_int>(a_charImg->GetHeight());
@@ -107,8 +108,8 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, t
   const auto widthRatio = (tl_float) imgWidth / (tl_float) sdfImgWidth;
   const auto heightRatio = (tl_float) imgHeight / (tl_float) sdfImgHeight;
 
-  const auto outColor = gfx_t::Color(0, 0, 0, 200);
-  const auto inColor = gfx_t::Color(200, 200, 200, 200);
+  const auto outColor = a_outCol;
+  const auto inColor = a_inCol;
 
   printf("\n0%%|                                                  |100%%");
 
@@ -118,9 +119,12 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, t
     {
       const auto imgRow = (tl_int) ( (tl_float) row * widthRatio );
       const auto imgCol = (tl_int) ( (tl_float) col * heightRatio );
-      const auto currCol = GetAverageColorFromImg(a_charImg, imgRow, imgCol, widthRatio, heightRatio);
+      auto currCol = GetAverageColorFromImg(a_charImg, imgRow, imgCol, widthRatio, heightRatio);
+
+      if (a_invert) { currCol = gfx_t::Color::COLOR_WHITE - currCol; }
 
       auto  disToEdge = (tl_float) kernelSize;
+      auto  vecToPixel = math_t::Vec3f32::ZERO;
       bool  disFromInside = false;
 
       for (tl_int kRow = -kernelSize; kRow <= kernelSize; ++kRow)
@@ -158,7 +162,11 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, t
 
             // if the destination color is NOT white
             if (destColor[0] < inColor[0])
-            { disToEdge = core::tlMin(eucDis, disToEdge); }
+            { 
+              vecToPixel[0] = (tl_float)kRow;
+              vecToPixel[1] = (tl_float)kCol;
+              disToEdge = core::tlMin(eucDis, disToEdge);
+            }
           }
           else // we consider anything not pure white to be black
           {
@@ -166,19 +174,22 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, t
 
             // if the destination color is white
             if (destColor[0] >= inColor[0])
-            { disToEdge = core::tlMin(eucDis, disToEdge); }
+            { 
+              vecToPixel[0] = (tl_float)kRow;
+              vecToPixel[1] = (tl_float)kCol;
+              disToEdge = core::tlMin(eucDis, disToEdge);
+            }
           }
         }
       }
 
-      auto sdfColor = EncodeDistanceToColor(disToEdge / kernelSize);
-      if (disFromInside)
-      {
-        using core::swap;
-        swap(sdfColor[0], sdfColor[1]);
-      }
+      using namespace math;
+      const auto kernelSizef32 = (tl_float)kernelSize;
 
-      sdfImg->SetPixel(row, col, sdfColor);
+      auto vec = math_t::Vec4f32(vecToPixel, disToEdge);
+      auto sdfColor = gfx_t::f_color::Encode(vec, MakeRangef<f32, p_range::Inclusive>().Get(-kernelSizef32, kernelSizef32));
+
+      sdfImg->SetPixel(row, col, gfx_t::Color(sdfColor));
     }
 
     auto sdfImgWidthf = (f32)row / (f32)(sdfImgWidth-1) * 50.0f;
@@ -193,32 +204,6 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim, t
     }
 
     printf("\r0%%|%s|100%%", dashes.c_str());
-  }
-
-  auto r0to255 = math::range_u32(0, 256);
-  auto r0to128 = math::range_u32(0, 128);
-  auto r128to256 = math::range_u32(128, 256);
-
-  math_utils::scale_u32_u32 scaleLower(r0to128, r0to255);
-  math_utils::scale_u32_u32 scaleUpper(r128to256, r0to255);
-
-  for (tl_int row = 0; row < sdfImgWidth; row++)
-  {
-    for (tl_int col = 0; col < sdfImgHeight; col++)
-    {
-      const auto& pixel = sdfImg->GetPixel(row, col);
-
-      u32 newColorVal;
-
-      if (pixel[0] > 0)
-      { newColorVal = scaleUpper.ScaleDown(pixel[0]); }
-      else
-      { newColorVal = scaleLower.ScaleDown(255 - pixel[1]); }
-
-      auto newColor = gfx_t::Color((u8) newColorVal, (u8) newColorVal, (u8) newColorVal, (u8) 255);
-
-      sdfImg->SetPixel(row, col, newColor);
-    }
   }
 
   return sdfImg;
@@ -267,23 +252,24 @@ struct Arg : public option::Arg
   }
 };
 
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 #define TLOC_COMMAND_LINE_SKIP_PROGRAM_NAME(_argc_, _argv_)\
   _argc_ = _argc_ > 0 ? --_argc_ : _argc_;\
   _argv_ = _argc_ > 0 ? ++_argv_ : _argv_
 
-enum optionIndex { UNKNOWN = 0, HELP, IN_FILE, OUT_FILE, SAFE, SDF_WIDTH, KERNEL_SIZE};
+enum optionIndex { UNKNOWN = 0, HELP, IN_FILE, OUT_FILE, INV_COL, SAFE, SDF_WIDTH, KERNEL_SIZE};
 const option::Descriptor usage[] = 
 {
   { UNKNOWN, 0, "", ""           , Arg::Unknown   , "\nUSAGE: tlocUtilsDFGenerator [options]\n\n"
                                                     "Options:" },
   { HELP, 0, "", "help"          , Arg::None      , "  \t--help  \tPrint usage and exit." },
   { IN_FILE, 0, "i", "input"     , Arg::Required  , "  -i <filename>, \t--input=<filename> \tInput file for DF generation." },
+  { INV_COL, 0, "n", "negate"    , Arg::None      , "  -n \tInverses the incoming image." },
   { OUT_FILE, 0, "o", "output"   , Arg::Required  , "  -o <filename>, \t--output=<filename> \tOutput file with DF (PNG)." },
   { SAFE, 0, "s", "safe"         , Arg::None      , "  -s, \tDisallows overwriting existing files." },
-  { SAFE, 0, "n", "normalize"    , Arg::None      , "  -s, \tDisallows overwriting existing files." },
   { SDF_WIDTH, 0, "w", "width"   , Arg::Numeric   , "  -w, \tWidth of the final SDF image. Height is calculated from ratio of source image." },
-  { KERNEL_SIZE, 0, "k", "kernel", Arg::Numeric   , "  -w, \tDF is calculated upto this many pixels (in radius) from the current pixel." },
+  { KERNEL_SIZE, 0, "k", "kernel", Arg::Numeric   , "  -k, \tDF is calculated upto this many pixels (in radius) from the current pixel." },
   { 0, 0, 0, 0, 0, 0 }
 };
 
@@ -291,6 +277,8 @@ const option::Descriptor usage[] =
 
 int TLOC_MAIN(int argc, char *argv[])
 {
+  core::memory::tracking::DoDisableTracking();
+
   TLOC_COMMAND_LINE_SKIP_PROGRAM_NAME(argc, argv);
   option::Stats   stats(usage, argc, argv);
   option::Option* options = new option::Option[stats.options_max];
@@ -360,7 +348,9 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_DEFAULT_INFO_NO_FILENAME() << "Generating SDF image from " 
     << g_inFile << " and saving to " << g_outFile << " with dimensions " << sdfDim;
 
-  auto_cref outImg = GetSDFFromCharImage(imgPtr, sdfDim, kernelSize);
+  bool invert = options[INV_COL] != nullptr;
+
+  auto_cref outImg = GetSDFFromCharImage(imgPtr, sdfDim, kernelSize, invert);
   gfx_med::f_image_loader::SaveImage(*outImg, g_outFile);
 
   return 0;
