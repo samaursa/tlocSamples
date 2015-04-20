@@ -11,6 +11,8 @@
 #include <tlocCore/smart_ptr/tloc_smart_ptr.inl.h>
 #include <tlocCore/containers/tlocArray.inl.h>
 
+#include <omp.h>
+
 using namespace tloc;
 
 namespace {
@@ -18,6 +20,7 @@ namespace {
   core_io::Path g_inFile("invalid_filename");
   core_io::Path g_outFile("sdf_out.png");
 
+  tl_int g_numOpenMPThreads = 4;
 };
 
 class WindowCallback
@@ -51,7 +54,7 @@ EncodeDistanceToColor(tl_float a_distance)
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 gfx_t::Color
-GetAverageColorFromImg(gfx_med::image_sptr a_charImg, tl_int currRow, tl_int currCol,
+GetAverageColorFromImg(const gfx_med::image_sptr& a_charImg, tl_int currRow, tl_int currCol,
 tl_float widthRatio, tl_float heightRatio)
 {
   const tl_float startingRow = core::Clamp(currRow - ( widthRatio - 1.0f ), 0.0f, (tl_float) a_charImg->GetWidth());
@@ -63,17 +66,15 @@ tl_float widthRatio, tl_float heightRatio)
   tl_int avgColor = a_charImg->GetPixel(currRow, currCol)[0];
 
   tl_int avgCount = 0;
-  for (tl_float row = startingRow; row < endingRow; ++row)
-  {
-    for (tl_float col = startingCol; col < endingCol; ++col)
-    {
-      const auto rowInt = (tl_int) row;
-      const auto colInt = (tl_int) col;
 
-      if (rowInt == currRow && colInt == currCol)
+  for (tl_int row = (tl_int)startingRow; row < (tl_int)endingRow; ++row)
+  {
+    for (tl_int col = (tl_int)startingCol; col < (tl_int)endingCol; ++col)
+    {
+      if (row == currRow && col == currCol)
       { continue; }
 
-      avgColor = avgColor + a_charImg->GetPixel(rowInt, colInt)[0];
+      avgColor += a_charImg->GetPixel(row, col)[0];
       avgCount++;
     }
   }
@@ -111,12 +112,18 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
   const auto outColor = a_outCol;
   const auto inColor = a_inCol;
 
-  printf("\n0%%|                                                  |100%%");
+  printf("\n0%%|                                                                                                    |100%%");
 
+  tl_int dashCount = 0;
+
+#pragma omp parallel for shared(dashCount) num_threads(g_numOpenMPThreads)
   for (tl_int row = 0; row < sdfImgWidth; row++)
   {
     for (tl_int col = 0; col < sdfImgHeight; col++)
     {
+#pragma omp atomic
+      dashCount++;
+
       const auto imgRow = (tl_int) ( (tl_float) row * widthRatio );
       const auto imgCol = (tl_int) ( (tl_float) col * heightRatio );
       auto currCol = GetAverageColorFromImg(a_charImg, imgRow, imgCol, widthRatio, heightRatio);
@@ -128,14 +135,13 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
       const auto kernelSizef32 = (tl_float)kernelSize;
       auto  disToEdge = kernelSizef32;
 
-      auto  vecToPixel = isInColor ? math_t::Vec3f32(-kernelSizef32) : math_t::Vec3f32(kernelSizef32);
+      auto  vecToPixel = isInColor ? math_t::Vec2f32(-kernelSizef32) : math_t::Vec2f32(kernelSizef32);
       bool  disFromInside = false;
 
       for (tl_int kRow = -kernelSize; kRow <= kernelSize; ++kRow)
       {
         for (tl_int kCol = -kernelSize; kCol <= kernelSize; ++kCol)
         {
-
           if (imgRow + kRow < 0 || imgCol + kCol < 0) { continue; }
           if (imgRow + kRow >= imgWidth || imgCol + kCol >= imgHeight) { continue; }
           //if (kRow == 0 && kCol == 0) { continue; }
@@ -167,8 +173,11 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
             // if the destination color is NOT white
             if (destColor[0] < inColor[0])
             { 
-              vecToPixel[0] = (tl_float)kRow;
-              vecToPixel[1] = (tl_float)kCol;
+              if (eucDis < disToEdge)
+              {
+                vecToPixel[0] = (tl_float) kRow;
+                vecToPixel[1] = (tl_float) kCol;
+              }
               disToEdge = core::tlMin(eucDis, disToEdge);
             }
           }
@@ -179,8 +188,11 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
             // if the destination color is white
             if (destColor[0] >= inColor[0])
             { 
-              vecToPixel[0] = (tl_float)kRow;
-              vecToPixel[1] = (tl_float)kCol;
+              if (eucDis < disToEdge)
+              {
+                vecToPixel[0] = (tl_float) kRow;
+                vecToPixel[1] = (tl_float) kCol;
+              }
               disToEdge = core::tlMin(eucDis, disToEdge);
             }
           }
@@ -189,24 +201,27 @@ GetSDFFromCharImage(gfx_med::image_sptr a_charImg, gfx_t::Dimension2 a_sdfDim,
 
       using namespace math;
 
-      auto vec = math_t::Vec4f32(vecToPixel, disToEdge);
+      disToEdge = disFromInside ? -disToEdge : disToEdge;
+      auto vec = math_t::Vec4f32(vecToPixel, disToEdge, kernelSizef32);
       auto sdfColor = gfx_t::f_color::Encode(vec, MakeRangef<f32, p_range::Inclusive>().Get(-kernelSizef32, kernelSizef32));
 
       sdfImg->SetPixel(row, col, gfx_t::Color(sdfColor));
     }
 
-    auto sdfImgWidthf = (f32)row / (f32)(sdfImgWidth-1) * 50.0f;
-    core_str::String dashes;
-    for (tl_int i = 0; i < 50; ++i)
+#pragma omp critical
     {
-      if (sdfImgWidthf > 0.0f)
-      { dashes += "-"; }
-      else
-      { dashes += " "; }
-      sdfImgWidthf--;
-    }
+      const f32 total = (f32)sdfImgWidth * (f32)sdfImgHeight;
+      const tl_int numDashes = (tl_int) ( (f32) dashCount * 100.0f / total );
 
-    printf("\r0%%|%s|100%%", dashes.c_str());
+      core_str::String dashes;
+      for (tl_int i = 0; i < numDashes; ++i)
+      { dashes += "-"; }
+
+      for (tl_int i = numDashes; i < 100; ++i)
+      { dashes += " "; }
+
+      printf("\r0%%|%s|100%%", dashes.c_str());
+    }
   }
 
   return sdfImg;
@@ -261,12 +276,13 @@ struct Arg : public option::Arg
   _argc_ = _argc_ > 0 ? --_argc_ : _argc_;\
   _argv_ = _argc_ > 0 ? ++_argv_ : _argv_
 
-enum optionIndex { UNKNOWN = 0, HELP, IN_FILE, OUT_FILE, INV_COL, SAFE, SDF_WIDTH, KERNEL_SIZE};
+enum optionIndex { UNKNOWN = 0, HELP, THREADS, IN_FILE, OUT_FILE, INV_COL, SAFE, SDF_WIDTH, KERNEL_SIZE};
 const option::Descriptor usage[] = 
 {
   { UNKNOWN, 0, "", ""           , Arg::Unknown   , "\nUSAGE: tlocUtilsDFGenerator [options]\n\n"
                                                     "Options:" },
   { HELP, 0, "", "help"          , Arg::None      , "  \t--help  \tPrint usage and exit." },
+  { THREADS, 0, "", "threads"    , Arg::Numeric   , "  \t--threads \tNumber of OpenMP threads to use."},
   { IN_FILE, 0, "i", "input"     , Arg::Required  , "  -i <filename>, \t--input=<filename> \tInput file for DF generation." },
   { INV_COL, 0, "n", "negate"    , Arg::None      , "  -n \tInverses the incoming image." },
   { OUT_FILE, 0, "o", "output"   , Arg::Required  , "  -o <filename>, \t--output=<filename> \tOutput file with DF (PNG)." },
@@ -299,6 +315,9 @@ int TLOC_MAIN(int argc, char *argv[])
     option::printUsage(TLOC_LOG_DEFAULT_INFO_NO_FILENAME(), usage);
     return 0;
   }
+
+  if (options[THREADS])
+  { g_numOpenMPThreads = atoi(options[THREADS].arg); }
 
   if (options[IN_FILE])
   {
@@ -353,7 +372,10 @@ int TLOC_MAIN(int argc, char *argv[])
 
   bool invert = options[INV_COL] != nullptr;
 
+  core_time::Timer sdfTimer;
   auto_cref outImg = GetSDFFromCharImage(imgPtr, sdfDim, kernelSize, invert);
+  printf("\nTime to calculate SDF: %f sec", sdfTimer.ElapsedSeconds());
+
   gfx_med::f_image_loader::SaveImage(*outImg, g_outFile);
 
   return 0;
