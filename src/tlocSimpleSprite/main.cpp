@@ -150,7 +150,7 @@ TLOC_DEF_TYPE(KeyboardCallback);
 
 int TLOC_MAIN(int argc, char *argv[])
 {
-  core_str::String imageAndXmlName("red_idle");
+  core_str::String imageAndXmlName("prince");
 
   if (argc == 2)
   { imageAndXmlName = argv[1]; }
@@ -161,7 +161,7 @@ int TLOC_MAIN(int argc, char *argv[])
   imagePath += ".png";
   core_str::String xmlPath("/misc/");
   xmlPath += imageAndXmlName;
-  xmlPath += ".xml";
+  xmlPath += ".txt";
 
   gfx_win::Window win;
   WindowCallback  winCallback;
@@ -238,18 +238,11 @@ int TLOC_MAIN(int argc, char *argv[])
     pref_gfx::QuadNoTexCoords(entityMgr.get(), cpoolMgr.get())
     .Sprite(true).Dimensions(rect).Create();
 
-  // We need a material to attach to our entity (which we have not yet created).
-#if defined (TLOC_OS_WIN)
-    core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String vsPath("/shaders/tlocOneTextureVS_gl_es_2_0.glsl");
-#endif
+  auto tComp = spriteEnt->GetComponent<math_cs::Transform>();
 
-#if defined (TLOC_OS_WIN)
-    core_str::String fsPath("/shaders/tlocOneTextureFS.glsl");
-#elif defined (TLOC_OS_IPHONE)
-    core_str::String fsPath("/shaders/tlocOneTextureFS_gl_es_2_0.glsl");
-#endif
+  // We need a material to attach to our entity (which we have not yet created).
+  core_str::String vsPath("/shaders/tlocOneTextureVS.glsl");
+  core_str::String fsPath("/shaders/tlocOneTextureFS.glsl");
 
   gfx_med::ImageLoaderPng png;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
@@ -281,14 +274,14 @@ int TLOC_MAIN(int argc, char *argv[])
     TLOC_LOG_GFX_ERR() << "Unable to open the sprite sheet";
   }
 
-  gfx_med::SpriteLoader_TexturePacker ssp;
-  core_str::String                    sspContents;
+  gfx_med::SpriteLoader_SpriteSheetPacker ssp;
+  core_str::String                        sspContents;
 
   file.GetContents(sspContents);
   ssp.Init(sspContents, png.GetImage()->GetDimensions());
 
   pref_gfx::SpriteAnimation(entityMgr.get(), cpoolMgr.get())
-    .Loop(true).Fps(24).Add(spriteEnt, ssp.begin(), ssp.end());
+    .Loop(true).Fps(24).Add(spriteEnt, ssp.begin("run"), ssp.end("run"));
 
   KeyboardCallback kb(spriteEnt);
   keyboard->Register(&kb);
@@ -336,9 +329,10 @@ int TLOC_MAIN(int argc, char *argv[])
     if (deltaT > 1.0f/60.0f)
     {
       // Finally, process the fan
-      renderer->ApplyRenderSettings();
       taSys.ProcessActiveEntities(deltaT);
       quadSys.ProcessActiveEntities();
+
+      renderer->ApplyRenderSettings();
       renderer->Render();
 
       win.SwapBuffers();

@@ -123,6 +123,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_rend::Renderer::Params p(renderer->GetParams());
   p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+   .Enable<gfx_rend::p_renderer::enable_disable::CullFace>()
+   .Cull<gfx_rend::p_renderer::cull_face::Back>()
    .Enable<enable_disable::DepthTest>()
    .AddClearBit<clear::ColorBufferBit>()
    .AddClearBit<clear::DepthBufferBit>();
@@ -199,16 +201,16 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Load the required resources
 
-  gfx_med::ImageLoaderPng png;
+  gfx_med::ImageLoaderJpeg img;
   core_io::Path path( (core_str::String(GetAssetsPath()) +
-                       "/images/crateTexture.png").c_str() );
+                       "/images/crateTexture.jpg").c_str() );
 
-  if (png.Load(path) != ErrorSuccess)
+  if (img.Load(path) != ErrorSuccess)
   { TLOC_ASSERT_FALSE("Image did not load!"); }
 
   // gl::Uniform supports quite a few types, including a TextureObject
   gfx_gl::texture_object_vso to;
-  to->Initialize(*png.GetImage());
+  to->Initialize(*img.GetImage());
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
