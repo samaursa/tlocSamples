@@ -6,23 +6,22 @@
 class Cell
 {
 public:
-  TLOC_DECL_AND_DEF_SETTER(tloc::tl_int, SetData, m_data);
-  TLOC_DECL_AND_DEF_GETTER(tloc::tl_int, GetData, m_data);
+  TLOC_DECL_AND_DEF_SETTER(tl_int, SetData, m_data);
+  TLOC_DECL_AND_DEF_GETTER(tl_int, GetData, m_data);
 
 private:
-  tloc::tl_int m_data;
+  tl_int m_data;
 };
 
 class SimpleGrid
 {
 public:
-  SimpleGrid(tloc::tl_size a_sizeX, tloc::tl_size a_sizeY);
+  SimpleGrid(tl_size a_sizeX, tl_size a_sizeY);
 
-  Cell GetCell(tloc::tl_size a_x, tloc::tl_size a_y);
+  Cell GetCell(tl_size a_x, tl_size a_y);
 
 private:
-  tloc::core_conts::Array<
-    tloc::core_conts::Array<Cell> > m_grid;
+  tl_core_conts::Array<tl_core_conts::Array<Cell> > m_grid;
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 using namespace tloc;
 
-SimpleGrid::SimpleGrid(tloc::tl_size a_sizeX, tloc::tl_size a_sizeY)
+SimpleGrid::SimpleGrid(tl_size a_sizeX, tl_size a_sizeY)
 {
   m_grid.resize(a_sizeX);
 
@@ -13,7 +13,7 @@ SimpleGrid::SimpleGrid(tloc::tl_size a_sizeX, tloc::tl_size a_sizeY)
 
 }
 
-Cell SimpleGrid::GetCell(tloc::tl_size a_x, tloc::tl_size a_y)
+Cell SimpleGrid::GetCell(tl_size a_x, tl_size a_y)
 {
   return m_grid[a_x][a_y];
 }
