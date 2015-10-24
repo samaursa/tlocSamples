@@ -27,7 +27,7 @@ void main()
 
   if (u_pScaleBias[2] > 0.5)
   {
-    float disp = texture2D(s_dispTexture, texCoord);
+    float disp = texture2D(s_dispTexture, texCoord).x;
     disp = (disp * u_pScaleBias[0]) + u_pScaleBias[1];
 
     vec3 viewDir = normalize(v_viewDir);

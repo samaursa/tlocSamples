@@ -38,19 +38,19 @@ void main()
     if (n >= 1.0) { step = 1.0 / n; }
     else { step = 1.0; }
 
-    float bumpScale = u_pScaleBias;
+    float bumpScale = u_pScaleBias.x;
   
     vec2 dt = viewDir.xy * bumpScale / (n * viewDir.z);
 
     float height = 1.0;
     vec2 t = texCoord;
-    float disp = texture2D(s_dispTexture, t);
+    float disp = texture2D(s_dispTexture, t).x;
     disp = (1.0 - disp) + u_pScaleBias[1];
 
     while (disp < height)
     {
       height -= step; t += dt;
-      disp = texture2D(s_dispTexture, t);
+      disp = texture2D(s_dispTexture, t).x;
       disp = (1.0 - disp) + u_pScaleBias[1];
     }
 
