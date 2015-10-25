@@ -82,14 +82,15 @@ int TLOC_MAIN(int argc, char *argv[])
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
+  {
+    gfx_rend::Renderer::Params p(renderer->GetParams());
+    p.SetClearColor(gfx_t::Color(1.0f, 1.0f, 1.0f, 1.0f))
+      .Enable<enable_disable::DepthTest>()
+      .AddClearBit<clear::ColorBufferBit>()
+      .AddClearBit<clear::DepthBufferBit>();
 
-  gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.SetClearColor(gfx_t::Color(1.0f, 1.0f, 1.0f, 1.0f))
-   .Enable<enable_disable::DepthTest>()
-   .AddClearBit<clear::ColorBufferBit>()
-   .AddClearBit<clear::DepthBufferBit>();
-
-  renderer->SetParams(p);
+    renderer->SetParams(p);
+  }
 
   // -----------------------------------------------------------------------
   // Create the two renderers
