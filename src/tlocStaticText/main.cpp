@@ -13,7 +13,7 @@ using namespace tloc;
 namespace {
 
   const core_str::StringW 
-    g_symbols = L"ABCDEFGHIJKLMNOPQRSTUVWXYZ" 
+    g_symbols = L"ABCDEFGHIJKLMNOPQRTUVWXYZ" 
                 L"abcdefghijklmnopqrstuvwxyz" 
                 L"1234567890!@#$%^&*()_+-=[]" 
                 L"{}\\|;:'\",<.>/?`~\n ";
@@ -96,7 +96,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_vso  eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized

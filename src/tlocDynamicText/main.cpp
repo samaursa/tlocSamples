@@ -95,7 +95,7 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems in the engine require an event manager and an entity manager
   core_cs::event_manager_vso  eventMgr;
-  core_cs::entity_manager_vso entityMgr( MakeArgs(eventMgr.get()) );
+  core_cs::entity_manager_vso entityMgr(eventMgr.get());
 
   //------------------------------------------------------------------------
   // To render a quad, we need a quad render system - this is a specialized
@@ -125,7 +125,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Text render system
   gfx_cs::dyn_text_render_system_vso 
-    textSys( MakeArgs(eventMgr.get(), entityMgr.get()) );
+    textSys(eventMgr.get(), entityMgr.get());
   textSys->SetRenderer(renderer);
 
   // We need a material to attach to our entity (which we have not yet created).

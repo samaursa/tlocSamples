@@ -73,7 +73,7 @@ struct glProgram
   glProgram()
     : m_endGame(false)
     , m_keyPresses(key_count)
-    , m_entityMgr( MakeArgs(m_eventMgr.get()) )
+    , m_entityMgr(m_eventMgr.get())
 
   { m_win.Register(this); }
 
