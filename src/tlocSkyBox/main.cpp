@@ -85,6 +85,11 @@ int TLOC_MAIN(int, char**)
   gfx_rend::renderer_sptr linesRenderer = 
     core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
 
+  auto skyBoxRenParams = renderer->GetParams();
+  skyBoxRenParams.SetDepthFunction<gfx_rend::p_renderer::depth_function::LessEqual>();
+
+  auto skyBoxRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(skyBoxRenParams);
+
   renderer->SetParams(p);
 
   //------------------------------------------------------------------------
@@ -119,7 +124,7 @@ int TLOC_MAIN(int, char**)
   meshSys->SetRenderer(renderer);
 
   auto skyBoxSys = ecs.AddSystem<gfx_cs::SkyBoxRenderSystem>();
-  skyBoxSys->SetRenderer(renderer);
+  skyBoxSys->SetRenderer(skyBoxRenderer);
 
   // -----------------------------------------------------------------------
   // Transformation debug rendering
@@ -145,16 +150,16 @@ int TLOC_MAIN(int, char**)
 
   core_str::String skyBoxes[] = 
   { 
-    "/images/skybox/cloudtop_bk.jpg", 
-    "/images/skybox/cloudtop_dn.jpg", 
-    "/images/skybox/cloudtop_ft.jpg", 
-    "/images/skybox/cloudtop_lf.jpg", 
-    "/images/skybox/cloudtop_rt.jpg", 
-    "/images/skybox/cloudtop_up.jpg"
+    "/images/skybox/lake1_rt.jpg", 
+    "/images/skybox/lake1_lf.jpg", 
+    "/images/skybox/lake1_up.jpg",
+    "/images/skybox/lake1_dn.jpg", 
+    "/images/skybox/lake1_bk.jpg", 
+    "/images/skybox/lake1_ft.jpg", 
   };
   
   // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_vso toSkyBox;
+  gfx_gl::texture_object_cube_map_vso toSkyBox;
   {
     core_conts::ArrayFixed<gfx_med::image_rgb_sptr, 6> images;
 
@@ -348,7 +353,10 @@ int TLOC_MAIN(int, char**)
 
       renderer->ApplyRenderSettings();
       renderer->Render();
+
       skyBoxSys->ProcessActiveEntities();
+      skyBoxRenderer->ApplyRenderSettings();
+      skyBoxRenderer->Render();
 
       linesRenderer->ApplyRenderSettings();
       dtrSys.ProcessActiveEntities();

@@ -3,7 +3,7 @@
 // Input vertex data, different for all executions of this shader.
 in vec3 a_vertPos;
 in vec2 a_vertTexCoord0;
-in mat3 a_tbn;
+in mat3 a_vertTBN;
 
 uniform mat4 u_vp;
 uniform mat4 u_model;
@@ -23,5 +23,5 @@ void main()
 
   // put the light in tangent space from world space
   v_lightDir = (inverse(u_model) * vec4(v_lightDir, 1)).xyz;
-  v_lightDir = inverse(a_tbn) * v_lightDir;
+  v_lightDir = inverse(a_vertTBN) * v_lightDir;
 }
