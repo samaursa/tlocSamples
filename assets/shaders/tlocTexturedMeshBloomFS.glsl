@@ -15,7 +15,7 @@ void main()
   float multiplier = dot(v_lightDir, v_norm);
   multiplier = clamp(multiplier, 0.1f, 1.0f);
 	o_color = texture2D(s_texture, vec2(v_texCoord[0], 1.0f - v_texCoord[1]));
-  o_color = o_color * multiplier * u_lightColor;
+  o_color = o_color * multiplier * vec4(u_lightColor, 1.0);
 
   // Bright pass
   // Where does the vec3() come from? That ensures that we get brightness

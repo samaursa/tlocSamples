@@ -176,11 +176,14 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
+  gfx_gl::uniform_vptr u_lightCol;
+
   TL_NESTED_FUNC_BEGIN(CreateMesh) 
     core_cs::entity_vptr 
     CreateMesh( core_cs::ECS& a_ecs,
                const gfx_med::ObjLoader::vert_cont_type& a_vertices,
-               const gfx_gl::texture_object_vptr& a_to)
+               const gfx_gl::texture_object_vptr& a_to,
+               gfx_gl::uniform_vptr& a_lightCol)
 
   {
     static gfx_cs::material_sptr mat;
@@ -195,7 +198,7 @@ int TLOC_MAIN(int argc, char *argv[])
     u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
     gfx_gl::uniform_vso  u_lightColor;
-    u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(1.5f, 1.5f, 1.5f));
+    u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(3.5f, 3.5f, 3.5f));
 
     if (mat == nullptr)
     {
@@ -207,6 +210,9 @@ int TLOC_MAIN(int argc, char *argv[])
                      core_io::Path(GetAssetsPath() + shaderPathFS));
 
       mat = ent->GetComponent<gfx_cs::Material>();
+
+      a_lightCol = gfx_gl::f_shader_operator::GetUniform
+        (*mat->GetShaderOperator(), "u_lightColor");
     }
     else
     {
@@ -226,7 +232,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   core_cs::entity_ptr_array meshes;
   {
-    auto newMesh = TL_NESTED_CALL(CreateMesh)(mainScene, vertices, to.get());
+    auto newMesh = TL_NESTED_CALL(CreateMesh)(mainScene, vertices, to.get(), u_lightCol);
     meshes.push_back(newMesh);
   }
 
@@ -245,7 +251,7 @@ int TLOC_MAIN(int argc, char *argv[])
     u_rttBrightTo->SetName("s_bright").SetValueAs(*brightTo);
 
     gfx_gl::uniform_vso u_exposure;
-    u_exposure->SetName("u_exposure").SetValueAs(1.0f);
+    u_exposure->SetName("u_exposure").SetValueAs(0.5f);
 
     rttScene.CreatePrefab<pref_gfx::Material>()
       .AddUniform(u_rttColTo.get())
@@ -322,6 +328,16 @@ int TLOC_MAIN(int argc, char *argv[])
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::right))
     {
       u_exposure->SetValueAs(core::Clamp(u_exposure->GetValueAs<float>() + 0.001f, 0.0f, 10.0f));
+    }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::up))
+    {
+      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] + 0.001f;
+      u_lightCol->SetValueAs(math_t::Vec3f32(lightVal, lightVal, lightVal));
+    }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::down))
+    {
+      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] - 0.001f;
+      u_lightCol->SetValueAs(math_t::Vec3f32(lightVal, lightVal, lightVal));
     }
 
     // -----------------------------------------------------------------------
