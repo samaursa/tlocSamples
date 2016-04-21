@@ -43,15 +43,15 @@ public:
   void DoCreateSystems()
   {
     auto_cref ecs = this->GetScene();
-    ecs->AddSystem<gfx_cs::CameraSystem>();
-    ecs->AddSystem<gfx_cs::ArcBallSystem>();
-    auto abcSys = ecs->AddSystem<input_cs::ArcBallControlSystem>();
+    ecs->AddSystem<gfx_cs::CameraSystem>("Render");
+    ecs->AddSystem<gfx_cs::ArcBallSystem>("Render");
+    auto abcSys = ecs->AddSystem<input_cs::ArcBallControlSystem>("Update");
 
     GetKeyboard()->Register(abcSys.get());
     GetMouse()->Register(abcSys.get());
 
-    ecs->AddSystem<gfx_cs::MaterialSystem>();
-    m_meshSys = ecs->AddSystem<gfx_cs::MeshRenderSystem>();
+    ecs->AddSystem<gfx_cs::MaterialSystem>("Render");
+    m_meshSys = ecs->AddSystem<gfx_cs::MeshRenderSystem>("Render");
     m_meshSys->SetRenderer(GetRenderer());
   };
 

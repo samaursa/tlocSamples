@@ -16,6 +16,12 @@ namespace {
   core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
   core_str::String shaderPathFS("/shaders/tlocTexturedMeshBloomFS.glsl");
 
+  core_str::String shaderPathOneTexVS("/shaders/tlocOneTextureVS.glsl");
+  core_str::String shaderPathOneTexFS("/shaders/tlocOneTextureNoFlipFS.glsl");
+
+  core_str::String shaderPathGaussianBlurVS("/shaders/tlocGaussianBlurVS.glsl");
+  core_str::String shaderPathGaussianBlurFS("/shaders/tlocGaussianBlurFS.glsl");
+
   core_str::String shaderPathBloomVS("/shaders/tlocBloomVS.glsl");
   core_str::String shaderPathBloomFS("/shaders/tlocBloomFS.glsl");
 
@@ -96,6 +102,8 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_ASSERT_NOT_NULL(touchSurface);
 
   core_cs::ECS mainScene;
+  core_cs::ECS rttHorScene;
+  core_cs::ECS rttVertScene;
   core_cs::ECS rttScene;
 
   // -----------------------------------------------------------------------
@@ -112,6 +120,14 @@ int TLOC_MAIN(int argc, char *argv[])
     rttRenderer->SetParams(params);
   }
 
+  gfx::Rtt rttHor(win.GetDimensions());
+  auto rttBrightHor = rttHor.AddColorAttachment<0, gfx_t::color_u16_rgba>();
+  auto rttBrightHorRend = rttHor.GetRenderer();
+
+  gfx::Rtt rttVert(win.GetDimensions());
+  rttVert.AddColorAttachment<0>(brightTo);
+  auto rttBrightVertRend = rttVert.GetRenderer();
+
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
@@ -123,9 +139,23 @@ int TLOC_MAIN(int argc, char *argv[])
   auto meshSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
   meshSys->SetRenderer(rtt.GetRenderer());
 
+  rttHorScene.AddSystem<gfx_cs::MaterialSystem>("Render");
+  {
+    auto rttMeshSys = rttHorScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+    rttMeshSys->SetRenderer(rttBrightHorRend);
+  }
+
+  rttVertScene.AddSystem<gfx_cs::MaterialSystem>("Render");
+  {
+    auto rttMeshSys = rttVertScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+    rttMeshSys->SetRenderer(rttBrightVertRend);
+  }
+
   rttScene.AddSystem<gfx_cs::MaterialSystem>("Render");
-  auto rttMeshSys = rttScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
-  rttMeshSys->SetRenderer(renderer);
+  {
+    auto rttMeshSys = rttScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+    rttMeshSys->SetRenderer(renderer);
+  }
 
   // -----------------------------------------------------------------------
   // Load the required resources
@@ -198,7 +228,7 @@ int TLOC_MAIN(int argc, char *argv[])
     u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
     gfx_gl::uniform_vso  u_lightColor;
-    u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(3.5f, 3.5f, 3.5f));
+    u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(2.8f, 2.8f, 2.8f));
 
     if (mat == nullptr)
     {
@@ -236,11 +266,47 @@ int TLOC_MAIN(int argc, char *argv[])
     meshes.push_back(newMesh);
   }
 
-  // -----------------------------------------------------------------------
-  // Quad for rendering the texture
-
   using math_t::Rectf32_c;
   Rectf32_c rect(Rectf32_c::width(2.0f), Rectf32_c::height(2.0f));
+
+  // -----------------------------------------------------------------------
+  // Quad for rendering the bright pass as HORIZONTAL blur
+
+  auto qHor = rttHorScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rect).Create();
+  {
+    gfx_gl::uniform_vso u_rttBrightTo;
+    u_rttBrightTo->SetName("s_texture").SetValueAs(*brightTo);
+
+    gfx_gl::uniform_vso u_horizontal;
+    u_horizontal->SetName("u_horizontal").SetValueAs(1);
+
+    rttHorScene.CreatePrefab<pref_gfx::Material>()
+      .AddUniform(u_rttBrightTo.get())
+      .AddUniform(u_horizontal.get())
+      .Add(qHor, core_io::Path(GetAssetsPath() + shaderPathGaussianBlurVS),
+                 core_io::Path(GetAssetsPath() + shaderPathGaussianBlurFS));
+  }
+
+  // -----------------------------------------------------------------------
+  // Quad for rendering the bright pass as VERTICAL blur
+
+  auto qVert = rttVertScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rect).Create();
+  {
+    gfx_gl::uniform_vso u_rttBrightTo;
+    u_rttBrightTo->SetName("s_texture").SetValueAs(*rttBrightHor);
+
+    gfx_gl::uniform_vso u_horizontal;
+    u_horizontal->SetName("u_horizontal").SetValueAs(0);
+
+    rttVertScene.CreatePrefab<pref_gfx::Material>()
+      .AddUniform(u_rttBrightTo.get())
+      .AddUniform(u_horizontal.get())
+      .Add(qVert, core_io::Path(GetAssetsPath() + shaderPathGaussianBlurVS),
+                 core_io::Path(GetAssetsPath() + shaderPathGaussianBlurFS));
+  }
+
+  // -----------------------------------------------------------------------
+  // Quad for rendering the texture
 
   auto q = rttScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rect).Create();
   {
@@ -251,7 +317,7 @@ int TLOC_MAIN(int argc, char *argv[])
     u_rttBrightTo->SetName("s_bright").SetValueAs(*brightTo);
 
     gfx_gl::uniform_vso u_exposure;
-    u_exposure->SetName("u_exposure").SetValueAs(0.5f);
+    u_exposure->SetName("u_exposure").SetValueAs(3.5f);
 
     rttScene.CreatePrefab<pref_gfx::Material>()
       .AddUniform(u_rttColTo.get())
@@ -263,6 +329,43 @@ int TLOC_MAIN(int argc, char *argv[])
 
   auto u_exposure = gfx_gl::f_shader_operator::GetUniform
     (*q->GetComponent<gfx_cs::Material>()->GetShaderOperator(), "u_exposure");
+
+  // -----------------------------------------------------------------------
+  // Quad for rendering debug info
+
+  const auto debRectDim = 0.5f;
+  const auto debRectHalfDim = debRectDim * 0.5f;
+
+  using math_t::Rectf32_c;
+  auto rectDebug = Rectf32_c(Rectf32_c::width(debRectDim), Rectf32_c::height(debRectDim));
+
+  auto qColDeb = rttScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rectDebug).Create();
+  {
+    gfx_gl::uniform_vso u_rttColTo;
+    u_rttColTo->SetName("s_texture").SetValueAs(*rttColTo);
+
+    rttScene.CreatePrefab<pref_gfx::Material>()
+      .AddUniform(u_rttColTo.get())
+      .Add(qColDeb, core_io::Path(GetAssetsPath() + shaderPathOneTexVS),
+              core_io::Path(GetAssetsPath() + shaderPathOneTexFS));
+  }
+
+  qColDeb->GetComponent<math_cs::Transform>()->SetPosition
+    (math_t::Vec3f32(-1.0f + debRectHalfDim, 1.0f - debRectHalfDim, -0.1f));
+
+  auto qBrightDeb = rttScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rectDebug).Create();
+  {
+    gfx_gl::uniform_vso u_rttColTo;
+    u_rttColTo->SetName("s_texture").SetValueAs(*brightTo);
+
+    rttScene.CreatePrefab<pref_gfx::Material>()
+      .AddUniform(u_rttColTo.get())
+      .Add(qBrightDeb, core_io::Path(GetAssetsPath() + shaderPathOneTexVS),
+              core_io::Path(GetAssetsPath() + shaderPathOneTexFS));
+  }
+
+  qBrightDeb->GetComponent<math_cs::Transform>()->SetPosition
+    (math_t::Vec3f32(-1.0f + debRectHalfDim + debRectDim, 1.0f - debRectHalfDim, -0.1f));
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -292,6 +395,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
   mainScene.Initialize();
   rttScene.Initialize();
+  rttHorScene.Initialize();
+  rttVertScene.Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -301,7 +406,10 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << "Press L to LookAt() the crate";
   TLOC_LOG_CORE_DEBUG() << "Press F to focus on the crate";
   TLOC_LOG_CORE_DEBUG() << "Press left and right arrow keys to change exposure";
+  TLOC_LOG_CORE_DEBUG() << "Press [0-9] to change the number of blur passes";
 
+
+  int numBlurPasses = 0;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
@@ -323,22 +431,47 @@ int TLOC_MAIN(int argc, char *argv[])
     }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::left))
     {
-      u_exposure->SetValueAs(core::Clamp(u_exposure->GetValueAs<float>() - 0.001f, 0.0f, 10.0f));
+      u_exposure->SetValueAs(core::Clamp(u_exposure->GetValueAs<float>() - 0.01f, 0.0f, 10.0f));
+      TLOC_LOG_DEFAULT_DEBUG() << "Exposure: " << u_exposure->GetValueAs<float>();
     }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::right))
     {
-      u_exposure->SetValueAs(core::Clamp(u_exposure->GetValueAs<float>() + 0.001f, 0.0f, 10.0f));
+      u_exposure->SetValueAs(core::Clamp(u_exposure->GetValueAs<float>() + 0.01f, 0.0f, 10.0f));
+      TLOC_LOG_DEFAULT_DEBUG() << "Exposure: " << u_exposure->GetValueAs<float>();
     }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::up))
     {
-      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] + 0.001f;
+      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] + 0.01f;
       u_lightCol->SetValueAs(math_t::Vec3f32(lightVal, lightVal, lightVal));
+      TLOC_LOG_DEFAULT_DEBUG() << "Light Color: " << u_lightCol->GetValueAs<math_t::Vec3f32>();
     }
     if (keyboard->IsKeyDown(input_hid::KeyboardEvent::down))
     {
-      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] - 0.001f;
+      const auto lightVal = u_lightCol->GetValueAs<math_t::Vec3f32>()[0] - 0.01f;
       u_lightCol->SetValueAs(math_t::Vec3f32(lightVal, lightVal, lightVal));
+      TLOC_LOG_DEFAULT_DEBUG() << "Light Color: " << u_lightCol->GetValueAs<math_t::Vec3f32>();
     }
+
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n1))
+    { numBlurPasses = 1; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n2))
+    { numBlurPasses = 2; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n3))
+    { numBlurPasses = 3; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n4))
+    { numBlurPasses = 4; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n5))
+    { numBlurPasses = 5; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n6))
+    { numBlurPasses = 6; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n7))
+    { numBlurPasses = 7; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n8))
+    { numBlurPasses = 8; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n9))
+    { numBlurPasses = 9; }
+    if (keyboard->IsKeyDown(input_hid::KeyboardEvent::n0))
+    { numBlurPasses = 0; }
 
     // -----------------------------------------------------------------------
     // update code
@@ -350,6 +483,21 @@ int TLOC_MAIN(int argc, char *argv[])
 
     rttRenderer->ApplyRenderSettings();
     rttRenderer->Render();
+
+    for (int i = 0; i < numBlurPasses; ++i)
+    {
+      rttHorScene.Update(1.0/60.0);
+      rttHorScene.Process(1.0/60.0);
+
+      rttBrightHorRend->ApplyRenderSettings();
+      rttBrightHorRend->Render();
+
+      rttVertScene.Update(1.0/60.0);
+      rttVertScene.Process(1.0/60.0);
+
+      rttBrightVertRend->ApplyRenderSettings();
+      rttBrightVertRend->Render();
+    }
 
     rttScene.Update(1.0/60.0);
     rttScene.Process(1.0/60.0);

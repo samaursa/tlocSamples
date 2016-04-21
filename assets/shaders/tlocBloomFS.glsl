@@ -9,8 +9,6 @@ uniform sampler2D s_bright;
 uniform float     u_exposure;
 uniform int       u_blur = 5;
 
-uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
-
 void main()
 {
   vec2 tex_offset = 1.0 / textureSize(s_bright, 0);
@@ -19,23 +17,10 @@ void main()
   float texCoordY = tex_offset[1];
 
 	vec3 hdr    = texture2D(s_texture, vec2(v_texCoord[0], v_texCoord[1])).rgb;
-	//vec3 bright = texture2D(s_bright, vec2(v_texCoord[0], v_texCoord[1])).rgb;
-	vec3 bright = vec3(0, 0, 0);
-
-  int counter = 1;
-  for (float i = -u_blur; i < u_blur; ++i)
-  {
-     for (float j = -u_blur; j < u_blur; ++j)
-     {
-        bright += texture2D(s_bright, vec2(v_texCoord[0] + (texCoordX * i), v_texCoord[1] + (texCoordY * j))).rgb;
-        counter = counter + 1;
-     }
-  }
-
-  bright = bright / counter;
+	vec3 bright = texture2D(s_bright, vec2(v_texCoord[0], v_texCoord[1])).rgb;
 
   // this is taken from learnopengl.com
-  const float gamma = 2.2;
+  const float gamma = 1.0;
   hdr += bright; // additive blending
   // tone mapping
   vec3 result = vec3(1.0) - exp(-hdr * u_exposure);
