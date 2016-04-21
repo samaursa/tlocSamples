@@ -433,8 +433,8 @@ int TLOC_MAIN(int argc, char *argv[])
   core_time::Timer64 t;
 
 
-  auto siItr = core::find_if(mainScene.GetSystemsProcessor()->begin_systems(), 
-                             mainScene.GetSystemsProcessor()->end_systems(),
+  auto siItr = core::find_if(mainScene.GetSystemsGroup()->GetSystemsProcessor()->begin_systems(), 
+                             mainScene.GetSystemsGroup()->GetSystemsProcessor()->end_systems(),
                              core_cs::algos::systems_processor::compare::System(meshSys));
   while (win.IsValid() && !winCallback.m_endProgram)
   {

@@ -236,8 +236,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    scene->Update();
-    scene->Process();
+    scene->Update(1.0/60.0);
+    scene->Process(1.0/60.0);
 
     renderer->ApplyRenderSettings();
     renderer->Render();

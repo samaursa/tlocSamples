@@ -292,7 +292,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    textECS->Process();
+    textECS->Process(0.0);
 
     renderer->ApplyRenderSettings();
     renderer->Render();

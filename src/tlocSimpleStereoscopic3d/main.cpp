@@ -10,7 +10,7 @@ using namespace tloc;
 
 namespace {
 
-  bool          g_renderDepthToRightViewport = false;
+  bool          g_renderDepthToRightViewport = true;
   bool          g_fullScreen = false;
   f32           g_convergence = 1.0f;
   f32           g_interaxial = 0.05f;
@@ -121,10 +121,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     using namespace gfx_gl::p_fbo;
     framebuffer_object_sptr fbo = core_sptr::MakeShared<FramebufferObject>();
-    fbo->Attach<target::Framebuffer,
-                attachment::ColorAttachment<0> >(*toLeft);
-    fbo->Attach<target::Framebuffer,
-                attachment::Depth>(*rbo);
+    fbo->Attach<target::Framebuffer, attachment::ColorAttachment<0>>(*toLeft);
+    fbo->Attach<target::Framebuffer, attachment::Depth>(*rbo);
 
     using namespace gfx_rend::p_renderer;
     using namespace gfx_rend;
@@ -181,10 +179,8 @@ int TLOC_MAIN(int argc, char *argv[])
     { fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*toRight); }
     else
     {
-      fbo->Attach<target::DrawFramebuffer,
-                  attachment::ColorAttachment<0> >(*toRight);
-      fbo->Attach<target::DrawFramebuffer,
-                  attachment::Depth>(*rbo);
+      fbo->Attach<target::DrawFramebuffer, attachment::ColorAttachment<0>>(*toRight);
+      fbo->Attach<target::DrawFramebuffer, attachment::Depth>(*rbo);
     }
 
     using namespace gfx_rend::p_renderer;
@@ -425,31 +421,40 @@ int TLOC_MAIN(int argc, char *argv[])
   TLOC_LOG_CORE_DEBUG() << 
     "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
 
+  core_time::Timer t;
   while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
     { }
 
-    inputMgr->Update();
+    if (t.ElapsedSeconds() > 1.0/60.0)
+    {
+      t.Reset();
 
-    rttRenderLeft->ApplyRenderSettings();
-    meshSys->SetCamera(m_cameraEntLeft);
-    meshSys->SetRenderer(rttRenderLeft);
-    ecsMainScene.Process();
-    rttRenderLeft->Render();
+      inputMgr->Update();
 
-    rttRenderRight->ApplyRenderSettings();
-    meshSys->SetCamera(m_cameraEntRight);
-    meshSys->SetRenderer(rttRenderRight);
-    ecsMainScene.Process();
-    rttRenderRight->Render();
+      meshSys->SetCamera(m_cameraEntLeft);
+      meshSys->SetRenderer(rttRenderLeft);
+      ecsMainScene.Process(1.0/60.0);
 
-    renderer->ApplyRenderSettings();
-    ecsRtt.Process();
-    renderer->Render();
+      rttRenderLeft->ApplyRenderSettings();
+      rttRenderLeft->Render();
 
-    win.SwapBuffers();
+      meshSys->SetCamera(m_cameraEntRight);
+      meshSys->SetRenderer(rttRenderRight);
+      ecsMainScene.Process(1.0/60.0);
+
+      rttRenderRight->ApplyRenderSettings();
+      rttRenderRight->Render();
+
+      ecsRtt.Process(1.0/60.0);
+
+      renderer->ApplyRenderSettings();
+      renderer->Render();
+
+      win.SwapBuffers();
+    }
   }
 
   // -----------------------------------------------------------------------

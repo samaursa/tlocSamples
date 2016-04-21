@@ -86,7 +86,7 @@ public:
       core_conts::Array<math_t::Mat3f32>  tbnArray(4, tbn);
 
       gfx_gl::attributeVBO_vso  v_tbn;
-      v_tbn->AddName("a_tbn").SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
+      v_tbn->AddName("a_vertTBN").SetValueAs<gfx_gl::p_vbo::target::ArrayBuffer, 
         gfx_gl::p_vbo::usage::StaticDraw>(tbnArray);
 
       ent->GetComponent<gfx_cs::Mesh>()->GetUserShaderOperator()->

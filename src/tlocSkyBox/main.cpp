@@ -117,13 +117,13 @@ int TLOC_MAIN(int, char**)
 
   core_cs::ECS ecs;
 
-  ecs.AddSystem<gfx_cs::MaterialSystem>();
-  ecs.AddSystem<gfx_cs::CameraSystem>();
+  ecs.AddSystem<gfx_cs::MaterialSystem>("Render");
+  ecs.AddSystem<gfx_cs::CameraSystem>("Render");
 
-  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
+  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>("Render");
   meshSys->SetRenderer(renderer);
 
-  auto skyBoxSys = ecs.AddSystem<gfx_cs::SkyBoxRenderSystem>();
+  auto skyBoxSys = ecs.AddSystem<gfx_cs::SkyBoxRenderSystem>("Render");
   skyBoxSys->SetRenderer(skyBoxRenderer);
 
   // -----------------------------------------------------------------------
@@ -348,8 +348,8 @@ int TLOC_MAIN(int, char**)
         camTrans->SetOrientation(finalRot);
       }
 
-      ecs.Update();
-      ecs.Process();
+      ecs.Update(1.0/60.0);
+      ecs.Process(1.0/60.0);
 
       renderer->ApplyRenderSettings();
       renderer->Render();

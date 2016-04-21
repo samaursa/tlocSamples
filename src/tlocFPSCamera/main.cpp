@@ -308,8 +308,8 @@ int TLOC_MAIN(int, char**)
         camTrans->SetOrientation(finalRot);
       }
 
-      ecs.Update();
-      ecs.Process();
+      ecs.Update(1.0/60.0);
+      ecs.Process(1.0/60.0);
 
       renderer->ApplyRenderSettings();
       renderer->Render();

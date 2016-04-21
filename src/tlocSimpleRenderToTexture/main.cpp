@@ -9,8 +9,8 @@ using namespace tloc;
 
 namespace {
 
-  const u32 g_rttResX = 128;
-  const u32 g_rttResY = 128;
+  const u32 g_rttResX = 512;
+  const u32 g_rttResY = 512;
 
   // We need a material to attach to our entity (which we have not yet created).
 #if defined (TLOC_OS_WIN)
@@ -98,23 +98,22 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
 
   gfx::Rtt rtt(core_ds::MakeTuple(g_rttResX, g_rttResY));
-  auto rttTo        = rtt.AddColorAttachment(0);
+  auto rttTo        = rtt.AddColorAttachment<0, gfx_t::color_u16_rgba>();
   auto rttRenderer  = rtt.GetRenderer();
-
-#if defined (TLOC_OS_WIN)
-  auto rttTo2 = rtt.AddColorAttachment(1);
-#endif
+  auto rttTo2       = rtt.AddColorAttachment(1);
 
   //------------------------------------------------------------------------
 
-  core_cs::ECS scene;
+  core_cs::ECS rttScene, mainScene;
 
   //------------------------------------------------------------------------
   // To render the texture we need a quad
-  scene.AddSystem<gfx_cs::MaterialSystem>();
-  auto  quadSys = scene.AddSystem<gfx_cs::MeshRenderSystem>(1.0/60.0, true);
-  auto  fanSys = scene.AddSystem<gfx_cs::MeshRenderSystem>(1.0/60.0, true);
+  mainScene.AddSystem<gfx_cs::MaterialSystem>();
+  auto  quadSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>();
   quadSys->SetRenderer(renderer);
+
+  rttScene.AddSystem<gfx_cs::MaterialSystem>();
+  auto  fanSys = rttScene.AddSystem<gfx_cs::MeshRenderSystem>();
   fanSys->SetRenderer(rttRenderer);
 
   //------------------------------------------------------------------------
@@ -136,10 +135,8 @@ int TLOC_MAIN(int argc, char *argv[])
   gfx_gl::uniform_vso u_rttTo;
   u_rttTo->SetName("s_texture").SetValueAs(core_sptr::ToVirtualPtr(rttTo));
 
-#if defined (TLOC_OS_WIN)
   gfx_gl::uniform_vso u_rttTo2;
   u_rttTo2->SetName("s_texture").SetValueAs(core_sptr::ToVirtualPtr(rttTo2));
-#endif
 
   gfx_gl::uniform_vso  u_blur;
   u_blur->SetName("u_blur").SetValueAs(5);
@@ -156,10 +153,10 @@ int TLOC_MAIN(int argc, char *argv[])
   // the circle that will be rendered to textures
   math_t::Circlef32 circ(math_t::Circlef32::radius(1.0f));
 
-  auto q = scene.CreatePrefab<pref_gfx::Fan>()
-    .Sides(64).Circle(circ).DispatchTo(fanSys.get()).Create();
+  auto q = rttScene.CreatePrefab<pref_gfx::Fan>()
+    .Sides(64).Circle(circ).Create();
 
-  scene.CreatePrefab<pref_gfx::Material>()
+  rttScene.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_to.get())
     .AssetsPath(GetAssetsPath())
     .Add(q, core_io::Path(shaderPathVS), core_io::Path(shaderPathFS));
@@ -170,13 +167,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // the first quad with the circle diffuse render
   auto diffuseQuad =
-    scene.CreatePrefab<pref_gfx::Quad>()
+    mainScene.CreatePrefab<pref_gfx::Quad>()
     .Dimensions(rect).DispatchTo(quadSys.get()).Create();
 
   diffuseQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(-0.5f, 0, 0));
 
-  scene.CreatePrefab<pref_gfx::Material>()
+  mainScene.CreatePrefab<pref_gfx::Material>()
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
@@ -186,13 +183,13 @@ int TLOC_MAIN(int argc, char *argv[])
 
   // the second quad rendering the circle using texcoords
   auto texQuad =
-    scene.CreatePrefab<pref_gfx::Quad>()
+    mainScene.CreatePrefab<pref_gfx::Quad>()
     .Dimensions(rect).DispatchTo(quadSys.get()).Create();
 
   texQuad->GetComponent<math_cs::Transform>()
     ->SetPosition(math_t::Vec3f32(0.5f, 0, 0));
 
-  scene.CreatePrefab<pref_gfx::Material>()
+  mainScene.CreatePrefab<pref_gfx::Material>()
     .AssetsPath(GetAssetsPath())
     .AddUniform(u_rttTo2.get()).AddUniform(u_blur.get())
     .AddUniform(u_winResX.get()).AddUniform(u_winResY.get())
@@ -221,9 +218,8 @@ int TLOC_MAIN(int argc, char *argv[])
   //------------------------------------------------------------------------
   // All systems need to be initialized once
 
-  scene.Initialize();
-  quadSys->Initialize();
-  fanSys->Initialize();
+  rttScene.Initialize();
+  mainScene.Initialize();
 
   //------------------------------------------------------------------------
   // Main loop
@@ -234,14 +230,13 @@ int TLOC_MAIN(int argc, char *argv[])
     { }
 
     // render the fan, which will be rendered to a texture
-    fanSys->ProcessActiveEntities();
-
+    rttScene.Process(1.0/60.0);
     fanSys->GetRenderer()->ApplyRenderSettings();
     fanSys->GetRenderer()->Render();
 
     // render the quad, which will be rendered to the front buffer with the
     // default renderer
-    quadSys->ProcessActiveEntities();
+    mainScene.Process(1.0/60.0);
 
     quadSys->GetRenderer()->ApplyRenderSettings();
     quadSys->GetRenderer()->Render();

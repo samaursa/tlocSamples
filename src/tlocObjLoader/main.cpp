@@ -172,22 +172,22 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // To render a mesh, we need a mesh render system - this is a specialized
   // system to render this primitive
-  ecs.AddSystem<gfx_cs::MaterialSystem>();
-  ecs.AddSystem<gfx_cs::CameraSystem>();
-  ecs.AddSystem<gfx_cs::ArcBallSystem>();
-  auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>();
+  ecs.AddSystem<gfx_cs::MaterialSystem>("Render");
+  ecs.AddSystem<gfx_cs::CameraSystem>("Render");
+  ecs.AddSystem<gfx_cs::ArcBallSystem>("Update");
+  auto arcBallControlSystem = ecs.AddSystem<input_cs::ArcBallControlSystem>("Update");
 
-  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>(1.0/15.0f);
+  auto raypickSys = ecs.AddSystem<gfx_cs::RaypickSystem>("Update");
   raypickSys->SetWindowDimensions(win.GetDimensions());
   raypickSys->SetPickingMode(gfx_cs::p_raypick_system::k_on_click);
   raypickSys->Register(&rayCallback);
   rayCallback.m_raypickSystem = raypickSys;
 
   ecs.AddSystem<gfx_cs::BoundingBoxSystem>();
-  auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>();
+  auto bbRenderSys = ecs.AddSystem<gfx_cs::BoundingBoxRenderSystem>("Render");
   bbRenderSys->SetRenderer(bbRenderer);
 
-  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>();
+  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>("Render");
   meshSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
@@ -409,8 +409,8 @@ int TLOC_MAIN(int argc, char *argv[])
 
     inputMgr->Update();
 
-    ecs.Update();
-    ecs.Process();
+    ecs.Update(1.0/60.0);
+    ecs.Process(1.0/60.0);
 
     renderer->ApplyRenderSettings();
     renderer->Render();

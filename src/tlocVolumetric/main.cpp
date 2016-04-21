@@ -196,7 +196,7 @@ int TLOC_MAIN(int argc, char *argv[])
     rotMat->MakeRotationY(math_t::Degree(currAngle));
     //rotMat->MakeIdentity
 
-    scene.Process();
+    scene.Process(1.0/60.0);
 
     renderer->ApplyRenderSettings();
     renderer->Render();
