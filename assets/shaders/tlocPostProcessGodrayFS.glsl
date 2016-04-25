@@ -9,9 +9,9 @@ out vec4 o_color;
 uniform sampler2D s_texture;
 uniform sampler2D s_stencil;
 
-const int NUM_SAMPLES = 100;
-const float density = 0.1;
-const float decay = 0.5;
+const int NUM_SAMPLES = 200;
+const float density = 0.05;
+const float decay = 0.9;
 const float weight = 0.9;
 
 void main()
@@ -33,5 +33,5 @@ void main()
   }
 
   //o_color = texture2D(s_texture, v_texCoord) + s_stencil;
-  o_color = texture2D(s_texture, v_texCoord) + rays;
+  o_color = texture2D(s_texture, v_texCoord) + (rays * 0.1);
 }
