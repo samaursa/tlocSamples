@@ -129,7 +129,7 @@ int TLOC_MAIN(int argc, char *argv[])
   // -----------------------------------------------------------------------
   // Transformation debug rendering
 
-  auto dtrSys = ecsMainScene.AddSystem<gfx_cs::DebugTransformRenderSystem>("Render");
+  auto dtrSys = ecsMainScene.AddSystem<gfx_cs::DebugTransformRenderSystem>("DebugRender");
   dtrSys->SetScale(1.0f);
   dtrSys->SetRenderer(linesRenderer);
 
@@ -363,7 +363,6 @@ int TLOC_MAIN(int argc, char *argv[])
 
   ecsMainScene.Initialize();
   ecsRttQuad.Initialize();
-  dtrSys->Initialize();
 
   // -----------------------------------------------------------------------
   // Main loop
@@ -397,12 +396,12 @@ int TLOC_MAIN(int argc, char *argv[])
     if (matSysTimer.ElapsedSeconds() > 1.0f)
     { matSys->ReInitialize(); matSysTimer.Reset(); }
 
-    camSys->ProcessActiveEntities();
+    ecsMainScene.Process("Update", 1.0/60.0);
 
     // render to RTT first
     meshSys->SetCamera(m_lightCamera);
     meshSys->SetRenderer(rttRenderer);
-    ecsMainScene.Process(1.0/60.0);
+    ecsMainScene.Process("Render", 1.0/60.0);
 
     rttRenderer->ApplyRenderSettings();
     rttRenderer->Render();
@@ -410,14 +409,14 @@ int TLOC_MAIN(int argc, char *argv[])
     // render the scene normally
     meshSys->SetCamera(m_cameraEnt);
     meshSys->SetRenderer(renderer);
-    ecsMainScene.Process(1.0/60.0);
+    ecsMainScene.Process("Render", 1.0/60.0);
 
     renderer->ApplyRenderSettings();
     renderer->Render();
 
     ecsRttQuad.GetEntityManager()->DeactivateEntity(rttQuad); // to avoid rendering its coordinates
     linesRenderer->ApplyRenderSettings();
-    dtrSys->ProcessActiveEntities();
+    ecsMainScene.Process("DebugRender", 1.0/60.0);
     ecsRttQuad.GetEntityManager()->ActivateEntity(rttQuad);
 
     // draw the quad on top layer

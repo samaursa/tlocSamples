@@ -166,7 +166,7 @@ int TLOC_MAIN(int, char**)
     for (int i = 0; i < 6; ++i)
     {
       gfx_med::ImageLoaderJpeg imgLoader;
-      core_io::Path path(( core_str::String(GetAssetsPath()) + skyBoxes[i] ).c_str());
+      path = core_io::Path(( core_str::String(GetAssetsPath()) + skyBoxes[i] ).c_str());
 
       if (imgLoader.Load(path) != ErrorSuccess)
       { TLOC_ASSERT_FALSE("Image did not load!"); }
@@ -219,42 +219,25 @@ int TLOC_MAIN(int, char**)
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  TL_NESTED_FUNC_BEGIN(CreateMesh) 
-    core_cs::entity_vptr 
-    CreateMesh( core_cs::ECS& a_ecs,
-               const gfx_med::ObjLoader::vert_cont_type& a_vertices,
-               const gfx_gl::texture_object_vptr& a_to)
+  core_cs::entity_vptr ent =
+    ecs.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
+  ent->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
-  {
-    core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
-    ent->GetComponent<gfx_cs::Mesh>()->
-      SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
 
-    gfx_gl::uniform_vso  u_to;
-    u_to->SetName("s_texture").SetValueAs(*a_to);
+  gfx_gl::uniform_vso  u_lightDir;
+  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
-    gfx_gl::uniform_vso  u_lightDir;
-    u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
+  ecs.CreatePrefab<pref_gfx::Material>()
+    .AddUniform(u_to.get())
+    .AddUniform(u_lightDir.get())
+    .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+              core_io::Path(GetAssetsPath() + shaderPathFS));
 
-    a_ecs.CreatePrefab<pref_gfx::Material>()
-      .AddUniform(u_to.get())
-      .AddUniform(u_lightDir.get())
-      .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-                core_io::Path(GetAssetsPath() + shaderPathFS));
-
-    auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
-
-    return ent;
-  }
-  TL_NESTED_FUNC_END();
-
-  core_cs::entity_ptr_array meshes;
-  {
-    auto newMesh = TL_NESTED_CALL(CreateMesh)(ecs, vertices, to.get());
-    meshes.push_back(newMesh);
-  }
+  auto matPtr = ent->GetComponent<gfx_cs::Material>();
+  matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library

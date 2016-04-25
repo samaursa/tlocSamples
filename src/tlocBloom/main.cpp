@@ -208,63 +208,34 @@ int TLOC_MAIN(int argc, char *argv[])
 
   gfx_gl::uniform_vptr u_lightCol;
 
-  TL_NESTED_FUNC_BEGIN(CreateMesh) 
-    core_cs::entity_vptr 
-    CreateMesh( core_cs::ECS& a_ecs,
-               const gfx_med::ObjLoader::vert_cont_type& a_vertices,
-               const gfx_gl::texture_object_vptr& a_to,
-               gfx_gl::uniform_vptr& a_lightCol)
+  core_cs::entity_vptr ent =
+    mainScene.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
 
-  {
-    static gfx_cs::material_sptr mat;
+  gfx_gl::uniform_vso  u_to;
+  u_to->SetName("s_texture").SetValueAs(*to);
 
-    core_cs::entity_vptr ent =
-      a_ecs.CreatePrefab<pref_gfx::Mesh>().Create(a_vertices);
+  gfx_gl::uniform_vso  u_lightDir;
+  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
 
-    gfx_gl::uniform_vso  u_to;
-    u_to->SetName("s_texture").SetValueAs(*a_to);
+  gfx_gl::uniform_vso  u_lightColor;
+  u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(2.8f, 2.8f, 2.8f));
 
-    gfx_gl::uniform_vso  u_lightDir;
-    u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(0.2f, 0.5f, 3.0f));
+  mainScene.CreatePrefab<pref_gfx::Material>()
+       .AddUniform(u_to.get())
+       .AddUniform(u_lightDir.get())
+       .AddUniform(u_lightColor.get())
+       .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
+                 core_io::Path(GetAssetsPath() + shaderPathFS));
 
-    gfx_gl::uniform_vso  u_lightColor;
-    u_lightColor->SetName("u_lightColor").SetValueAs(math_t::Vec3f32(2.8f, 2.8f, 2.8f));
+  auto matPtr = ent->GetComponent<gfx_cs::Material>();
+  matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
-    if (mat == nullptr)
-    {
-      a_ecs.CreatePrefab<pref_gfx::Material>()
-           .AddUniform(u_to.get())
-           .AddUniform(u_lightDir.get())
-           .AddUniform(u_lightColor.get())
-           .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
-                     core_io::Path(GetAssetsPath() + shaderPathFS));
+  u_lightCol = gfx_gl::f_shader_operator::GetUniform
+    (*matPtr->GetShaderOperator(), "u_lightColor");
 
-      mat = ent->GetComponent<gfx_cs::Material>();
+  auto meshPtr = ent->GetComponent<gfx_cs::Mesh>();
+  meshPtr->SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
-      a_lightCol = gfx_gl::f_shader_operator::GetUniform
-        (*mat->GetShaderOperator(), "u_lightColor");
-    }
-    else
-    {
-      a_ecs.GetEntityManager()->
-        InsertComponent(core_cs::EntityManager::Params(ent, mat));
-    }
-
-    auto matPtr = ent->GetComponent<gfx_cs::Material>();
-    matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
-
-    auto meshPtr = ent->GetComponent<gfx_cs::Mesh>();
-    meshPtr->SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
-
-    return ent;
-  }
-  TL_NESTED_FUNC_END();
-
-  core_cs::entity_ptr_array meshes;
-  {
-    auto newMesh = TL_NESTED_CALL(CreateMesh)(mainScene, vertices, to.get(), u_lightCol);
-    meshes.push_back(newMesh);
-  }
 
   using math_t::Rectf32_c;
   Rectf32_c rect(Rectf32_c::width(2.0f), Rectf32_c::height(2.0f));
