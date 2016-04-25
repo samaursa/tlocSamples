@@ -17,7 +17,13 @@ namespace {
   // We need a material to attach to our entity (which we have not yet created).
 
   core_str::String shaderPathVS("/shaders/tlocTexturedMeshVS.glsl");
-  core_str::String shaderPathFS("/shaders/tlocTexturedMeshFS.glsl");
+  core_str::String shaderPathFS("/shaders/tlocTexturedMeshPlusStencilFS.glsl");
+
+  core_str::String shaderPathOneTextureBillboardVS("/shaders/tlocOneTextureBillboardVS.glsl");
+  core_str::String shaderPathOneTextureBillboardFS("/shaders/tlocOneTexturePlusLightStencilFS.glsl");
+
+  core_str::String shaderPathGodrayVS("/shaders/tlocPostProcessGodrayVS.glsl");
+  core_str::String shaderPathGodrayFS("/shaders/tlocPostProcessGodrayFS.glsl");
 
   core_str::String g_assetsPath = GetAssetsPath();
 
@@ -53,7 +59,7 @@ int TLOC_MAIN(int, char**)
   const tl_int winHeight = 600;
 
   win.Create( gfx_win::Window::graphics_mode::Properties(winWidth, winHeight),
-    gfx_win::WindowSettings("SkyBox") );
+    gfx_win::WindowSettings("FPS Camera") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -64,27 +70,15 @@ int TLOC_MAIN(int, char**)
   // Get the default renderer
   using namespace gfx_rend::p_renderer;
   gfx_rend::renderer_sptr renderer = win.GetRenderer();
+  {
+    gfx_rend::Renderer::Params p(renderer->GetParams());
+    p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
+     .Enable<enable_disable::DepthTest>()
+     .AddClearBit<clear::ColorBufferBit>()
+     .AddClearBit<clear::DepthBufferBit>();
 
-  gfx_rend::Renderer::Params p(renderer->GetParams());
-  p.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-   .Enable<enable_disable::DepthTest>()
-   .AddClearBit<clear::ColorBufferBit>()
-   .AddClearBit<clear::DepthBufferBit>();
-
-  gfx_rend::Renderer::Params pNoDepth(renderer->GetParams());
-  pNoDepth.SetClearColor(gfx_t::Color(0.5f, 0.5f, 1.0f, 1.0f))
-          .Disable<enable_disable::DepthTest>() 
-          .AddClearBit<clear::DepthBufferBit>();
-
-  gfx_rend::renderer_sptr linesRenderer = 
-    core_sptr::MakeShared<gfx_rend::Renderer>(pNoDepth);
-
-  auto skyBoxRenParams = renderer->GetParams();
-  skyBoxRenParams.SetDepthFunction<gfx_rend::p_renderer::depth_function::LessEqual>();
-
-  auto skyBoxRenderer = core_sptr::MakeShared<gfx_rend::Renderer>(skyBoxRenParams);
-
-  renderer->SetParams(p);
+    renderer->SetParams(p);
+  }
 
   //------------------------------------------------------------------------
   // Creating InputManager - This manager will handle all of our HIDs during
@@ -107,117 +101,123 @@ int TLOC_MAIN(int, char**)
   TLOC_LOG_CORE_WARN_IF(mouse == nullptr) << "No mouse detected";
 
   // -----------------------------------------------------------------------
+
+  gfx::Rtt rtt(win.GetDimensions());
+  auto toColScene = rtt.AddColorAttachment(0);
+  auto toColStencil = core_sptr::MakeShared<gfx_gl::TextureObject>();
+  {
+    gfx_med::Image img;
+    img.Create(win.GetDimensions());
+    toColStencil->Initialize(img);
+  }
+  rtt.AddColorAttachment(1, toColStencil);
+  rtt.AddDepthAttachment();
+  {
+    auto rttRenderParams = rtt.GetRenderer()->GetParams();
+    rttRenderParams.Enable<enable_disable::Blend>()
+                   .SetClearColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 1.0f))
+                   .SetBlendFunction<blend_function::SourceAlpha, 
+                                     blend_function::OneMinusSourceAlpha>();
+    rtt.GetRenderer()->SetParams(rttRenderParams);
+  }
+
+  // -----------------------------------------------------------------------
   // ECS
 
-  core_cs::ECS ecs;
+  core_cs::ECS rttScene, mainScene;
 
-  ecs.AddSystem<gfx_cs::MaterialSystem>("Render");
-  ecs.AddSystem<gfx_cs::CameraSystem>("Render");
+  rttScene.AddSystem<gfx_cs::MaterialSystem>("Render");
+  rttScene.AddSystem<gfx_cs::CameraSystem>("Render");
 
-  auto meshSys = ecs.AddSystem<gfx_cs::MeshRenderSystem>("Render");
-  meshSys->SetRenderer(renderer);
+  auto meshSys = rttScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+  meshSys->SetRenderer(rtt.GetRenderer());
 
-  auto skyBoxSys = ecs.AddSystem<gfx_cs::SkyBoxRenderSystem>("Render");
-  skyBoxSys->SetRenderer(skyBoxRenderer);
-
-  // -----------------------------------------------------------------------
-  // Transformation debug rendering
-
-  gfx_cs::DebugTransformRenderSystem dtrSys(ecs.GetEventManager(), 
-                                            ecs.GetEntityManager());
-  dtrSys.SetScale(1.0f);
-  dtrSys.SetRenderer(linesRenderer);
-
-  // -----------------------------------------------------------------------
-  // Load the required resources
-
-  gfx_med::ImageLoaderPng png;
-  core_io::Path path( (core_str::String(GetAssetsPath()) +
-                       "/images/crateTexture.png").c_str() );
-
-  if (png.Load(path) != ErrorSuccess)
-  { TLOC_ASSERT_FALSE("Image did not load!"); }
-
-  // gl::Uniform supports quite a few types, including a TextureObject
-  gfx_gl::texture_object_vso to;
-  to->Initialize(*png.GetImage());
-
-  core_conts::ArrayFixed<core_io::Path, 6> imgPaths;
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_rt.jpg"));
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_lf.jpg"));
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_up.jpg"));
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_dn.jpg"));
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_bk.jpg"));
-  imgPaths.push_back(core_io::Path(g_assetsPath + "/images/skybox/lake2_ft.jpg"));
-
-  auto toSkyBox = app_res::f_resource::LoadImageAsTextureObjectCubeMap(imgPaths);
-
-  // -----------------------------------------------------------------------
-  // Add a texture to the material. We need:
-  //  * an image
-  //  * a TextureObject (preparing the image for OpenGL)
-  //  * a Uniform (all textures are uniforms in shaders)
-  //  * a ShaderOperator (this is what the material will take)
+  mainScene.AddSystem<gfx_cs::MaterialSystem>("Render");
+  auto quadSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+  quadSys->SetRenderer(renderer);
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
 
-  path = core_io::Path(g_assetsPath + "/models/Crate.obj");
-
-  core_io::FileIO_ReadA objFile(path);
-  if (objFile.Open() != ErrorSuccess)
-  { 
-    TLOC_LOG_GFX_ERR() << "Unable to open the .obj file."; 
-    return 1;
-  }
-
-  core_str::String objFileContents;
-  objFile.GetContents(objFileContents);
-
-  gfx_med::ObjLoader objLoader;
-  if (objLoader.Init(objFileContents) != ErrorSuccess)
-  { 
-    TLOC_LOG_GFX_ERR() << "Parsing errors in .obj file.";
-    return 1;
-  }
-
-  if (objLoader.GetNumGroups() == 0)
-  { 
-    TLOC_LOG_GFX_ERR() << "Obj file does not have any objects.";
-    return 1;
-  }
+  auto objLoader = gfx_med::f_obj_loader::LoadObjFile
+    (core_io::Path(g_assetsPath + "/models/Crate.obj"));
 
   gfx_med::ObjLoader::vert_cont_type vertices;
-  objLoader.GetUnpacked(vertices, 0);
+  objLoader->GetUnpacked(vertices, 0);
 
   // -----------------------------------------------------------------------
   // Create the mesh and add the material
 
-  core_cs::entity_vptr ent =
-    ecs.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
+  gfx_gl::uniform_vso  u_toLight;
+  {
+    auto to = app_res::f_resource::LoadImageAsTextureObject
+      (core_io::Path(g_assetsPath + "/images/light.png"));
+    u_toLight->SetName("s_texture").SetValueAs(*to);
+  }
+
+  using math_t::Rectf32_c;
+  auto rect = Rectf32_c(Rectf32_c::width(3.0f), Rectf32_c::height(3.0f));
+  auto light = rttScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rect).Create();
+  rttScene.CreatePrefab<pref_gfx::Material>()
+    .AddUniform(u_toLight.get())
+    .Add(light, core_io::Path(g_assetsPath + shaderPathOneTextureBillboardVS), 
+                core_io::Path(g_assetsPath + shaderPathOneTextureBillboardFS));
+  light->GetComponent<math_cs::Transform>()->SetPosition(math_t::Vec3f32(10.0f, 5.0f, 10.0f));
+
+  auto lightMat = light->GetComponent<gfx_cs::Material>();
+  lightMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>(false);
+  lightMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
+  lightMat->SetEnableUniform<gfx_cs::p_material::uniforms::k_projectionMatrix>();
+
+  auto ent =
+    rttScene.CreatePrefab<pref_gfx::Mesh>().Create(vertices);
   ent->GetComponent<gfx_cs::Mesh>()->
     SetEnableUniform<gfx_cs::p_renderable::uniforms::k_normalMatrix>();
 
   gfx_gl::uniform_vso  u_to;
-  u_to->SetName("s_texture").SetValueAs(*to);
+  {
+    auto to = app_res::f_resource::LoadImageAsTextureObject
+      (core_io::Path(g_assetsPath + "/images/crateTexture.png"));
+    u_to->SetName("s_texture").SetValueAs(*to);
+  }
 
-  gfx_gl::uniform_vso  u_lightDir;
-  u_lightDir->SetName("u_lightDir").SetValueAs(math_t::Vec3f32(-3.0f, 3.0f, -3.0f));
+  gfx_gl::uniform_vso  u_lightPos;
+  u_lightPos->SetName("u_lightDir").SetValueAs(light->GetComponent<math_cs::Transform>()->GetPosition());
 
-  ecs.CreatePrefab<pref_gfx::Material>()
+  rttScene.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_to.get())
-    .AddUniform(u_lightDir.get())
+    .AddUniform(u_lightPos.get())
     .Add(ent, core_io::Path(GetAssetsPath() + shaderPathVS),
               core_io::Path(GetAssetsPath() + shaderPathFS));
 
   auto matPtr = ent->GetComponent<gfx_cs::Material>();
   matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
 
+  gfx_gl::uniform_vso  u_toScene;
+  u_toScene->SetName("s_texture").SetValueAs(*toColScene);
+
+  gfx_gl::uniform_vso  u_toStencil;
+  u_toStencil->SetName("s_stencil").SetValueAs(*toColStencil);
+
+  auto rttRect = Rectf32_c(Rectf32_c::width(2.0f), Rectf32_c::height(2.0f));
+  auto rttQuad = mainScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rttRect).Create();
+  mainScene.CreatePrefab<pref_gfx::Material>()
+    .AddUniform(u_toScene.get())
+    .AddUniform(u_toStencil.get())
+    .AddUniform(u_lightPos.get())
+    .Add(rttQuad, core_io::Path(g_assetsPath + shaderPathGodrayVS), 
+                core_io::Path(g_assetsPath + shaderPathGodrayFS));
+
+  rttQuad->GetComponent<gfx_cs::Material>()->
+    SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>();
+  rttQuad->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
+
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
 
   core_cs::entity_vptr m_cameraEnt =
-    ecs.CreatePrefab<pref_gfx::Camera>()
+    rttScene.CreatePrefab<pref_gfx::Camera>()
     .Perspective(true)
     .Near(1.0f)
     .Far(100.0f)
@@ -225,17 +225,14 @@ int TLOC_MAIN(int, char**)
     .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
     .Create(win.GetDimensions());
 
-  dtrSys.SetCamera(m_cameraEnt);
   meshSys->SetCamera(m_cameraEnt);
-  skyBoxSys->SetCamera(m_cameraEnt);
-
-  ecs.CreatePrefab<pref_gfx::SkyBox>().Create(*toSkyBox);
+  quadSys->SetCamera(m_cameraEnt);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
-  ecs.Initialize();
-  dtrSys.Initialize();
+  rttScene.Initialize();
+  mainScene.Initialize();
 
   //------------------------------------------------------------------------
   // In order to update at a pre-defined time interval, a timer must be created
@@ -305,18 +302,17 @@ int TLOC_MAIN(int, char**)
         camTrans->SetOrientation(finalRot);
       }
 
-      ecs.Update(1.0/60.0);
-      ecs.Process(1.0/60.0);
+      rttScene.Update(1.0 / 60.0);
+      rttScene.Process(1.0 / 60.0);
+
+      rtt.GetRenderer()->ApplyRenderSettings();
+      rtt.GetRenderer()->Render();
+
+      mainScene.Update(1.0 / 60.0);
+      mainScene.Process(1.0 / 60.0);
 
       renderer->ApplyRenderSettings();
       renderer->Render();
-
-      skyBoxSys->ProcessActiveEntities();
-      skyBoxRenderer->ApplyRenderSettings();
-      skyBoxRenderer->Render();
-
-      linesRenderer->ApplyRenderSettings();
-      dtrSys.ProcessActiveEntities();
 
       win.SwapBuffers();
       inputMgr->Reset();

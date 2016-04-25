@@ -56,7 +56,7 @@ int TLOC_MAIN(int argc, char *argv[])
 
   win.Register(&winCallback);
   win.Create( gfx_win::Window::graphics_mode::Properties(800, 600),
-    gfx_win::WindowSettings("Object File Loader") );
+    gfx_win::WindowSettings("Bloom") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -448,9 +448,10 @@ int TLOC_MAIN(int argc, char *argv[])
     // update code
 
     inputMgr->Update();
+    mainScene.Process("Update", 1.0/100.0);
 
     mainScene.Update(1.0/60.0);
-    mainScene.Process(1.0/60.0);
+    mainScene.Process("Render", 1.0/60.0);
 
     rttRenderer->ApplyRenderSettings();
     rttRenderer->Render();
