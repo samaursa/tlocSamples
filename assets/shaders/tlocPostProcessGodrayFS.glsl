@@ -6,32 +6,36 @@ in  vec3 v_lightPosOnScreen;
 
 out vec4 o_color;
 
-uniform sampler2D s_texture;
 uniform sampler2D s_stencil;
 
-const int NUM_SAMPLES = 200;
-const float density = 0.05;
-const float decay = 0.9;
-const float weight = 0.9;
+uniform int   u_numSamples  = 200;
+uniform float u_density     = 0.5;
+uniform float u_decay       = 0.9;
+uniform float u_weight      = 0.5;
+uniform float u_exposure    = 0.1;
+uniform float u_illumDecay  = 1.0;
 
 void main()
 {
-  vec2 deltaTexCoord = vec2(v_texCoord.st - v_lightPosOnScreen.xy);
-  vec2 texCoo = v_texCoord.st;
-  deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;
-  float illuminationDecay = 1.0;
+  vec2 lightPosScreen = v_lightPosOnScreen.xy;
+
+  vec2 deltaTexCoord = vec2(v_texCoord - lightPosScreen);
+  deltaTexCoord = normalize(deltaTexCoord);
+  vec2 texCoo = v_texCoord;
+  deltaTexCoord *= 1.0 / float(u_numSamples) * u_density;
+
+  float illumDec = u_illumDecay;
 
 	vec4 rays = vec4(0, 0, 0, 1);
 
-  for (int i = 0; i < NUM_SAMPLES; i++)
+  for (int i = 0; i < u_numSamples; i++)
   {
     texCoo -= deltaTexCoord;
     vec4 sample = texture2D(s_stencil, texCoo);
-    sample *= illuminationDecay * weight;
+    sample *= illumDec * u_weight;
     rays += sample;
-    illuminationDecay *= decay;
+    illumDec *= u_decay;
   }
 
-  //o_color = texture2D(s_texture, v_texCoord) + s_stencil;
-  o_color = texture2D(s_texture, v_texCoord) + (rays * 0.1);
+  o_color = rays * u_exposure;
 }

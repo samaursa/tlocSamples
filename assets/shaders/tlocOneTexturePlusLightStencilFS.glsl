@@ -10,5 +10,5 @@ layout (location = 1) out vec4 o_stencil;
 void main()
 {
 	o_color = texture2D(s_texture, vec2(v_texCoord[0], 1.0 - v_texCoord[1]));
-  o_stencil = o_color * 0.2;
+  o_stencil = o_color * 0.5;
 }

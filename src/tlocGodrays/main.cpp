@@ -25,6 +25,9 @@ namespace {
   core_str::String shaderPathGodrayVS("/shaders/tlocPostProcessGodrayVS.glsl");
   core_str::String shaderPathGodrayFS("/shaders/tlocPostProcessGodrayFS.glsl");
 
+  core_str::String shaderPathAdditiveVS("/shaders/tlocOneTextureVS.glsl");
+  core_str::String shaderPathAdditiveFS("/shaders/tlocAdditiveBlendingFS.glsl");
+
   core_str::String g_assetsPath = GetAssetsPath();
 
 };
@@ -49,6 +52,17 @@ public:
 };
 TLOC_DEF_TYPE(WindowCallback);
 
+template <typename T_UniformPtr, typename T>
+void ModifyUniform(T_UniformPtr a_uniform, T a_min, T a_max, T a_step)
+{
+  auto a_value = a_uniform->GetValueAs<T>();
+  a_value += a_step;
+  a_value = core::Clamp(a_value, a_min, a_max);
+
+  a_uniform->SetValueAs(a_value);
+  TLOC_LOG_DEFAULT_DEBUG() << a_uniform->GetName() << ": " << a_value;
+}
+
 int TLOC_MAIN(int, char**)
 {
   gfx_win::Window win;
@@ -59,7 +73,7 @@ int TLOC_MAIN(int, char**)
   const tl_int winHeight = 600;
 
   win.Create( gfx_win::Window::graphics_mode::Properties(winWidth, winHeight),
-    gfx_win::WindowSettings("FPS Camera") );
+    gfx_win::WindowSettings("Godrays") );
 
   //------------------------------------------------------------------------
   // Initialize graphics platform
@@ -86,15 +100,12 @@ int TLOC_MAIN(int, char**)
   ParamList<core_t::Any> params;
   params.m_param1 = win.GetWindowHandle();
 
-  input::input_mgr_i_ptr inputMgr =
-    core_sptr::MakeShared<input::InputManagerI>(params);
+  auto inputMgr = core_sptr::MakeShared<input::InputManagerB>(params);
 
   //------------------------------------------------------------------------
   // Creating a keyboard and mouse HID
-  input_hid::keyboard_i_vptr      keyboard = 
-    inputMgr->CreateHID<input_hid::KeyboardI>();
-  input_hid::mouse_i_vptr         mouse = 
-    inputMgr->CreateHID<input_hid::MouseI>();
+  auto keyboard = inputMgr->CreateHID<input_hid::KeyboardB>();
+  auto mouse = inputMgr->CreateHID<input_hid::MouseB>();
 
   // Check pointers
   TLOC_LOG_CORE_WARN_IF(keyboard == nullptr) << "No keyboard detected";
@@ -104,27 +115,36 @@ int TLOC_MAIN(int, char**)
 
   gfx::Rtt rtt(win.GetDimensions());
   auto toColScene = rtt.AddColorAttachment(0);
-  auto toColStencil = core_sptr::MakeShared<gfx_gl::TextureObject>();
-  {
-    gfx_med::Image img;
-    img.Create(win.GetDimensions());
-    toColStencil->Initialize(img);
-  }
-  rtt.AddColorAttachment(1, toColStencil);
+  auto toColStencil = rtt.AddColorAttachment(1);
   rtt.AddDepthAttachment();
   {
     auto rttRenderParams = rtt.GetRenderer()->GetParams();
     rttRenderParams.Enable<enable_disable::Blend>()
-                   .SetClearColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 1.0f))
+                   .SetClearColor(gfx_t::Color(0.1f, 0.1f, 0.1f, 0.0f))
                    .SetBlendFunction<blend_function::SourceAlpha, 
                                      blend_function::OneMinusSourceAlpha>();
     rtt.GetRenderer()->SetParams(rttRenderParams);
   }
 
+  gfx::Rtt rttGodrayPass(core_ds::Divide(1u, win.GetDimensions()));
+  auto toGodray = rttGodrayPass.AddColorAttachment(0);
+  {
+    auto texParams = toGodray->GetParams();
+    texParams.Wrap_R<gfx_gl::p_texture_object::wrap_technique::Repeat>();
+    texParams.Wrap_S<gfx_gl::p_texture_object::wrap_technique::Repeat>();
+    toGodray->SetParams(texParams);
+  }
+  auto godrayRenderer = rttGodrayPass.GetRenderer();
+
   // -----------------------------------------------------------------------
   // ECS
 
-  core_cs::ECS rttScene, mainScene;
+  core_cs::ECS rttScene, godrayScene, mainScene;
+
+  rttScene.AddSystem<gfx_cs::ArcBallSystem>("Update");
+  auto abcSys = rttScene.AddSystem<input_cs::ArcBallControlSystem>("Update");
+  mouse->Register(abcSys.get());
+  keyboard->Register(abcSys.get());
 
   rttScene.AddSystem<gfx_cs::MaterialSystem>("Render");
   rttScene.AddSystem<gfx_cs::CameraSystem>("Render");
@@ -132,9 +152,15 @@ int TLOC_MAIN(int, char**)
   auto meshSys = rttScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
   meshSys->SetRenderer(rtt.GetRenderer());
 
+  godrayScene.AddSystem<gfx_cs::MaterialSystem>("Render");
+  auto quadSysGodray = godrayScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+  quadSysGodray->SetRenderer(godrayRenderer);
+
   mainScene.AddSystem<gfx_cs::MaterialSystem>("Render");
-  auto quadSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
-  quadSys->SetRenderer(renderer);
+  {
+    auto quadSys = mainScene.AddSystem<gfx_cs::MeshRenderSystem>("Render");
+    quadSys->SetRenderer(renderer);
+  }
 
   // -----------------------------------------------------------------------
   // ObjLoader can load (basic) .obj files
@@ -192,26 +218,74 @@ int TLOC_MAIN(int, char**)
 
   auto matPtr = ent->GetComponent<gfx_cs::Material>();
   matPtr->SetEnableUniform<gfx_cs::p_material::uniforms::k_viewMatrix>();
+  
+  // -----------------------------------------------------------------------
+
+  auto rttRect = Rectf32_c(Rectf32_c::width(2.0f), Rectf32_c::height(2.0f));
+  auto rttQuadGodRay = godrayScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rttRect).Create();
+  auto matPref = godrayScene.CreatePrefab<pref_gfx::Material>();
+  {
+    gfx_gl::uniform_vso  u_toStencil;
+    u_toStencil->SetName("s_stencil").SetValueAs(*toColStencil);
+
+    gfx_gl::uniform_vso  u_numSamples;
+    u_numSamples->SetName("u_numSamples").SetValueAs(200);
+
+    gfx_gl::uniform_vso  u_density;
+    u_density->SetName("u_density").SetValueAs(0.2f);
+
+    gfx_gl::uniform_vso  u_decay;
+    u_decay->SetName("u_decay").SetValueAs(0.98f);
+
+    gfx_gl::uniform_vso  u_weight;
+    u_weight->SetName("u_weight").SetValueAs(0.5f);
+
+    gfx_gl::uniform_vso  u_exposure;
+    u_exposure->SetName("u_exposure").SetValueAs(0.16f);
+    
+    gfx_gl::uniform_vso  u_illumDecay;
+    u_illumDecay->SetName("u_illumDecay").SetValueAs(0.8f);
+
+    matPref
+      .AddUniform(u_toStencil.get())
+      .AddUniform(u_lightPos.get())
+      .AddUniform(u_numSamples.get())
+      .AddUniform(u_density.get())
+      .AddUniform(u_decay.get())
+      .AddUniform(u_weight.get())
+      .AddUniform(u_exposure.get())
+      .AddUniform(u_illumDecay.get())
+      .Add(rttQuadGodRay, core_io::Path(g_assetsPath + shaderPathGodrayVS), 
+                          core_io::Path(g_assetsPath + shaderPathGodrayFS));
+  }
+
+  auto godraySO     = rttQuadGodRay->GetComponent<gfx_cs::Material>()->GetShaderOperator();
+  auto u_numSamples = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_numSamples");
+  auto u_density    = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_density");
+  auto u_decay      = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_decay");
+  auto u_weight     = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_weight");
+  auto u_exposure   = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_exposure");
+  auto u_illumDecay = gfx_gl::f_shader_operator::GetUniform(*godraySO, "u_illumDecay");
+
+  rttQuadGodRay->GetComponent<gfx_cs::Material>()->
+    SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>();
+  rttQuadGodRay->GetComponent<gfx_cs::Mesh>()->
+    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
+
+  // -----------------------------------------------------------------------
 
   gfx_gl::uniform_vso  u_toScene;
   u_toScene->SetName("s_texture").SetValueAs(*toColScene);
 
-  gfx_gl::uniform_vso  u_toStencil;
-  u_toStencil->SetName("s_stencil").SetValueAs(*toColStencil);
+  gfx_gl::uniform_vso  u_toProcessedGodray;
+  u_toProcessedGodray->SetName("s_texture2").SetValueAs(*toGodray);
 
-  auto rttRect = Rectf32_c(Rectf32_c::width(2.0f), Rectf32_c::height(2.0f));
-  auto rttQuad = mainScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rttRect).Create();
+  auto rttFinalScene = mainScene.CreatePrefab<pref_gfx::Quad>().Dimensions(rttRect).Create();
   mainScene.CreatePrefab<pref_gfx::Material>()
     .AddUniform(u_toScene.get())
-    .AddUniform(u_toStencil.get())
-    .AddUniform(u_lightPos.get())
-    .Add(rttQuad, core_io::Path(g_assetsPath + shaderPathGodrayVS), 
-                core_io::Path(g_assetsPath + shaderPathGodrayFS));
-
-  rttQuad->GetComponent<gfx_cs::Material>()->
-    SetEnableUniform<gfx_cs::p_material::uniforms::k_viewProjectionMatrix>();
-  rttQuad->GetComponent<gfx_cs::Mesh>()->
-    SetEnableUniform<gfx_cs::p_renderable::uniforms::k_modelMatrix>(false);
+    .AddUniform(u_toProcessedGodray.get())
+    .Add(rttFinalScene, core_io::Path(g_assetsPath + shaderPathAdditiveVS), 
+                        core_io::Path(g_assetsPath + shaderPathAdditiveFS));
 
   // -----------------------------------------------------------------------
   // Create a camera from the prefab library
@@ -222,15 +296,21 @@ int TLOC_MAIN(int, char**)
     .Near(1.0f)
     .Far(100.0f)
     .VerticalFOV(math_t::Degree(60.0f))
-    .Position(math_t::Vec3f(0.0f, 0.0f, 5.0f))
+    .Position(math_t::Vec3f(0.0f, 20.0f, 20.0f))
     .Create(win.GetDimensions());
 
+  rttScene.CreatePrefab<pref_gfx::ArcBall>().Add(m_cameraEnt);
+  rttScene.CreatePrefab<pref_input::ArcBallControl>()
+    .GlobalMultiplier(math_t::Vec2f(0.01f, 0.01f))
+    .Add(m_cameraEnt);
+
   meshSys->SetCamera(m_cameraEnt);
-  quadSys->SetCamera(m_cameraEnt);
+  quadSysGodray->SetCamera(m_cameraEnt);
 
   // -----------------------------------------------------------------------
   // All systems need to be initialized once
 
+  godrayScene.Initialize();
   rttScene.Initialize();
   mainScene.Initialize();
 
@@ -239,16 +319,18 @@ int TLOC_MAIN(int, char**)
   core_time::Timer32 inputFrameTime;
   inputFrameTime.Reset();
 
-  win.SetMouseVisibility(false);
-  win.ConfineMouseToWindow(true);
-
-  f32 pitch = 0.0f;
-  f32 yaw = 0.0f;
-  bool quit = false;
+  TLOC_LOG_CORE_DEBUG() << 
+    "Press ALT and Left, Middle and Right mouse buttons to manipulate the camera";
+  TLOC_LOG_CORE_DEBUG() << "Press n/N to increase/decrease number of samples";
+  TLOC_LOG_CORE_DEBUG() << "Press p/P to increase/decrease density of (fake) particles";
+  TLOC_LOG_CORE_DEBUG() << "Press d/D to increase/decrease effect decay";
+  TLOC_LOG_CORE_DEBUG() << "Press w/W to increase/decrease weighting of each sample";
+  TLOC_LOG_CORE_DEBUG() << "Press e/E to increase/decrease exposure";
+  TLOC_LOG_CORE_DEBUG() << "Press i/I to increase/decrease illumination decay";
 
   //------------------------------------------------------------------------
   // Main loop
-  while (win.IsValid() && !winCallback.m_endProgram && !quit)
+  while (win.IsValid() && !winCallback.m_endProgram)
   {
     gfx_win::WindowEvent  evt;
     while (win.GetEvent(evt))
@@ -258,49 +340,54 @@ int TLOC_MAIN(int, char**)
     // Update Input
     if (win.IsValid() && inputFrameTime.ElapsedMilliSeconds() > 16)
     {
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::n))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_numSamples, 0, 500, -1); }
+        else
+        { ModifyUniform(u_numSamples, 0, 500, 1); }
+      }
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::p))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_density, 0.0f, 10.0f, -0.01f); }
+        else
+        { ModifyUniform(u_density, 0.0f, 10.0f, 0.01f); }
+      }
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_decay, 0.0f, 1.0f, -0.001f); }
+        else
+        { ModifyUniform(u_decay, 0.0f, 1.0f, 0.001f); }
+      }
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::w))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_weight, 0.0f, 1.0f, -0.01f); }
+        else
+        { ModifyUniform(u_weight, 0.0f, 1.0f, 0.01f); }
+      }
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::e))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_exposure, 0.0f, 1.0f, -0.01f); }
+        else
+        { ModifyUniform(u_exposure, 0.0f, 1.0f, 0.01f); }
+      }
+      if(keyboard->IsKeyDown(input_hid::KeyboardEvent::i))
+      {
+        if (keyboard->IsModifierDown(input_hid::KeyboardEvent::Shift))
+        { ModifyUniform(u_illumDecay, 0.0f, 1.0f, -0.01f); }
+        else
+        { ModifyUniform(u_illumDecay, 0.0f, 1.0f, 0.01f); }
+      }
+
       inputFrameTime.Reset();
 
       // This updates all HIDs attached to the InputManager. An InputManager can
       // be updated at a different interval than the main render update.
       inputMgr->Update();
-
-      // process input
-      {
-        auto camTrans = m_cameraEnt->GetComponent<math_cs::Transform>();
-        auto camDir = camTrans->GetOrientation().GetCol(2).ConvertTo<math_t::Vec3f32>();
-        auto camLeft = camTrans->GetOrientation().GetCol(0).ConvertTo<math_t::Vec3f32>();
-
-        camDir *= 0.1f;
-        camLeft *= 0.1f;
-
-        // translation
-        if (keyboard->IsKeyDown(input_hid::KeyboardEvent::w))
-        { camTrans->SetPosition(camTrans->GetPosition() - camDir); }
-        if (keyboard->IsKeyDown(input_hid::KeyboardEvent::s))
-        { camTrans->SetPosition(camTrans->GetPosition() + camDir); }
-        if (keyboard->IsKeyDown(input_hid::KeyboardEvent::a))
-        { camTrans->SetPosition(camTrans->GetPosition() - camLeft); }
-        if (keyboard->IsKeyDown(input_hid::KeyboardEvent::d))
-        { camTrans->SetPosition(camTrans->GetPosition() + camLeft); }
-        if (keyboard->IsKeyDown(input_hid::KeyboardEvent::q))
-        { quit = true; }
-
-        auto mouseState = mouse->GetState();
-        f32 absX = (f32)mouseState.m_X.m_rel;
-        f32 absY = (f32)mouseState.m_Y.m_rel;
-
-        pitch += absY * 0.1f;
-        yaw += absX * 0.1f;
-
-        auto rotX = math_t::Mat3f32::IDENTITY;
-        rotX.MakeRotationX(math_t::Degree(-pitch));
-
-        auto rotY = math_t::Mat3f32::IDENTITY;
-        rotY.MakeRotationY(math_t::Degree(-yaw));
-
-        auto finalRot = rotY * rotX;
-        camTrans->SetOrientation(finalRot);
-      }
 
       rttScene.Update(1.0 / 60.0);
       rttScene.Process(1.0 / 60.0);
@@ -308,7 +395,12 @@ int TLOC_MAIN(int, char**)
       rtt.GetRenderer()->ApplyRenderSettings();
       rtt.GetRenderer()->Render();
 
-      mainScene.Update(1.0 / 60.0);
+      godrayScene.Update(1.0 / 60.0f);
+      godrayScene.Process(1.0 / 60.0f);
+
+      godrayRenderer->ApplyRenderSettings();
+      godrayRenderer->Render();
+
       mainScene.Process(1.0 / 60.0);
 
       renderer->ApplyRenderSettings();
