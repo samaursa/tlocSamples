@@ -9,6 +9,7 @@ endif()
 #------------------------------------------------------------------------------
 set(SOLUTION_EXECUTABLE_PROJECTS "tlocDynamicText;")
 list(APPEND SOLUTION_EXECUTABLE_PROJECTS "tlocBloom;")
+list(APPEND SOLUTION_EXECUTABLE_PROJECTS "tlocDynamicMesh;")
 list(APPEND SOLUTION_EXECUTABLE_PROJECTS "tlocFontSprite;")
 list(APPEND SOLUTION_EXECUTABLE_PROJECTS "tlocFontSpriteSheet;")
 list(APPEND SOLUTION_EXECUTABLE_PROJECTS "tlocFPSCamera;")
