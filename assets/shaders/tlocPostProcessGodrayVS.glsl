@@ -14,7 +14,7 @@ void main()
   gl_Position = vec4(a_vertPos, 1);
   v_texCoord = a_vertTexCoord0;
   vec4 lightPosClip = u_vp * vec4(u_lightDir, 1);
-  lightPosClip  = lightPosClip / lightPosClip.w;
+  lightPosClip  = lightPosClip / abs(lightPosClip.w);
 
   v_lightPosOnScreen = lightPosClip.xyz * 0.5 + 0.5;
 }

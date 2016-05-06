@@ -20,17 +20,25 @@ void main()
   vec2 lightPosScreen = v_lightPosOnScreen.xy;
 
   vec2 deltaTexCoord = vec2(v_texCoord - lightPosScreen);
+  
+  float lenCounter = length(deltaTexCoord);
+  float deltaLen = u_density / float(u_numSamples);
+  
   deltaTexCoord = normalize(deltaTexCoord);
   vec2 texCoo = v_texCoord;
   deltaTexCoord *= 1.0 / float(u_numSamples) * u_density;
 
   float illumDec = u_illumDecay;
 
-	vec4 rays = vec4(0, 0, 0, 1);
+  vec4 rays = vec4(0, 0, 0, 1);
 
   for (int i = 0; i < u_numSamples; i++)
   {
-    texCoo -= deltaTexCoord;
+    if (lenCounter > 0) // Don't keep moving past the light position.
+    { texCoo -= deltaTexCoord; }
+    
+    lenCounter -= deltaLen;
+    
     vec4 sample = texture2D(s_stencil, texCoo);
     sample *= illumDec * u_weight;
     rays += sample;
